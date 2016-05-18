@@ -12,7 +12,7 @@ module.exports = function (nodecg) {
 		persistent: false
 	});
 
-	singleInstance.on('graphicAvailable', function (url) {
+	singleInstance.on('graphicAvailable', url => {
 		if (url === '/graphics/agdq16-layouts/index.html') {
 			layoutState.value.page = 'closed';
 			layoutState.value.currentLayout = null;
