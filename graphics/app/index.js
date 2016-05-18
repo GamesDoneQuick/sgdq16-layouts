@@ -11,7 +11,7 @@
             layoutState.value.page = 'preloading';
 
             // Prevent NodeCG restarts from breaking the layoutState.
-            layoutState.on('change', function(oldVal, newVal) {
+            layoutState.on('change', newVal => {
                 if (newVal.page === 'closed') {
                     layoutState.value.page = 'open';
                 }

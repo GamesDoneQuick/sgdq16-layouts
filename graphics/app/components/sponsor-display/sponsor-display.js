@@ -60,7 +60,7 @@ requirejs(['debug'], function(debug) {
 
         ready: function() {
             var sponsors = nodecg.Replicant('sponsors');
-            sponsors.on('change', function(oldVal, newVal) {
+            sponsors.on('change', newVal => {
                 this.sponsors = newVal;
 
                 // If no sponsor is showing yet, show the first sponsor immediately

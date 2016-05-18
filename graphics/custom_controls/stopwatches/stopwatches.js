@@ -25,7 +25,7 @@
     var checklistStatus = document.getElementById('checklistStatus');
 
     var checklistComplete = nodecg.Replicant('checklistComplete');
-    checklistComplete.on('change', function(oldVal, newVal) {
+    checklistComplete.on('change', newVal => {
         if (newVal) {
             startButtons.forEach(function(button) {
                 button.removeAttribute('disabled');

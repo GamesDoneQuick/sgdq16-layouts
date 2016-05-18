@@ -1,137 +1,138 @@
-/* jshint -W106 */
-(function() {
-    'use strict';
+(function () {
+	'use strict';
 
-    var disabledCover = document.getElementById('cover');
+	const disabledCover = document.getElementById('cover');
 
-    var layoutState = nodecg.Replicant('layoutState');
-    layoutState.on('change', function(oldVal, newVal) {
-        disabledCover.reason = newVal.page;
+	const layoutState = nodecg.Replicant('layoutState');
+	layoutState.on('change', newVal => {
+		disabledCover.reason = newVal.page;
 
-        if (newVal.page === 'open') {
-            disabledCover.reason = null;
+		if (newVal.page === 'open') {
+			disabledCover.reason = null;
 
-            /* When the dashboard first loads, the layout might already be open and have all ads preloaded.
-             * Therefore, on first load we have to ask the layout what the status of all the ads is.
-             * This message will trigger the layout to send `adLoadProgress` or `adLoadFinished` events
-             * for all ads. */
-            setTimeout(function() {
-                nodecg.sendMessage('getLoadedAds');
-            }, 100);
-        }
+			/* When the dashboard first loads, the layout might already be open and have all ads preloaded.
+			 * Therefore, on first load we have to ask the layout what the status of all the ads is.
+			 * This message will trigger the layout to send `adLoadProgress` or `adLoadFinished` events
+			 * for all ads. */
+			setTimeout(() => {
+				nodecg.sendMessage('getLoadedAds');
+			}, 100);
+		} else {
+			disabledCover.reason = newVal.page;
 
-        else {
-            disabledCover.reason = newVal.page;
+			if (newVal.page === 'closed') {
+				const adItems = Array.from(document.querySelectorAll('ad-item'));
+				adItems.forEach(adItem => {
+					adItem.percentLoaded = 0;
+					adItem.loaded = false;
+				});
+			}
+		}
+	});
 
-            if (newVal.page === 'closed') {
-                var adItems = Array.prototype.slice.call(document.querySelectorAll('ad-item'));
-                adItems.forEach(function(adItem) {
-                    adItem.percentLoaded = 0;
-                    adItem.loaded = false;
-                });
-            }
-        }
-    });
+	/* ----- */
 
-    /* ----- */
+	const playImageButton = document.getElementById('play-image');
+	const playVideoButton = document.getElementById('play-video');
+	const ftb = nodecg.Replicant('ftb');
 
-    var playImageButton = document.getElementById('play-image');
-    var playVideoButton = document.getElementById('play-video');
+	window.checkVideoPlayButton = function () {
+		if (!window.playCooldown &&
+			window.adListSelectedAd &&
+			window.adListSelectedAd.type === 'video' &&
+			ftb.value === true) {
+			playVideoButton.removeAttribute('disabled');
+		} else {
+			playVideoButton.setAttribute('disabled', 'true');
+		}
+	};
 
-    window.checkVideoPlayButton = function () {
-        if (!window.playCooldown
-            && window.adListSelectedAd
-            && window.adListSelectedAd.type === 'video'
-            && ftb.value === true) {
-            playVideoButton.removeAttribute('disabled');
-        } else {
-            playVideoButton.setAttribute('disabled', 'true');
-        }
-    };
+	playImageButton.addEventListener('click', playButtonClick);
+	playVideoButton.addEventListener('click', playButtonClick);
 
-    playImageButton.addEventListener('click', playButtonClick);
-    playVideoButton.addEventListener('click', playButtonClick);
+	function playButtonClick() {
+		// window.adListSelectedAd is set by elements/ad-list.html
+		nodecg.sendMessage('playAd', window.adListSelectedAd);
 
-    function playButtonClick() {
-        // window.adListSelectedAd is set by elements/ad-list.html
-        nodecg.sendMessage('playAd', window.adListSelectedAd);
+		playImageButton.querySelector('span').innerText = 'Starting playback...';
+		playVideoButton.querySelector('span').innerText = 'Starting playback...';
+		playImageButton.setAttribute('disabled', 'true');
+		playVideoButton.setAttribute('disabled', 'true');
 
-        playImageButton.querySelector('span').innerText = 'Starting playback...';
-        playVideoButton.querySelector('span').innerText = 'Starting playback...';
-        playImageButton.setAttribute('disabled', 'true');
-        playVideoButton.setAttribute('disabled', 'true');
+		window.playCooldown = setTimeout(() => {
+			window.playCooldown = null;
+			playImageButton.removeAttribute('disabled');
+			playImageButton.querySelector('span').innerText = 'Play Selected Ad';
+			playVideoButton.querySelector('span').innerText = 'Play Selected Ad';
+			window.checkVideoPlayButton();
+		}, 1000);
+	}
 
-        window.playCooldown = setTimeout(function() {
-            window.playCooldown = null;
-            playImageButton.removeAttribute('disabled');
-            playImageButton.querySelector('span').innerText = 'Play Selected Ad';
-            playVideoButton.querySelector('span').innerText = 'Play Selected Ad';
-            window.checkVideoPlayButton();
-        }, 1000);
-    }
+	const stopButton = document.getElementById('stop');
+	stopButton.addEventListener('click', () => {
+		nodecg.sendMessage('stopAd');
+	});
 
-    var stopButton = document.getElementById('stop');
-    stopButton.addEventListener('click', function() {
-        nodecg.sendMessage('stopAd');
-    });
+	const ftbButton = document.getElementById('ftb');
+	ftbButton.addEventListener('click', () => {
+		ftb.value = !ftb.value;
+	});
 
-    var ftbButton = document.getElementById('ftb');
-    ftbButton.addEventListener('click', function() {
-        ftb.value = !ftb.value;
-    });
+	ftb.on('change', newVal => {
+		window.checkVideoPlayButton();
+		if (newVal) {
+			ftbButton.classList.add('nodecg-warning');
+			playVideoButton.querySelector('span').innerText = 'Play Selected Ad';
+		} else {
+			ftbButton.classList.remove('nodecg-warning');
+			playVideoButton.querySelector('span').innerText = 'FTB To Play Video';
+		}
+	});
 
-    var ftb = nodecg.Replicant('ftb');
-    ftb.on('change', function(oldVal, newVal) {
-        window.checkVideoPlayButton();
-        if (newVal) {
-            ftbButton.classList.add('nodecg-warning');
-            playVideoButton.querySelector('span').innerText = 'Play Selected Ad';
-        } else {
-            ftbButton.classList.remove('nodecg-warning');
-            playVideoButton.querySelector('span').innerText = 'FTB To Play Video';
-        }
-    });
+	/* ----- */
 
-    /* ----- */
+	const imageList = document.getElementById('imageList');
+	const videoList = document.getElementById('videoList');
+	nodecg.Replicant('ads').on('change', newVal => {
+		imageList.ads = newVal.filter(ad => {
+			return ad.type === 'image';
+		});
 
-    var imageList = document.getElementById('imageList');
-    var videoList = document.getElementById('videoList');
-    nodecg.Replicant('ads').on('change', function (oldVal, newVal) {
-        imageList.ads = newVal.filter(function(ad) {
-            return ad.type === 'image';
-        });
+		videoList.ads = newVal.filter(ad => {
+			return ad.type === 'video';
+		});
+	});
 
-        videoList.ads = newVal.filter(function(ad) {
-            return ad.type === 'video';
-        });
-    });
+	nodecg.listenFor('adLoadProgress', data => {
+		const el = document.querySelector(`ad-item[filename="${data.filename}"]`);
+		if (el) {
+			el.percentLoaded = data.percentLoaded;
+		}
+	});
 
-    nodecg.listenFor('adLoadProgress', function(data) {
-        var el = document.querySelector('ad-item[filename="' + data.filename + '"]');
-        if (el) el.percentLoaded = data.percentLoaded;
-    });
+	nodecg.listenFor('adLoaded', filename => {
+		const el = document.querySelector(`ad-item[filename="${filename}"]`);
+		if (el) {
+			el.loaded = true;
+		}
+	});
 
-    nodecg.listenFor('adLoaded', function(filename) {
-        var el = document.querySelector('ad-item[filename="' + filename + '"]');
-        if (el) el.loaded = true;
-    });
+	/* ----- */
 
-    /* ----- */
-
-    var adState = nodecg.Replicant('adState');
-    var status = document.getElementById('status');
-    adState.on('change', function(oldVal, newVal) {
-        switch (newVal) {
-            case 'stopped':
-                status.innerText = 'Not currently playing an ad.';
-                status.style.fontWeight = 'normal';
-                break;
-            case 'playing':
-                status.innerText = 'An ad is in progress.';
-                status.style.fontWeight = 'bold';
-                break;
-            default:
-                throw new Error('Unexpected adState: "' + newVal + '"');
-        }
-    });
+	const adState = nodecg.Replicant('adState');
+	const status = document.getElementById('status');
+	adState.on('change', newVal => {
+		switch (newVal) {
+			case 'stopped':
+				status.innerText = 'Not currently playing an ad.';
+				status.style.fontWeight = 'normal';
+				break;
+			case 'playing':
+				status.innerText = 'An ad is in progress.';
+				status.style.fontWeight = 'bold';
+				break;
+			default:
+				throw new Error(`Unexpected adState: "${newVal}"`);
+		}
+	});
 })();

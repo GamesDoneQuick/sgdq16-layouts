@@ -278,7 +278,7 @@ define([
 
     totalContainer.addChild(totalLeftBorder, totalText);
 
-    globals.totalRep.on('change', function(oldVal, newVal) {
+    globals.totalRep.on('change', newVal => {
         var TIME_PER_DOLLAR = 0.03;
         var delta = newVal.raw - totalText.rawValue;
         var duration = Math.min(delta * TIME_PER_DOLLAR, 5);

@@ -1,51 +1,49 @@
 /* jshint -W106 */
 (function () {
-    'use strict';
+	'use strict';
 
-    var tweetsContainer = document.getElementById('tweets');
-    var tweets = nodecg.Replicant('tweets');
-    var disabledCover = document.getElementById('cover');
-    var empty = document.getElementById('empty');
-    var layoutName = disabledCover.querySelector('.layoutName');
+	const tweetsContainer = document.getElementById('tweets');
+	const tweets = nodecg.Replicant('tweets');
+	const disabledCover = document.getElementById('cover');
+	const empty = document.getElementById('empty');
+	const layoutName = disabledCover.querySelector('.layoutName');
 
-    tweets.on('change', function (oldVal, newVal) {
-        empty.style.display = newVal.length > 0 ? 'none' : 'flex';
+	tweets.on('change', newVal => {
+		empty.style.display = newVal.length > 0 ? 'none' : 'flex';
 
-        // Remove existing tweets from div
-        while (tweetsContainer.firstChild) {
-            tweetsContainer.removeChild(tweetsContainer.firstChild);
-        }
+		// Remove existing tweets from div
+		while (tweetsContainer.firstChild) {
+			tweetsContainer.removeChild(tweetsContainer.firstChild);
+		}
 
-        var sortedTweets = newVal.slice(0);
-        sortedTweets.sort(function (a, b) {
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
+		const sortedTweets = newVal.slice(0);
+		sortedTweets.sort((a, b) => {
+			return new Date(b.created_at) - new Date(a.created_at);
+		});
 
-        sortedTweets.forEach(function(tweet) {
-            var tweetItem = document.createElement('tweet-item');
-            tweetItem.value = tweet;
-            tweetsContainer.appendChild(tweetItem);
-        });
-    });
+		sortedTweets.forEach(tweet => {
+			const tweetItem = document.createElement('tweet-item');
+			tweetItem.value = tweet;
+			tweetsContainer.appendChild(tweetItem);
+		});
+	});
 
-    var layoutState = nodecg.Replicant('layoutState');
-    layoutState.on('change', function (oldVal, newVal) {
-        if (newVal.page === 'open') {
-            layoutName.innerHTML = newVal.currentLayout;
-            switch (newVal.currentLayout) {
-                case '4x3_4':
-                    layoutName.innerHTML = '3x2_4, 4x3_4';
-                /* falls through */
-                case 'ds':
-                    disabledCover.reason = 'badLayout';
-                    break;
-                default:
-                    disabledCover.reason = null;
-            }
-        }
-
-        else {
-            disabledCover.reason = newVal.page;
-        }
-    });
+	const layoutState = nodecg.Replicant('layoutState');
+	layoutState.on('change', newVal => {
+		if (newVal.page === 'open') {
+			layoutName.innerHTML = newVal.currentLayout;
+			switch (newVal.currentLayout) {
+				case '4x3_4':
+					layoutName.innerHTML = '3x2_4, 4x3_4';
+				/* falls through */
+				case 'ds':
+					disabledCover.reason = 'badLayout';
+					break;
+				default:
+					disabledCover.reason = null;
+			}
+		} else {
+			disabledCover.reason = newVal.page;
+		}
+	});
 })();

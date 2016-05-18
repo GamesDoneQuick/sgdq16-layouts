@@ -240,7 +240,7 @@ define([
     }
 
     // This needs to be near the bottom of this file.
-    globals.currentRunRep.on('change', function(oldVal, newVal) {
+    globals.currentRunRep.on('change', newVal => {
         var img = document.createElement('img');
         img.src = newVal.boxart.url;
         gBoxartImage = img;

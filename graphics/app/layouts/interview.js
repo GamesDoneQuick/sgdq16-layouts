@@ -73,7 +73,7 @@ define([
     var interviewNames = nodecg.Replicant('interviewNames');
     var tl = new TimelineLite({autoRemoveChildren: true});
 
-    nodecg.Replicant('interviewLowerthirdShowing').on('change', function(oldVal, newVal) {
+    nodecg.Replicant('interviewLowerthirdShowing').on('change', newVal => {
         if (newVal) {
             tl.call(function() {
                 var names = interviewNames.value;

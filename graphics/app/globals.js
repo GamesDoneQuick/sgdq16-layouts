@@ -15,7 +15,7 @@ define(function() {
     var currentPrizesRep = nodecg.Replicant('currentPrizes');
     var currentGrandPrizes = [];
     var currentNormalPrizes = [];
-    currentPrizesRep.on('change', function (oldVal, newVal) {
+    currentPrizesRep.on('change', newVal => {
         currentGrandPrizes = newVal.filter(function (prize) {
             return prize.grand;
         });

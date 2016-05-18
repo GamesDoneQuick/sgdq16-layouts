@@ -3,48 +3,48 @@
 <link rel="import" href="../components/paper-styles/typography.html">
 
 <dom-module id="label-value">
-    <style>
-        :host {
-            @apply(--layout-horizontal);
-            @apply(--layout-justified);
-            height: 42px;
-        }
+	<style>
+		:host {
+			@apply(--layout-horizontal);
+			@apply(--layout-justified);
+			height: 42px;
+		}
 
-        :host:not(:last-child) {
-            margin-bottom: 6px;
-        }
+		:host:not(:last-child) {
+			margin-bottom: 6px;
+		}
 
-        #label {
-            @apply(--paper-font-caption);
-            @apply(--layout-flex-none);
-            width: 90px;
-        }
+		#label {
+			@apply(--paper-font-caption);
+			@apply(--layout-flex-none);
+			width: 90px;
+		}
 
-        #value {
-            text-align: right;
-            @apply(--paper-font-code1);
+		#value {
+			text-align: right;
+			@apply(--paper-font-code1);
 
-            /* Hacky webkit-only way of enforcing that a node have at most two lines of text. */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
+			/* Hacky webkit-only way of enforcing that a node have at most two lines of text. */
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+	</style>
 
-    <template>
-        <span id="label">[[label]]</span>
-        <span id="value" title="[[value]]">[[value]]</span>
-    </template>
+	<template>
+		<span id="label">[[label]]</span>
+		<span id="value" title="[[value]]">[[value]]</span>
+	</template>
 </dom-module>
 
 <script>
-    Polymer({
-        is: 'label-value',
+	Polymer({
+		is: 'label-value',
 
-        properties: {
-            label: String,
-            value: String
-        }
-    })
+		properties: {
+			label: String,
+			value: String
+		}
+	});
 </script>

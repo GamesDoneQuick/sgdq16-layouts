@@ -140,7 +140,7 @@
          * Lifecycle
          */
         ready: function() {
-            nodecg.Replicant('stopwatches').on('change', function(oldVal, newVal) {
+            nodecg.Replicant('stopwatches').on('change', newVal => {
                 if (!newVal) {
                     return;
                 } else if (!newVal[this.index]) {
@@ -184,7 +184,7 @@
                 }
             }.bind(this));
 
-            nodecg.Replicant('currentRun').on('change', function(oldVal, newVal) {
+            nodecg.Replicant('currentRun').on('change', newVal => {
                 if (!newVal) return;
 
                 // Hide the entire element if there is no runner at this index.

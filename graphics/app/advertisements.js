@@ -73,7 +73,7 @@ define([
 
     var ftbCover = document.getElementById('ftbCover');
     var ftb = nodecg.Replicant('ftb');
-    ftb.on('change', function(oldVal, newVal) {
+    ftb.on('change', newVal => {
         if (newVal) {
             TweenLite.to(ftbCover, FADE_DURATION, {
                 opacity: 1,

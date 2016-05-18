@@ -74,7 +74,7 @@ define([
 
     var preloadedImages = {};
     var tl = new TimelineMax({repeat: -1});
-    globals.currentPrizesRep.on('change', function (oldVal, newVal) {
+    globals.currentPrizesRep.on('change', newVal => {
         tl.clear();
         newVal.forEach(function (prize) {
             showPrize(prize);

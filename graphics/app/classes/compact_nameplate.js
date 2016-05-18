@@ -231,7 +231,7 @@ define([
             }, [], this);
         }.bind(this), 1500);
 
-        globals.currentRunRep.on('change', function(oldVal, newVal) {
+        globals.currentRunRep.on('change', newVal => {
             var runner = newVal.runners[index];
             if (runner) {
                 handleRunnerChange(runner.name, runner.stream);
@@ -240,7 +240,7 @@ define([
             }
         }.bind(this));
 
-        globals.stopwatchesRep.on('change', function(oldVal, newVal) {
+        globals.stopwatchesRep.on('change', newVal => {
             var stopwatch = newVal[index];
             this.timeText.text = stopwatch.time;
             this.placeText.text = '';
@@ -286,7 +286,7 @@ define([
             }
         }.bind(this));
 
-        globals.gameAudioChannelsRep.on('change', function(oldVal, newVal) {
+        globals.gameAudioChannelsRep.on('change', newVal => {
             var channels = newVal[index];
             var canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
             var canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;

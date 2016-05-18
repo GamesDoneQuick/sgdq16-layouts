@@ -58,7 +58,7 @@ requirejs(['debug'], function(debug) {
                 }
             });
 
-            nodecg.Replicant('nowPlayingPulsing').on('change', function(oldVal, newVal) {
+            nodecg.Replicant('nowPlayingPulsing').on('change', newVal => {
                 if (newVal) {
                     tl.call(function() {
                         self.style.visibility = 'visible';
