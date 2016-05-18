@@ -1,0 +1,34 @@
+<link rel="import" href="../components/polymer/polymer.html">
+<link rel="import" href="../components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="edit-runner">
+    <style>
+        :host {
+            @apply(--layout-vertical);
+        }
+
+        :host:not(:last-child) {
+            margin-bottom: 12px;
+        }
+
+        #nameInput {
+            margin-bottom: -12px;
+        }
+    </style>
+
+    <template>
+        <h5>Runner [[_calcRunnerDisplayIndex(index)]]</h5>
+        <paper-input id="nameInput" type="text" label="Name" value="[[runner.name]]"></paper-input>
+        <paper-input id="streamInput" type="text" label="Twitch Username" value="[[runner.stream]]"></paper-input>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'edit-runner',
+
+        _calcRunnerDisplayIndex: function(index) {
+            return index+1;
+        }
+    })
+</script>

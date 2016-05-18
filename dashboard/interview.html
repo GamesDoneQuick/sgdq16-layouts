@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="import" href="components/iron-flex-layout/classes/iron-flex-layout.html">
+    <link rel="import" href="components/paper-button/paper-button.html">
+    <link rel="import" href="components/paper-input/paper-input.html">
+    <link rel="import" href="elements/label-value.html">
+    <link rel="import" href="elements/disabled-cover.html">
+    <link rel="stylesheet" href="shared-panel-styles.css">
+
+    <style>
+        body {
+            margin-bottom: 8px;
+        }
+
+        #preview1 {
+            margin-top: -12px;
+        }
+
+        #show {
+            margin-right: 4px;
+        }
+
+        #hide {
+            margin-left: 4px;
+            margin-right: 4px;
+            z-index: 1;
+        }
+
+        #auto {
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout horizontal">
+        <div class="column flex">
+            <h5>Preview</h5>
+            <paper-input id="preview1" label="Name 1" type="text"></paper-input>
+            <paper-input id="preview2" label="Name 2" type="text"></paper-input>
+            <paper-input id="preview3" label="Name 3" type="text"></paper-input>
+            <paper-input id="preview4" label="Name 4" type="text"></paper-input>
+            <paper-button id="take" class="nodecg-info">Take</paper-button>
+        </div>
+
+        <div class="column flex" style="position: relative;">
+            <h5>Program</h5>
+            <label-value id="program1" label="Name 1"></label-value>
+            <label-value id="program2" label="Name 2"></label-value>
+            <label-value id="program3" label="Name 3"></label-value>
+            <label-value id="program4" label="Name 4"></label-value>
+
+            <div class="layout horizontal" style="position: absolute; bottom: 0;">
+                <paper-button id="show" class="nodecg-success">Show</paper-button>
+                <paper-button id="hide" class="nodecg-danger">Hide</paper-button>
+                <paper-button id="auto" class="nodecg-info" raised>Auto</paper-button>
+            </div>
+        </div>
+    </div>
+
+    <disabled-cover id="cover">
+        <span reason="closed">
+            The layout graphic appears to be closed.
+            <br/>
+            Open the layout graphic to enable these controls.
+        </span>
+
+        <span reason="preloading">
+            The layout graphic is preloading.
+            <br/>
+            Please wait...
+        </span>
+
+        <span reason="badLayout">
+            This graphic is only available on the <b>Interview</b> layout.
+        </span>
+    </disabled-cover>
+
+    <script src="interview.js"></script>
+</body>
+</html>

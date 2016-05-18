@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="import" href="components/iron-flex-layout/classes/iron-flex-layout.html">
+    <link rel="import" href="components/iron-icons/iron-icons.html">
+    <link rel="import" href="components/paper-button/paper-button.html">
+    <link rel="import" href="components/nodecg-toast/nodecg-toast.html">
+    <link rel="import" href="components/nodecg-typeahead-input/nodecg-typeahead-input.html">
+    <link rel="import" href="elements/label-value.html">
+    <link rel="stylesheet" href="shared-panel-styles.css">
+
+    <style>
+        #nextRun {
+            text-align: right;
+            height: 20px;
+        }
+
+        #take {
+            font-size: 14px;
+            height: 24px;
+            padding-right: 0;
+        }
+
+        #update,
+        #edit {
+            margin-bottom: 0;
+        }
+
+        #typeahead {
+            width: 100%;
+        }
+
+        label-value[label="Name"] #value {
+            font-weight: bold!important;
+        }
+    </style>
+</head>
+<body>
+    <nodecg-toast id="toast"></nodecg-toast>
+
+    <div class="layout horizontal">
+        <!-- Left Column -->
+        <div class="flex-4 layout vertical justified column">
+            <div class="layout vertical end" style="margin-top: -14px;">
+                <nodecg-typeahead-input id="typeahead" max-suggestions="3" placeholder="Search">
+                </nodecg-typeahead-input>
+
+                <paper-button id="take" class="nodecg-success flex layout horizontal center-center">
+                    <span>Take</span>
+                    <iron-icon icon="chevron-right"></iron-icon>
+                </paper-button>
+            </div>
+
+            <div>
+                <h5>Sequential Select</h5>
+                <div class="layout horizontal">
+                    <paper-button id="previous" class="nodecg-info flex layout horizontal center-center"
+                                  style="margin-right: 4px;">
+
+                        <iron-icon icon="arrow-back"></iron-icon>
+                        <span>Prev</span>
+                    </paper-button>
+
+                    <paper-button id="next" class="nodecg-info flex layout horizontal center-center"
+                                  style="margin-left: 4px;">
+
+                        <span>Next</span>
+                        <iron-icon icon="arrow-forward"></iron-icon>
+                    </paper-button>
+                </div>
+
+                <div class="layout horizontal justified">
+                    <span class="flex-none">Next Run:&nbsp;</span>
+                    <span id="nextRun"></span>
+                </div>
+            </div>
+
+
+            <paper-button id="update" raised>Force Update</paper-button>
+        </div>
+
+        <!-- Right Column -->
+        <div class="flex-6 column">
+            <h5>Current Run Info</h5>
+
+            <div class="layout vertical">
+                <label-value label="Name"></label-value>
+                <label-value label="Console"></label-value>
+                <label-value label="Runners"></label-value>
+                <label-value label="Release Year"></label-value>
+                <label-value label="Estimate"></label-value>
+                <label-value label="Category"></label-value>
+                <label-value label="Order"></label-value>
+            </div>
+
+            <paper-button id="edit" class="nodecg-configure" nodecg-dialog="edit-current-run">
+                EDIT CURRENT RUN
+            </paper-button>
+        </div>
+    </div>
+
+    <script src="schedule.js"></script>
+</body>
+</html>

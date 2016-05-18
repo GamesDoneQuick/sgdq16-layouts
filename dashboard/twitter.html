@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="import" href="components/iron-flex-layout/iron-flex-layout.html">
+    <link rel="import" href="components/nodecg-replicant/nodecg-replicant.html">
+    <link rel="import" href="elements/tweet-item.html">
+    <link rel="import" href="elements/disabled-cover.html">
+    <link rel="stylesheet" href="/agdq16-layouts/emoji.css">
+    <link rel="stylesheet" href="/agdq16-layouts/twitter/shared.css">
+
+    <style is="custom-style">
+        #scrollWrapper {
+            overflow-y: scroll;
+            height: 300px;
+            padding-right: 6px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            -webkit-border-radius: 10px;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            background: #757575;
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        ::-webkit-scrollbar-thumb:window-inactive {
+            background: #b9b9b9;;
+        }
+
+        #empty {
+            text-align: center;
+            border: 4px dashed #B7B7B7;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<div id="scrollWrapper">
+    <div id="tweets"></div>
+    <div id="empty">There are no tweets in the queue.</div>
+</div>
+
+<disabled-cover id="cover">
+    <span reason="closed">
+        The layout graphic appears to be closed.
+        <br/>
+        Open the layout graphic to enable these controls.
+    </span>
+
+    <span reason="preloading">
+        The layout graphic is preloading.
+        <br/>
+        Please wait...
+    </span>
+
+    <span reason="badLayout">
+        This layout (<b class="layoutName"></b>) does not support Twitter.
+        <br/>
+        Switch to another layout to enable these controls.
+    </span>
+</disabled-cover>
+
+<script src="twitter.js"></script>
+</body>
+</html>

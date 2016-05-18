@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stopwatches</title>
+
+    <link rel="import" href="../../components/iron-flex-layout/classes/iron-flex-layout.html">
+    <link rel="import" href="../../components/paper-button/paper-button.html">
+    <link rel="import" href="../../components/paper-dialog/paper-dialog.html">
+    <link rel="import" href="/dashboard/style/nodecg-styles.html">
+    <link rel="import" href="elements/gdq-stopwatch.html">
+    <link rel="import" href="elements/time-only-validator.html">
+
+    <style is="custom-style">
+        body {margin: 0;}
+
+        #container {
+            height: 100vh;
+            min-height: 500px;
+            box-sizing: border-box;
+        }
+
+        #checklistStatusContainer {
+            border-bottom: 1px solid #9E9E9E;
+            padding: 0.2em 0;
+            margin-bottom: 0.5em;
+        }
+
+        #globalButtons {
+            border-top: 1px solid #9E9E9E;
+            margin-top: 0.5em;
+            font-size: 1.3em;
+            height: 2.65em;
+            padding: 1em 0.5em;
+        }
+
+        #globalButtons paper-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        #globalButtons iron-icon {
+            --iron-icon-height: 2em;
+            --iron-icon-width: 2em;
+            margin-right: 0.2em;
+        }
+
+        #startAll {
+            margin-right: 0.5em;
+            background-color: #43ac6a;
+        }
+
+        #startAll:hover {
+            background-color: #358753;
+        }
+
+        #startAll-notReady {
+            display: none;
+        }
+
+        #pauseAll {
+            margin-right: 0.5em;
+            margin-left: 0.5em;
+            background-color: #e99002;
+        }
+
+        #pauseAll:hover {
+            background-color: #b67102;
+        }
+
+        #resetAll {
+            margin-left: 0.5em;
+            background-color: var(--nodecg-configure-color);
+        }
+
+        #resetAll:hover {
+            background-color: var(--nodecg-configure-color--dark);
+        }
+
+        #checklistStatus {
+            text-align: center;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="container" class="layout vertical">
+        <div id="checklistStatusContainer" class="layout horizontal center-center">
+            <span id="checklistStatus"></span>
+        </div>
+
+        <gdq-stopwatch index="0"></gdq-stopwatch>
+        <gdq-stopwatch index="1"></gdq-stopwatch>
+        <gdq-stopwatch index="2"></gdq-stopwatch>
+        <gdq-stopwatch index="3"></gdq-stopwatch>
+
+        <div id="globalButtons" class="layout horizontal">
+            <paper-button id="startAll" class="flex">
+                <div id="startAll-ready" class="layout horizontal center">
+                    <iron-icon icon="av:play-arrow" title="Start/Resume All"></iron-icon>
+                    Start All
+                </div>
+                <span id="startAll-notReady">Checklist Incomplete</span>
+            </paper-button>
+
+            <paper-button id="pauseAll" class="flex">
+                <iron-icon icon="av:pause" title="Start/Resume All"></iron-icon>
+                Pause All
+            </paper-button>
+
+            <paper-button id="resetAll" class="flex">
+                <iron-icon icon="refresh" title="Reset"></iron-icon>
+                Reset All
+            </paper-button>
+        </div>
+    </div>
+
+    <paper-dialog id="editDialog" with-backdrop>
+        <h2>Edit Stopwatch</h2>
+
+        <!-- Initialize the "time-only" validator so that we may use it -->
+        <time-only></time-only>
+
+        <paper-input id="editInput" label="Time" validator="time-only" auto-validate
+                     error-message="Should be formatted as HH:MM:SS"></paper-input>
+
+        <div class="buttons">
+            <paper-button dialog-dismiss autofocus>Cancel</paper-button>
+            <paper-button id="confirmEdit">Save</paper-button>
+        </div>
+    </paper-dialog>
+
+    <paper-dialog id="resetDialog" with-backdrop>
+        <h2>Reset <b class="runnerName"></b>'s Stopwatch</h2>
+
+        <p>Are you sure you wish to reset <b class="runnerName"></b>'s stopwatch to 00:00:00?</p>
+
+        <div class="buttons">
+            <paper-button dialog-dismiss autofocus>No, Cancel</paper-button>
+            <paper-button id="confirmReset">Yes, Reset</paper-button>
+        </div>
+    </paper-dialog>
+
+    <script src="stopwatches.js"></script>
+</body>
+</html>

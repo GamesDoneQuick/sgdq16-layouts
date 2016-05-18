@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="import" href="components/paper-button/paper-button.html">
+    <link rel="import" href="components/paper-input/paper-input.html">
+</head>
+<body>
+    <paper-input id="input" label="Donation Total" type="number"></paper-input>
+
+    <script>
+        var input = document.getElementById('input');
+        var total = nodecg.Replicant('total');
+
+        document.addEventListener('dialog-confirmed', function() {
+            nodecg.sendMessage('setTotal', parseFloat(input.value));
+        });
+    </script>
+</body>
+</html>
