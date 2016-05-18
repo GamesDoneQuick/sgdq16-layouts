@@ -1,2 +1,3 @@
-/graphics
-/dashboard/rosters.js
+node_modules
+bower_components
+/graphics/lib

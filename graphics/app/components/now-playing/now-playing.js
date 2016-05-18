@@ -1,114 +1,111 @@
-/* global requirejs, Polymer, TimelineLite, TweenLite, Power2 */
-requirejs(['debug'], function(debug) {
-    'use strict';
+requirejs(['debug'], debug => {
+	'use strict';
 
-    var SONG_EXTRA_WIDTH = 40;
+	const SONG_EXTRA_WIDTH = 40;
 
-    /* jshint -W064 */
-    Polymer({
-        /* jshint +W064 */
+	/* jshint -W064 */
+	Polymer({
+		/* jshint +W064 */
 
-        is: 'now-playing',
+		is: 'now-playing',
 
-        properties: {
-            song: String,
-            album: String
-        },
+		properties: {
+			song: String,
+			album: String
+		},
 
-        observers: [
-            '_resizeContainers(song, album)'
-        ],
+		observers: [
+			'_resizeContainers(song, album)'
+		],
 
-        ready: function() {
-            var self = this;
-            var tl = new TimelineLite({autoRemoveChildren: true});
-            var nowPlaying = nodecg.Replicant('nowPlaying');
+		ready() {
+			const self = this;
+			const tl = new TimelineLite({autoRemoveChildren: true});
+			const nowPlaying = nodecg.Replicant('nowPlaying');
 
-            var songContainer = this.$.songContainer;
-            var songContainerWidth = 0;
-            var songContainerX = '-100%';
-            var songContainerProxy = {};
-            Object.defineProperty(songContainerProxy, 'x', {
-                set: function (newVal) {
-                    var percentage = parseFloat(newVal) / 100;
-                    songContainerX = newVal;
-                    TweenLite.set(songContainer, {
-                        x: Math.round(songContainerWidth * percentage)
-                    });
-                },
-                get: function() {
-                    return songContainerX;
-                }
-            });
+			const songContainer = this.$.songContainer;
+			let songContainerWidth = 0;
+			let songContainerX = '-100%';
+			const songContainerProxy = {};
+			Object.defineProperty(songContainerProxy, 'x', {
+				set(newVal) {
+					const percentage = parseFloat(newVal) / 100;
+					songContainerX = newVal;
+					TweenLite.set(songContainer, {
+						x: Math.round(songContainerWidth * percentage)
+					});
+				},
+				get() {
+					return songContainerX;
+				}
+			});
 
-            var albumContainer = this.$.albumContainer;
-            var albumContainerWidth = 0;
-            var albumContainerX = '-100%';
-            var albumContainerProxy = {};
-            Object.defineProperty(albumContainerProxy, 'x', {
-                set: function (newVal) {
-                    var percentage = parseFloat(newVal) / 100;
-                    albumContainerX = newVal;
-                    TweenLite.set(albumContainer, {
-                        x: Math.round(albumContainerWidth * percentage)
-                    });
-                },
-                get: function() {
-                    return albumContainerX;
-                }
-            });
+			const albumContainer = this.$.albumContainer;
+			let albumContainerWidth = 0;
+			let albumContainerX = '-100%';
+			const albumContainerProxy = {};
+			Object.defineProperty(albumContainerProxy, 'x', {
+				set(newVal) {
+					const percentage = parseFloat(newVal) / 100;
+					albumContainerX = newVal;
+					TweenLite.set(albumContainer, {
+						x: Math.round(albumContainerWidth * percentage)
+					});
+				},
+				get() {
+					return albumContainerX;
+				}
+			});
 
-            nodecg.Replicant('nowPlayingPulsing').on('change', newVal => {
-                if (newVal) {
-                    tl.call(function() {
-                        self.style.visibility = 'visible';
+			nodecg.Replicant('nowPlayingPulsing').on('change', newVal => {
+				if (newVal) {
+					tl.call(() => {
+						self.style.visibility = 'visible';
 
-                        self.song = nowPlaying.value.song;
-                        songContainerProxy.x = '-100%';
+						self.song = nowPlaying.value.song;
+						songContainerProxy.x = '-100%';
 
-                        self.album = nowPlaying.value.album;
-                        albumContainerProxy.x = '-100%';
+						self.album = nowPlaying.value.album;
+						albumContainerProxy.x = '-100%';
 
-                        songContainerWidth = songContainer.getBoundingClientRect().width;
-                        albumContainerWidth = albumContainer.getBoundingClientRect().width;
-                    }, null, null, '+=0.1');
+						songContainerWidth = songContainer.getBoundingClientRect().width;
+						albumContainerWidth = albumContainer.getBoundingClientRect().width;
+					}, null, null, '+=0.1');
 
-                    tl.to([songContainerProxy, albumContainerProxy], 1.2, {
-                        onStart: function() {
-                            debug.time('nowPlayingEnter');
-                        },
-                        x: '0%',
-                        ease: Power2.easeOut,
-                        onComplete: function() {
-                            debug.timeEnd('nowPlayingEnter');
-                        }
-                    });
-                }
+					tl.to([songContainerProxy, albumContainerProxy], 1.2, {
+						onStart() {
+							debug.time('nowPlayingEnter');
+						},
+						x: '0%',
+						ease: Power2.easeOut,
+						onComplete() {
+							debug.timeEnd('nowPlayingEnter');
+						}
+					});
+				} else {
+					tl.to([songContainerProxy, albumContainerProxy], 1.2, {
+						onStart() {
+							debug.time('nowPlayingExit');
+						},
+						x: '-100%',
+						ease: Power2.easeIn,
+						onComplete() {
+							self.style.visibility = 'hidden';
+							debug.timeEnd('nowPlayingExit');
+						}
+					});
+				}
+			});
+		},
 
-                else {
-                    tl.to([songContainerProxy, albumContainerProxy], 1.2, {
-                        onStart: function() {
-                            debug.time('nowPlayingExit');
-                        },
-                        x: '-100%',
-                        ease: Power2.easeIn,
-                        onComplete: function() {
-                            self.style.visibility = 'hidden';
-                            debug.timeEnd('nowPlayingExit');
-                        }
-                    });
-                }
-            });
-        },
+		_resizeContainers() {
+			this.$.songContainer.style.width = 'auto';
 
-        _resizeContainers: function() {
-            this.$.songContainer.style.width = 'auto';
-
-            var songContainerWidth = this.$.songContainer.getBoundingClientRect().width;
-            var albumContainerWidth = this.$.albumContainer.getBoundingClientRect().width;
-            if (songContainerWidth < albumContainerWidth + SONG_EXTRA_WIDTH) {
-                this.$.songContainer.style.width = albumContainerWidth + SONG_EXTRA_WIDTH + 'px';
-            }
-        }
-    });
+			const songContainerWidth = this.$.songContainer.getBoundingClientRect().width;
+			const albumContainerWidth = this.$.albumContainer.getBoundingClientRect().width;
+			if (songContainerWidth < albumContainerWidth + SONG_EXTRA_WIDTH) {
+				this.$.songContainer.style.width = `${albumContainerWidth + SONG_EXTRA_WIDTH}px`;
+			}
+		}
+	});
 });

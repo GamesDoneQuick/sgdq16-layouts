@@ -1,24 +1,24 @@
 /* global define */
 define([
-    'debug',
-    'preloader'
-], function(debug, preloader) {
-    'use strict';
+	'debug',
+	'preloader'
+], (debug, preloader) => {
+	'use strict';
 
-    var containerEl = document.getElementById('container');
-    var lastBg;
+	const containerEl = document.getElementById('container');
+	let lastBg;
 
-    return function(bgName) {
-        debug.log('[background] setBackground(%s)', bgName);
+	return function (bgName) {
+		debug.log('[background] setBackground(%s)', bgName);
 
-        // Remove the last background, if any.
-        if (lastBg) {
-            lastBg.remove();
-        }
+		// Remove the last background, if any.
+		if (lastBg) {
+			lastBg.remove();
+		}
 
-        var newBg = preloader.getResult('bg-' + bgName);
-        newBg.id = 'background';
-        containerEl.appendChild(newBg);
-        lastBg = newBg;
-    };
+		const newBg = preloader.getResult(`bg-${bgName}`);
+		newBg.id = 'background';
+		containerEl.appendChild(newBg);
+		lastBg = newBg;
+	};
 });

@@ -145,7 +145,7 @@
   },
   "scripts": {
     "build": "npm run static && webpack",
-    "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html --ignore-path .eslintignore",
+    "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html graphics/**/*.js --ignore-path .eslintignore",
     "test": "npm run static",
     "watch": "webpack --progress --colors --watch"
   }

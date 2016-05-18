@@ -1,254 +1,251 @@
 /* global define, Power1, TweenLite, TimelineLite, createjs */
 define([
-    'debug',
-    'preloader',
-    'classes/stage'
-],function(debug, preloader, Stage) {
-    'use strict';
+	'debug',
+	'preloader',
+	'classes/stage'
+], (debug, preloader, Stage) => {
+	'use strict';
 
-    var SLIDE_DURATION = 1.5;
-    var FADE_DURATION = 0.5;
-    var FADE_EASE = Power1.easeInOut;
-    var IMAGE_AD_DURATION = 30;
+	const SLIDE_DURATION = 1.5;
+	const FADE_DURATION = 0.5;
+	const FADE_EASE = Power1.easeInOut;
+	const IMAGE_AD_DURATION = 30;
 
-    /* ----- */
+	/* ----- */
 
-    var adState = nodecg.Replicant('adState');
+	const adState = nodecg.Replicant('adState');
 
-    function loadAd(ad) {
-        debug.log('[advertisements] Loading %s', ad.filename);
+	function loadAd(ad) {
+		debug.log('[advertisements] Loading %s', ad.filename);
+		const preloadType = ad.type === 'video' ? createjs.AbstractLoader.VIDEO : createjs.AbstractLoader.IMAGE;
+		preloader.loadFile({
+			id: `ad-${ad.filename}`,
+			src: ad.url,
+			gdqType: 'ad',
+			gdqFilename: ad.filename,
+			type: preloadType
+		});
+	}
 
-        var preloadType = ad.type === 'video'
-            ? createjs.AbstractLoader.VIDEO
-            : createjs.AbstractLoader.IMAGE;
+	nodecg.readReplicant('ads', value => {
+		value.forEach(loadAd);
+	});
 
-        preloader.loadFile({
-            id: 'ad-' + ad.filename,
-            src: ad.url,
-            gdqType: 'ad',
-            gdqFilename: ad.filename,
-            type: preloadType
-        });
-    }
+	nodecg.listenFor('adRemoved', ad => {
+		debug.log('[advertisements] Removing %s', ad.filename);
+		preloader.remove(`ad-${ad.filename}`);
+	});
 
-    nodecg.readReplicant('ads', function(value) {
-        value.forEach(loadAd);
-    });
+	nodecg.listenFor('adChanged', ad => {
+		debug.log('[advertisements] Reloading %s', ad.filename);
+		preloader.remove(`ad-${ad.filename}`);
+		loadAd(ad);
+	});
 
-    nodecg.listenFor('adRemoved', function(ad) {
-        debug.log('[advertisements] Removing %s', ad.filename);
-        preloader.remove('ad-' + ad.filename);
-    });
+	nodecg.listenFor('newAd', loadAd);
 
-    nodecg.listenFor('adChanged', function(ad) {
-        debug.log('[advertisements] Reloading %s', ad.filename);
-        preloader.remove('ad-' + ad.filename);
-        loadAd(ad);
-    });
+	preloader.on('fileprogress', e => {
+		if (e.item.gdqType !== 'ad') {
+			return;
+		}
 
-    nodecg.listenFor('newAd', loadAd);
+		nodecg.sendMessage('adLoadProgress', {
+			filename: e.item.gdqFilename,
+			percentLoaded: e.loaded * 100
+		});
+	});
 
-    preloader.on('fileprogress', function(e) {
-        if (e.item.gdqType !== 'ad') return;
-        nodecg.sendMessage('adLoadProgress', {
-            filename: e.item.gdqFilename,
-            percentLoaded: e.loaded*100
-        });
-    });
+	preloader.on('fileload', e => {
+		if (e.item.gdqType !== 'ad') {
+			return;
+		}
+		nodecg.sendMessage('adLoaded', e.item.gdqFilename);
+	});
 
-    preloader.on('fileload', function(e) {
-        if (e.item.gdqType !== 'ad') return;
-        nodecg.sendMessage('adLoaded', e.item.gdqFilename);
-    });
+	nodecg.listenFor('getLoadedAds', () => {
+		preloader.getItems(false).forEach(item => {
+			if (item.result && item.item.gdqType === 'ad') {
+				nodecg.sendMessage('adLoaded', item.item.gdqFilename);
+			}
+		});
+	});
 
-    nodecg.listenFor('getLoadedAds', function() {
-         preloader.getItems(false).forEach(function(item) {
-             if (item.result && item.item.gdqType === 'ad') {
-                 nodecg.sendMessage('adLoaded', item.item.gdqFilename);
-             }
-         });
-    });
+	/* ----- */
 
-    /* ----- */
+	const ftbCover = document.getElementById('ftbCover');
+	const ftb = nodecg.Replicant('ftb');
+	ftb.on('change', newVal => {
+		if (newVal) {
+			TweenLite.to(ftbCover, FADE_DURATION, {
+				opacity: 1,
+				ease: FADE_EASE,
+				onComplete() {
+					Stage.globalPause = true;
+				}
+			});
+		} else {
+			TweenLite.to(ftbCover, FADE_DURATION, {
+				onStart() {
+					Stage.globalPause = false;
+				},
+				opacity: 0,
+				ease: FADE_EASE
+			});
+		}
+	});
 
-    var ftbCover = document.getElementById('ftbCover');
-    var ftb = nodecg.Replicant('ftb');
-    ftb.on('change', newVal => {
-        if (newVal) {
-            TweenLite.to(ftbCover, FADE_DURATION, {
-                opacity: 1,
-                ease: FADE_EASE,
-                onComplete: function() {
-                    Stage.globalPause = true;
-                }
-            });
-        } else {
-            TweenLite.to(ftbCover, FADE_DURATION, {
-                onStart: function() {
-                    Stage.globalPause = false;
-                },
-                opacity: 0,
-                ease: FADE_EASE
-            });
-        }
-    });
+	/* ----- */
 
-    /* ----- */
+	const tl = new TimelineLite({autoRemoveChildren: true});
+	const container = document.getElementById('container');
+	const imageContainer = document.getElementById('imageAdContainer');
+	let currentImage;
+	let nextImage;
 
-    var container = document.getElementById('container');
-    var imageContainer = document.getElementById('imageAdContainer');
-    var currentImage, nextImage;
-    var tl = new TimelineLite({autoRemoveChildren: true});
+	nodecg.listenFor('stopAd', () => {
+		adState.value = 'stopped';
+		tl.clear();
+		tl.to(imageContainer, SLIDE_DURATION, {
+			x: -1280,
+			roundProps: 'x',
+			ease: Power2.easeIn,
+			onComplete: removeAdImages
+		});
+		removeAdVideo();
+	});
 
-    nodecg.listenFor('stopAd', function() {
-        adState.value = 'stopped';
-        tl.clear();
-        tl.to(imageContainer, SLIDE_DURATION, {
-            x: -1280,
-            roundProps: 'x',
-            ease: Power2.easeIn,
-            onComplete: removeAdImages
-        });
-        removeAdVideo();
-    });
+	// We assume that if we're hearing this message then the ad in question is fully preloaded.
+	nodecg.listenFor('playAd', ad => {
+		const result = preloader.getResult(`ad-${ad.filename}`);
+		if (ad.type === 'image') {
+			if (result) {
+				showAdImage(result);
+				nodecg.sendMessage('logAdPlay', ad);
+			} else {
+				throw new Error(`Tried to play ad but ad was not preloaded: ${ad.filename}`);
+			}
+		} else if (ad.type === 'video') {
+			if (result) {
+				showAdVideo(result);
+				nodecg.sendMessage('logAdPlay', ad);
+			} else {
+				throw new Error(`Tried to play ad but ad was not preloaded: ${ad.filename}`);
+			}
+		} else {
+			throw new Error(`[advertisements] Unexpected ad type: "${ad.type}"`);
+		}
+	});
 
-    // We assume that if we're hearing this message then the ad in question is fully preloaded.
-    nodecg.listenFor('playAd', function(ad) {
-        var result = preloader.getResult('ad-' + ad.filename);
-        if (ad.type === 'image') {
-            if (result) {
-                showAdImage(result);
-                nodecg.sendMessage('logAdPlay', ad);
-            } else {
-                throw new Error('Tried to play ad but ad was not preloaded:' + ad.filename);
-            }
-        } else if (ad.type === 'video') {
-            if (result) {
-                showAdVideo(result);
-                nodecg.sendMessage('logAdPlay', ad);
-            } else {
-                throw new Error('Tried to play ad but ad was not preloaded:' + ad.filename);
-            }
-        } else {
-            throw new Error('[advertisements] Unexpected ad type: "' + ad.type + '"');
-        }
-    });
+	function showAdImage(img) {
+		// If the new ad is the same as the old one, do nothing.
+		if (currentImage === img) {
+			debug.log('[advertisements] New img is identical to current image, aborting.');
+			return;
+		}
 
-    function showAdImage(img) {
-        // If the new ad is the same as the old one, do nothing.
-        if (currentImage === img) {
-            debug.log('[advertisements] New img is identical to current image, aborting.');
-            return;
-        }
+		// Clear any existing tweens. Advertisements ain't nothin' to fuck wit.
+		tl.clear();
+		removeAdVideo();
+		tl.add('start');
 
-        // Clear any existing tweens. Advertisements ain't nothin' to fuck wit.
-        tl.clear();
-        removeAdVideo();
-        tl.add('start');
+		// If we already have a next image, ???
+		if (nextImage) {
+			throw new Error('[advertisements] We\'ve already got a next image queued up, you\'re screwed.');
+		}
 
-        // If we already have a next image, ???
-        if (nextImage) {
-            throw new Error('[advertisements] We\'ve already got a next image queued up, you\'re screwed.');
-        }
+		// If there is an existing image being displayed, we need to crossfade to the new image.
+		// Else, just slide the imageContainer in.
+		if (currentImage) {
+			nextImage = img;
+			nextImage.style.opacity = 0;
+			imageContainer.appendChild(nextImage);
 
-        // If there is an existing image being displayed, we need to crossfade to the new image.
-        if (currentImage) {
-            nextImage = img;
-            nextImage.style.opacity = 0;
-            imageContainer.appendChild(nextImage);
+			tl.to(nextImage, FADE_DURATION, {
+				opacity: 1,
+				ease: FADE_EASE,
+				onComplete() {
+					imageContainer.removeChild(currentImage);
+					currentImage = nextImage;
+					nextImage = null;
+				}
+			}, 'start');
+		} else {
+			currentImage = img;
+			imageContainer.appendChild(currentImage);
 
-            tl.to(nextImage, FADE_DURATION, {
-                opacity: 1,
-                ease: FADE_EASE,
-                onComplete: function() {
-                    imageContainer.removeChild(currentImage);
-                    currentImage = nextImage;
-                    nextImage = null;
-                }
-            }, 'start');
-        }
+			tl.to(imageContainer, SLIDE_DURATION, {
+				onStart() {
+					currentImage.style.opacity = 1;
+					adState.value = 'playing';
+				},
+				x: 0,
+				roundProps: 'x',
+				ease: Power2.easeOut
+			}, 'start');
+		}
 
-        // Else, just slide the imageContainer in.
-        else {
-            currentImage = img;
-            imageContainer.appendChild(currentImage);
+		// Slide out after FADE_DURATION seconds.
+		tl.to(imageContainer, SLIDE_DURATION, {
+			x: -1280,
+			roundProps: 'x',
+			ease: Power2.easeIn,
+			onComplete() {
+				adState.value = 'stopped';
+				removeAdImages();
+			}
+		}, `start+=${IMAGE_AD_DURATION + FADE_DURATION}`);
+	}
 
-            tl.to(imageContainer, SLIDE_DURATION, {
-                onStart: function() {
-                    currentImage.style.opacity = 1;
-                    adState.value = 'playing';
-                },
-                x: 0,
-                roundProps: 'x',
-                ease: Power2.easeOut
-            }, 'start');
-        }
+	function removeAdImages() {
+		if (currentImage) {
+			imageContainer.removeChild(currentImage);
+			currentImage = null;
+		}
 
-        // Slide out after FADE_DURATION seconds.
-        tl.to(imageContainer, SLIDE_DURATION, {
-            x: -1280,
-            roundProps: 'x',
-            ease: Power2.easeIn,
-            onComplete: function() {
-                adState.value = 'stopped';
-                removeAdImages();
-            }
-        }, 'start+=' + (IMAGE_AD_DURATION + FADE_DURATION));
-    }
+		if (nextImage) {
+			imageContainer.removeChild(nextImage);
+			nextImage = null;
+		}
+	}
 
-    function removeAdImages() {
+	function showAdVideo(video) {
+		video.removeEventListener('playing', playingListener);
+		video.removeEventListener('ended', endedListener);
 
-        if (currentImage) {
-            imageContainer.removeChild(currentImage);
-            currentImage = null;
-        }
+		removeAdVideo();
+		removeAdImages();
 
-        if (nextImage) {
-            imageContainer.removeChild(nextImage);
-            nextImage = null;
-        }
-    }
+		video.currentTime = 0;
+		video.style.visibility = 'hidden';
+		video.id = 'videoPlayer';
+		video.classList.add('fullscreen');
+		video.play();
 
-    function showAdVideo(video) {
-        video.removeEventListener('playing', playingListener);
-        video.removeEventListener('ended', endedListener);
+		// The videos sometimes look at bit weird when they first start playing.
+		// To polish things up a bit, we hide the video until the 'playing' event is fired.
+		video.addEventListener('playing', playingListener);
 
-        removeAdVideo();
-        removeAdImages();
+		// When the video ends, remove it from the page.
+		video.addEventListener('ended', endedListener);
 
-        video.currentTime = 0;
-        video.style.visibility = 'hidden';
-        video.id = 'videoPlayer';
-        video.classList.add('fullscreen');
-        video.play();
+		container.appendChild(video);
+	}
 
-        // The videos sometimes look at bit weird when they first start playing.
-        // To polish things up a bit, we hide the video until the 'playing' event is fired.
-        video.addEventListener('playing', playingListener);
+	function removeAdVideo() {
+		while (document.getElementById('videoPlayer')) {
+			container.removeChild(document.getElementById('videoPlayer'));
+		}
+	}
 
-        // When the video ends, remove it from the page.
-        video.addEventListener('ended', endedListener);
+	function playingListener() {
+		this.style.visibility = 'visible';
+		this.removeEventListener('playing', playingListener);
+		adState.value = 'playing';
+	}
 
-        container.appendChild(video);
-    }
-
-    function removeAdVideo() {
-        while (document.getElementById('videoPlayer')) {
-            container.removeChild(document.getElementById('videoPlayer'));
-        }
-    }
-
-    var playingListener = function() {
-        this.style.visibility = 'visible';
-        this.removeEventListener('playing', playingListener);
-        adState.value = 'playing';
-    };
-
-    var endedListener = function() {
-        removeAdVideo();
-        this.removeEventListener('ended', endedListener);
-        adState.value = 'stopped';
-    };
+	function endedListener() {
+		removeAdVideo();
+		this.removeEventListener('ended', endedListener);
+		adState.value = 'stopped';
+	}
 });
-
-

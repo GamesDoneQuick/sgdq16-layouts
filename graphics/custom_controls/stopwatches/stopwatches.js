@@ -1,116 +1,111 @@
-(function() {
-    'use strict';
+(function () {
+	'use strict';
 
-    var startAll = document.getElementById('startAll');
-    startAll.addEventListener('click', function() {
-        nodecg.sendMessage('startTime', 'all');
-    });
+	const resetDialog = document.getElementById('resetDialog');
+	const confirmReset = document.getElementById('confirmReset');
+	const editDialog = document.getElementById('editDialog');
+	const confirmEdit = document.getElementById('confirmEdit');
+	const editInput = document.getElementById('editInput');
 
-    var pauseAll = document.getElementById('pauseAll');
-    pauseAll.addEventListener('click', function() {
-        nodecg.sendMessage('pauseTime', 'all');
-    });
+	const startAll = document.getElementById('startAll');
+	startAll.addEventListener('click', () => {
+		nodecg.sendMessage('startTime', 'all');
+	});
 
-    var resetAll = document.getElementById('resetAll');
-    resetAll.addEventListener('click', function() {
-        window.setDialogInfo('all', 'everyone');
-        resetDialog.open();
-    });
+	const pauseAll = document.getElementById('pauseAll');
+	pauseAll.addEventListener('click', () => {
+		nodecg.sendMessage('pauseTime', 'all');
+	});
 
-    /* ----- */
+	const resetAll = document.getElementById('resetAll');
+	resetAll.addEventListener('click', () => {
+		window.setDialogInfo('all', 'everyone');
+		resetDialog.open();
+	});
 
-    var globalButtons = document.getElementById('globalButtons');
-    var startButtons = Array.prototype.slice.call(document.querySelectorAll('#play'));
-    var checklistStatusContainer = document.getElementById('checklistStatusContainer');
-    var checklistStatus = document.getElementById('checklistStatus');
+	/* ----- */
 
-    var checklistComplete = nodecg.Replicant('checklistComplete');
-    checklistComplete.on('change', newVal => {
-        if (newVal) {
-            startButtons.forEach(function(button) {
-                button.removeAttribute('disabled');
-            });
+	const globalButtons = document.getElementById('globalButtons');
+	const startButtons = Array.from(document.querySelectorAll('#play'));
+	const checklistStatusContainer = document.getElementById('checklistStatusContainer');
+	const checklistStatus = document.getElementById('checklistStatus');
 
-            startAll.removeAttribute('disabled');
-            startAll.querySelector('#startAll-notReady').style.display = 'none';
-            startAll.querySelector('#startAll-ready').style.display = 'flex';
+	const checklistComplete = nodecg.Replicant('checklistComplete');
+	checklistComplete.on('change', newVal => {
+		if (newVal) {
+			startButtons.forEach(button => button.removeAttribute('disabled'));
 
-            checklistStatus.innerText = 'Checklist Complete';
-            checklistStatus.style.fontWeight = 'normal';
-            checklistStatusContainer.style.backgroundColor = '';
-            globalButtons.style.backgroundColor = '';
-        } else {
-            startButtons.forEach(function(button) {
-                button.setAttribute('disabled', 'true');
-            });
+			startAll.removeAttribute('disabled');
+			startAll.querySelector('#startAll-notReady').style.display = 'none';
+			startAll.querySelector('#startAll-ready').style.display = 'flex';
 
-            startAll.setAttribute('disabled', 'true');
-            startAll.querySelector('#startAll-notReady').style.display = 'inline';
-            startAll.querySelector('#startAll-ready').style.display = 'none';
+			checklistStatus.innerText = 'Checklist Complete';
+			checklistStatus.style.fontWeight = 'normal';
+			checklistStatusContainer.style.backgroundColor = '';
+			globalButtons.style.backgroundColor = '';
+		} else {
+			startButtons.forEach(button => button.setAttribute('disabled', 'true'));
 
-            checklistStatus.innerText = 'Checklist Incomplete, complete before starting';
-            checklistStatus.style.fontWeight = 'bold';
-            checklistStatusContainer.style.backgroundColor = '#ff6d6b';
-            globalButtons.style.backgroundColor = '#ff6d6b';
-        }
-    });
+			startAll.setAttribute('disabled', 'true');
+			startAll.querySelector('#startAll-notReady').style.display = 'inline';
+			startAll.querySelector('#startAll-ready').style.display = 'none';
 
-    /* ----- */
+			checklistStatus.innerText = 'Checklist Incomplete, complete before starting';
+			checklistStatus.style.fontWeight = 'bold';
+			checklistStatusContainer.style.backgroundColor = '#ff6d6b';
+			globalButtons.style.backgroundColor = '#ff6d6b';
+		}
+	});
 
-    var dialogIndex = 0;
-    var runnerNameEls = Array.prototype.slice.call(document.getElementsByClassName('runnerName'));
+	/* ----- */
 
-    window.setDialogInfo = function (index, name, currentTime) {
-        dialogIndex = index;
+	const runnerNameEls = Array.from(document.getElementsByClassName('runnerName'));
+	let dialogIndex = 0;
 
-        runnerNameEls.forEach(function(el) {
-            el.innerText = name;
-        });
+	window.setDialogInfo = function (index, name, currentTime) {
+		dialogIndex = index;
 
-        if (currentTime) {
-            editInput.value = currentTime;
-        }
-    };
+		runnerNameEls.forEach(el => {
+			el.innerText = name;
+		});
 
-    /* ----- */
+		if (currentTime) {
+			editInput.value = currentTime;
+		}
+	};
 
-    var resetDialog = document.getElementById('resetDialog');
-    var confirmReset = document.getElementById('confirmReset');
+	/* ----- */
 
-    confirmReset.addEventListener('click', function() {
-        confirmReset.setAttribute('disabled', 'true');
-        nodecg.sendMessage('resetTime', dialogIndex, function() {
-            resetDialog.close();
-            confirmReset.removeAttribute('disabled');
-        });
-    });
+	confirmReset.addEventListener('click', () => {
+		confirmReset.setAttribute('disabled', 'true');
+		nodecg.sendMessage('resetTime', dialogIndex, () => {
+			resetDialog.close();
+			confirmReset.removeAttribute('disabled');
+		});
+	});
 
-    /* ----- */
+	/* ----- */
 
-    var editDialog = document.getElementById('editDialog');
-    var confirmEdit = document.getElementById('confirmEdit');
-    var editInput = document.getElementById('editInput');
+	editInput.addEventListener('iron-input-validate', e => {
+		// e.target.validity.valid seems to be busted. Use this workaround.
+		const isValid = !e.target.hasAttribute('invalid');
+		if (isValid) {
+			confirmEdit.removeAttribute('disabled');
+		} else {
+			confirmEdit.setAttribute('disabled', 'true');
+		}
+	});
 
-    editInput.addEventListener('iron-input-validate', function(e) {
-        // e.target.validity.valid seems to be busted. Use this workaround.
-        var isValid = !e.target.hasAttribute('invalid');
-        if (isValid) {
-            confirmEdit.removeAttribute('disabled');
-        } else {
-            confirmEdit.setAttribute('disabled', 'true');
-        }
-    });
+	confirmEdit.addEventListener('click', () => {
+		if (editInput.validate()) {
+			const ts = editInput.value.split(':');
+			const ms = Date.UTC(1970, 0, 1, ts[0], ts[1], ts[2]);
 
-    confirmEdit.addEventListener('click', function() {
-        if (editInput.validate()) {
-            var ts = editInput.value.split(':');
-            var ms = Date.UTC(1970, 0, 1, ts[0], ts[1], ts[2]);
-
-            confirmEdit.setAttribute('disabled', 'true');
-            nodecg.sendMessage('setTime', {index: dialogIndex, milliseconds: ms}, function() {
-                editDialog.close();
-                confirmEdit.removeAttribute('disabled');
-            });
-        }
-    });
+			confirmEdit.setAttribute('disabled', 'true');
+			nodecg.sendMessage('setTime', {index: dialogIndex, milliseconds: ms}, () => {
+				editDialog.close();
+				confirmEdit.removeAttribute('disabled');
+			});
+		}
+	});
 })();
