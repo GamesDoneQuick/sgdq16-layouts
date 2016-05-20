@@ -22,18 +22,18 @@
 			}
 
 			if (updated) {
-				console.info('[agdq16-layouts] Total successfully updated');
+				console.info(`[${nodecg.bundleName}] Total successfully updated`);
 				toast.text = 'Successfully updated total.';
 				toast.show();
 			} else {
-				console.info('[agdq16-layouts] Total unchanged, not updated');
+				console.info(`[${nodecg.bundleName}] Total unchanged, not updated`);
 				toast.text = 'Total unchanged, not updated.';
 				toast.show();
 			}
 		});
 	});
 
-	const totalInput = window.top.document.querySelector('#agdq16-layouts_edit-total iframe')
+	const totalInput = window.top.document.querySelector(`#${nodecg.bundleName}_edit-total iframe`)
 		.contentDocument.getElementById('input');
 	document.getElementById('edit').addEventListener('click', () => {
 		totalInput.value = total.value.raw;

@@ -97,13 +97,15 @@
 
 	const imageList = document.getElementById('imageList');
 	const videoList = document.getElementById('videoList');
-	nodecg.Replicant('ads').on('change', newVal => {
+	const imageRegex = /(\.png$)|(\.jpg$)|(\.jpeg$)|(\.gif$)\w+/g;
+	const videoRegex = /(\.mp4$)|(\.webm$)\w+/g;
+	nodecg.Replicant('assets:advertisements').on('change', newVal => {
 		imageList.ads = newVal.filter(ad => {
-			return ad.type === 'image';
+			return imageRegex.test(ad.ext);
 		});
 
 		videoList.ads = newVal.filter(ad => {
-			return ad.type === 'video';
+			return videoRegex.test(ad.ext);
 		});
 	});
 
