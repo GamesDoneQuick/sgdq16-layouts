@@ -1,4 +1,3 @@
-/* jshint -W106 */
 'use strict';
 
 const POLL_INTERVAL = 60 * 1000;
