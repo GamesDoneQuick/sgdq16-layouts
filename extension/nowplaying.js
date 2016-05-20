@@ -25,19 +25,6 @@ module.exports = function (nodecg) {
 	let pulseTimeout;
 
 	nodecg.listenFor('pulseNowPlaying', pulse);
-	function pulse() {
-		// Don't stack pulses
-		if (pulsing.value) {
-			return;
-		}
-
-		pulsing.value = true;
-
-		// Hard-coded 12 second duration
-		pulseTimeout = setTimeout(() => {
-			pulsing.value = false;
-		}, 12 * 1000);
-	}
 
 	trackStream.on('nowPlaying', track => {
 		const newNp = {
@@ -73,4 +60,22 @@ module.exports = function (nodecg) {
 	});
 
 	trackStream.start();
+
+	/**
+	 * Shows the nowPlaying graphic for 12 seconds.
+	 * @returns {undefined}
+	 */
+	function pulse() {
+		// Don't stack pulses
+		if (pulsing.value) {
+			return;
+		}
+
+		pulsing.value = true;
+
+		// Hard-coded 12 second duration
+		pulseTimeout = setTimeout(() => {
+			pulsing.value = false;
+		}, 12 * 1000);
+	}
 };

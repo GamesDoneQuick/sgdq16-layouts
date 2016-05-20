@@ -49,6 +49,11 @@
 	const take = document.getElementById('take');
 	take.addEventListener('click', takeTypeahead);
 
+	/**
+	 * Takes the current value of the typeahead and loads that as the current speedrun.
+	 * Shows a helpful error toast if no matching speedrun could be found.
+	 * @returns {undefined}
+	 */
 	function takeTypeahead() {
 		take.setAttribute('disabled', 'true');
 

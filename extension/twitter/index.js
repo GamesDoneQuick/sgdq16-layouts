@@ -42,6 +42,10 @@ module.exports = function (nodecg) {
 
 	let userStream;
 
+	/**
+	 * Builds the stream. Called once every 90 minutes because sometimes the stream just dies silently.
+	 * @returns {undefined}
+	 */
 	function buildUserStream() {
 		userStream = new TwitterStream({
 			consumer_key: nodecg.bundleConfig.twitter.consumerKey,
@@ -59,20 +63,43 @@ module.exports = function (nodecg) {
 			if (data.event) {
 				switch (data.event) {
 					case 'favorite':
-						handleFavorite(data);
+						if (data.source.id_str !== TARGET_USER_ID) {
+							return;
+						}
+
+						addTweet(data.target_object);
 						break;
 					case 'unfavorite':
-						handleUnfavorite(data);
+						if (data.source.id_str !== TARGET_USER_ID) {
+							return;
+						}
+
+						removeTweetById(data.target_object.id_str);
 						break;
 					default:
 					// do nothing
 				}
 			} else if (data.delete) {
-				handleDelete(data);
+				removeTweetById(data.delete.status.id_str);
 			} else if (data.retweeted_status) {
-				handleRetweet(data);
+				if (data.user.id_str !== TARGET_USER_ID) {
+					return;
+				}
+
+				const retweetedStatus = data.retweeted_status;
+				retweetedStatus.gdqRetweetId = data.id_str;
+				addTweet(retweetedStatus);
 			} else if (data.text) {
-				handleStatus(data);
+				if (data.user.id_str !== TARGET_USER_ID) {
+					return;
+				}
+
+				// Filter out @ replies
+				if (data.text.charAt(0) === '@') {
+					return;
+				}
+
+				addTweet(data);
 			}
 		});
 
@@ -119,49 +146,7 @@ module.exports = function (nodecg) {
 		userStream.stream('user', {thisCantBeNull: true});
 	}
 
-	function handleStatus(status) {
-		if (status.user.id_str !== TARGET_USER_ID) {
-			return;
-		}
-
-		// Filter out @ replies
-		if (status.text.charAt(0) === '@') {
-			return;
-		}
-		addTweet(status);
-	}
-
 	buildUserStream();
-
-	function handleRetweet(retweet) {
-		if (retweet.user.id_str !== TARGET_USER_ID) {
-			return;
-		}
-
-		const retweetedStatus = retweet.retweeted_status;
-		retweetedStatus.gdqRetweetId = retweet.id_str;
-		addTweet(retweetedStatus);
-	}
-
-	function handleDelete(event) {
-		removeTweetById(event.delete.status.id_str);
-	}
-
-	function handleFavorite(favorite) {
-		if (favorite.source.id_str !== TARGET_USER_ID) {
-			return;
-		}
-
-		addTweet(favorite.target_object);
-	}
-
-	function handleUnfavorite(unfavorite) {
-		if (unfavorite.source.id_str !== TARGET_USER_ID) {
-			return;
-		}
-
-		removeTweetById(unfavorite.target_object.id_str);
-	}
 
 	// Close and re-open the twitter connection every 90 minutes
 	setInterval(() => {
@@ -177,6 +162,11 @@ module.exports = function (nodecg) {
 
 	nodecg.listenFor('rejectTweet', removeTweetById);
 
+	/**
+	 * Adds a Tweet to the queue.
+	 * @param {Object} tweet - The tweet to add.
+	 * @returns {undefined}
+	 */
 	function addTweet(tweet) {
 		// Parse pictures and add them to the tweet object as a simply array of URL strings.
 		const imageUrls = [];
@@ -204,6 +194,11 @@ module.exports = function (nodecg) {
 		tweets.value.push(tweet);
 	}
 
+	/**
+	 * Removes a Tweet (by id) from the queue.
+	 * @param {String} idToRemove - The ID string of the Tweet to remove.
+	 * @returns {Object} - The removed tweet. "Undefined" if tweet not found.
+	 */
 	function removeTweetById(idToRemove) {
 		if (typeof idToRemove !== 'string') {
 			throw new Error('[twitter] Must provide a string ID when removing a tweet. ID provided was: ', idToRemove);

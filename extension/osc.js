@@ -112,6 +112,10 @@ module.exports = function (nodecg) {
 	renewSubscriptions();
 	setInterval(renewSubscriptions, 10000);
 
+	/**
+	 * Renews subscriptions with the X32 (they expire every 10s).
+	 * @returns {undefined}
+	 */
 	function renewSubscriptions() {
 		udpPort.send({
 			address: '/batchsubscribe',

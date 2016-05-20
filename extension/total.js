@@ -50,6 +50,12 @@ module.exports = function (nodecg) {
 	// Dashboard can invoke manual updates
 	nodecg.listenFor('updateTotal', updateTotal);
 
+	/**
+	 * Handles manual "updateTotal" requests.
+	 * @param {Boolean} [silent = false] - Whether to print info to logs or not.
+	 * @param {Function} [cb] - The callback to invoke after the total has been updated.
+	 * @returns {undefined}
+	 */
 	function updateTotal(silent, cb) {
 		if (!silent) {
 			nodecg.log.info('Manual donation total update button pressed, invoking update...');
@@ -71,6 +77,10 @@ module.exports = function (nodecg) {
 			});
 	}
 
+	/**
+	 * Updates the "total" replicant with the latest value from the GDQ Tracker API.
+	 * @returns {Promise} - A promise.
+	 */
 	function update() {
 		const deferred = Q.defer();
 		request(DONATION_STATS_URL, (error, response, body) => {

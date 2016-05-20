@@ -147,6 +147,11 @@ module.exports = function (nodecg) {
 
 	nodecg.mount(app);
 
+	/**
+	 * Handles a request (via REST or a NodeCG message) to start a stopwatch.
+	 * @param {Number|String} index - The index (0-3) of the stopwatch to start. If "all", starts all stopwatches.
+	 * @returns {Object} - The stopwatch(es) targeted.
+	 */
 	function handleStartTimeRequest(index) {
 		if (index === 'all') {
 			for (let i = 0; i < NUM_STOPWATCHES; i++) {
@@ -158,6 +163,11 @@ module.exports = function (nodecg) {
 		return startStopwatch(index);
 	}
 
+	/**
+	 * Handles a request (via REST or a NodeCG message) to pause a stopwatch.
+	 * @param {Number|String} index - The index (0-3) of the stopwatch to pause. If "all", pauses all stopwatches.
+	 * @returns {Object} - The stopwatch(es) targeted.
+	 */
 	function handlePauseTimeRequest(index) {
 		if (index === 'all') {
 			for (let i = 0; i < NUM_STOPWATCHES; i++) {
@@ -169,6 +179,11 @@ module.exports = function (nodecg) {
 		return pauseStopwatch(index);
 	}
 
+	/**
+	 * Handles a request (via REST or a NodeCG message) to finish a stopwatch.
+	 * @param {Number|String} index - The index (0-3) of the stopwatch to finish. If "all", finishes all stopwatches.
+	 * @returns {Object} - The stopwatch(es) targeted.
+	 */
 	function handleFinishTimeRequest(index) {
 		if (index === 'all') {
 			for (let i = 0; i < NUM_STOPWATCHES; i++) {
@@ -180,6 +195,12 @@ module.exports = function (nodecg) {
 		return finishStopwatch(index);
 	}
 
+	/**
+	 * Handles a request (via REST or a NodeCG message) to reset a stopwatch.
+	 * @param {Number|String} index - The index (0-3) of the stopwatch to reset. If "all", resets all stopwatches.
+	 * @param {Function} [cb] - An optional callback to invoke once the stopwatch(es) have been reset.
+	 * @returns {Object} - The stopwatch(es) targeted.
+	 */
 	function handleResetTimeRequest(index, cb) {
 		let retValue;
 
@@ -199,6 +220,12 @@ module.exports = function (nodecg) {
 		return retValue;
 	}
 
+	/**
+	 * Handles a request (via REST or a NodeCG message) to set the time of a stopwatch.
+	 * @param {Object} data - An object containing information about the stopwatches to set, and what times to set them to.
+	 * @param {Function} [cb] - An optional callback to invoke once the stopwatch(es) have been set.
+	 * @returns {Object} - The stopwatch(es) targeted.
+	 */
 	function handleSetTimeRequest(data, cb) {
 		let retValue;
 
@@ -218,6 +245,11 @@ module.exports = function (nodecg) {
 		return retValue;
 	}
 
+	/**
+	 * Starts a stopwatch.
+	 * @param {Number} index - The index (0-3) of the stopwatch to start.
+	 * @returns {Object} - The started stopwatch.
+	 */
 	function startStopwatch(index) {
 		if (index < 0 || index >= NUM_STOPWATCHES) {
 			nodecg.log.error('index "%d" sent to "startStopwatch" is out of bounds', index);
@@ -230,6 +262,11 @@ module.exports = function (nodecg) {
 		return stopwatches.value[index];
 	}
 
+	/**
+	 * Pauses a stopwatch.
+	 * @param {Number} index - The index (0-3) of the stopwatch to pause.
+	 * @returns {Object} - The paused stopwatch.
+	 */
 	function pauseStopwatch(index) {
 		if (index < 0 || index >= NUM_STOPWATCHES) {
 			nodecg.log.error('index "%d" sent to "pauseStopwatch" is out of bounds', index);
@@ -242,6 +279,11 @@ module.exports = function (nodecg) {
 		return stopwatches.value[index];
 	}
 
+	/**
+	 * Finishes a stopwatch.
+	 * @param {Number} index - The index (0-3) of the stopwatch to finish.
+	 * @returns {Object} - The finished stopwatch.
+	 */
 	function finishStopwatch(index) {
 		if (index < 0 || index >= NUM_STOPWATCHES) {
 			nodecg.log.error('index "%d" sent to "finishTime" is out of bounds', index);
@@ -260,6 +302,11 @@ module.exports = function (nodecg) {
 		return stopwatch;
 	}
 
+	/**
+	 * Resets a stopwatch.
+	 * @param {Number} index - The index (0-3) of the stopwatch to reset.
+	 * @returns {Object} - The reset stopwatch.
+	 */
 	function resetStopwatch(index) {
 		if (index < 0 || index >= NUM_STOPWATCHES) {
 			nodecg.log.error('index "%d" sent to "resetStopwatch" is out of bounds', index);
@@ -275,6 +322,11 @@ module.exports = function (nodecg) {
 		return stopwatches.value[index];
 	}
 
+	/**
+	 * Start or finishes a stopwatch, depending on its current state.
+	 * @param {Number} index - The index (0-3) of the stopwatch to start/finish.
+	 * @returns {Object} - The started/finished stopwatch.
+	 */
 	function startFinishStopwatch(index) {
 		if (index < 0 || index >= NUM_STOPWATCHES) {
 			nodecg.log.error('index "%d" sent to "startFinishStopwatch" is out of bounds', index);
@@ -290,6 +342,11 @@ module.exports = function (nodecg) {
 		return stopwatches.value[index];
 	}
 
+	/**
+	 * Sets a stopwatch's time.
+	 * @param {Object} data - An object containing information about the stopwatch to set, and what time to set it to.
+	 * @returns {Object} - The changed stopwatch.
+	 */
 	function setStopwatch(data) {
 		const index = data.index;
 		if (index < 0 || index >= NUM_STOPWATCHES) {
@@ -321,6 +378,10 @@ module.exports = function (nodecg) {
 		return targetStopwatch;
 	}
 
+	/**
+	 * Re-calculates the podium place for all stopwatches.
+	 * @returns {undefined}
+	 */
 	function recalcPlaces() {
 		const finishedStopwatches = stopwatches.value.filter(s => {
 			s.place = 0;
@@ -337,6 +398,11 @@ module.exports = function (nodecg) {
 	}
 };
 
+/**
+ * Converts milliseconds to a formatted time string (hh:mm:ss)
+ * @param {Number} duration - The time to convert, in milliseconds.
+ * @returns {string} - The formatted string.
+ */
 function msToTime(duration) {
 	// This rounding is extremely important. It prevents all sorts of errors!
 	duration = Math.floor(duration);

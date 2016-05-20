@@ -43,6 +43,10 @@ module.exports = function (nodecg) {
 			});
 	});
 
+	/**
+	 * Grabs the latest bids from the Tracker.
+	 * @returns {Promise} - A Q.all promise.
+	 */
 	function update() {
 		const currentPromise = Q.defer();
 		request(CURRENT_BIDS_URL, (err, res, body) => {
@@ -66,6 +70,15 @@ module.exports = function (nodecg) {
 		]);
 	}
 
+	/**
+	 * A kind of weird and slightly polymorphic function to handle the various responses from the tracker that we receive.
+	 * @param {Error} [error] - The error (if any) encountered during the request.
+	 * @param {Object} response - The request response.
+	 * @param {Object} body - The request body.
+	 * @param {Object} deferred - A deferred promise object.
+	 * @param {Object} opts - Options.
+	 * @returns {undefined}
+	 */
 	function handleResponse(error, response, body, deferred, opts) {
 		if (!error && response.statusCode === 200) {
 			const bids = JSON.parse(body);

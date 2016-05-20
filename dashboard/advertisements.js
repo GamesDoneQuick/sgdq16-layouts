@@ -50,6 +50,10 @@
 	playImageButton.addEventListener('click', playButtonClick);
 	playVideoButton.addEventListener('click', playButtonClick);
 
+	/**
+	 * Handles the "play" button click events.
+	 * @return {undefined}
+	 */
 	function playButtonClick() {
 		// window.adListSelectedAd is set by elements/ad-list.html
 		nodecg.sendMessage('playAd', window.adListSelectedAd);

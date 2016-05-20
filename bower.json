@@ -1,7 +1,7 @@
 {
   "name": "sgdq16-layouts",
   "dependencies": {
-    "EaselJS": "0.8.1",
+    "EaselJS": "0.8.2",
     "gsap": "1.18.0",
     "iron-icons": "PolymerElements/iron-icons#1.0.5",
     "iron-image": "PolymerElements/iron-image#^1.1.0",
@@ -22,6 +22,7 @@
     "paper-input": "PolymerElements/paper-input#1.1.1",
     "paper-item": "PolymerElements/paper-item#^1.1.2",
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.0",
-    "paper-progress": "PolymerElements/paper-progress#^1.0.7"
+    "paper-progress": "PolymerElements/paper-progress#^1.0.7",
+    "PreloadJS": "0.6.2"
   }
 }

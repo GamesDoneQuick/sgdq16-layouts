@@ -68,6 +68,10 @@ module.exports = function (nodecg) {
 		}
 	});
 
+	/**
+	 * Gets the latest schedule info from the GDQ tracker.
+	 * @returns {Promise.<T>|*}
+	 */
 	function update() {
 		const deferred = Q.defer();
 
@@ -182,6 +186,12 @@ module.exports = function (nodecg) {
 		});
 	}
 
+	/**
+	 * Sets the currentRun replicant.
+	 * @param {Object} run - The run to set as the new currentRun.
+	 * @private
+	 * @returns {undefined}
+	 */
 	function _setCurrentRun(run) {
 		const cr = clone(run);
 
