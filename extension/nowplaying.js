@@ -3,11 +3,8 @@
 const LastFmNode = require('lastfm').LastFmNode;
 
 module.exports = function (nodecg) {
-	if (!nodecg.bundleConfig) {
-		nodecg.log.error('cfg/agdq16-layouts.json was not found. "Now playing" graphic will be disabled.');
-		return;
-	} else if (typeof nodecg.bundleConfig.lastfm === 'undefined') {
-		nodecg.log.error('"lastfm" is not defined in cfg/agdq16-layouts.json! ' +
+	if (Object.keys(nodecg.bundleConfig.lastfm).length === 0) {
+		nodecg.log.error('"lastfm" is not defined in cfg/sgdq16-layouts.json! ' +
 			'"Now playing" graphic will be disabled.');
 		return;
 	}

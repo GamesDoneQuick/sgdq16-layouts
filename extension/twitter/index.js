@@ -7,31 +7,28 @@ const jEmoji = require('emoji');
 const TwitterStream = require('twitter-stream-api');
 
 module.exports = function (nodecg) {
-	if (!nodecg.bundleConfig) {
-		nodecg.log.error('cfg/agdq16-layouts.json was not found. Twitter integration will be disabled.');
-		return;
-	} else if (typeof nodecg.bundleConfig.twitter === 'undefined') {
-		nodecg.log.error('"twitter" is not defined in cfg/agdq16-layouts.json! ' +
+	// Create a route to serve the emoji lib
+	app.get(`/${nodecg.bundleName}/emoji.png`, (req, res) => {
+		const emojiPNGPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.png');
+		res.sendFile(emojiPNGPath);
+	});
+	app.get(`/${nodecg.bundleName}/emoji.css`, (req, res) => {
+		const emojiCSSPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.css');
+		res.sendFile(emojiCSSPath);
+	});
+	app.get(`/${nodecg.bundleName}/twitter/shared.css`, (req, res) => {
+		const sharedCSSPath = path.resolve(__dirname, 'shared.css');
+		res.sendFile(sharedCSSPath);
+	});
+	nodecg.mount(app);
+
+	if (Object.keys(nodecg.bundleConfig.twitter).length === 0) {
+		nodecg.log.error('"twitter" is not defined in cfg/sgdq16-layouts.json! ' +
 			'Twitter integration will be disabled.');
 		return;
 	}
 
 	const TARGET_USER_ID = nodecg.bundleConfig.twitter.userId;
-
-	// Create a route to serve the emoji lib
-	app.get('/agdq16-layouts/emoji.png', (req, res) => {
-		const emojiPNGPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.png');
-		res.sendFile(emojiPNGPath);
-	});
-	app.get('/agdq16-layouts/emoji.css', (req, res) => {
-		const emojiCSSPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.css');
-		res.sendFile(emojiCSSPath);
-	});
-	app.get('/agdq16-layouts/twitter/shared.css', (req, res) => {
-		const sharedCSSPath = path.resolve(__dirname, 'shared.css');
-		res.sendFile(sharedCSSPath);
-	});
-	nodecg.mount(app);
 
 	const tweets = nodecg.Replicant('tweets', {defaultValue: []});
 
