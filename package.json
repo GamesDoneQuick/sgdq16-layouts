@@ -1,16 +1,14 @@
 {
   "name": "sgdq16-layouts",
   "description": "The on-stream graphics used during Summer Games Done Quick 2016.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "contributors": [
     "Alex Van Camp <email@alexvan.camp>",
     "Chris Hanel <chrishanel@gmail.com>"
   ],
   "dependencies": {
     "bluebird": "^3.4.0",
-    "chokidar": "^1.4.2",
     "clone": "^1.0.2",
-    "debounce": "^1.0.0",
     "deep-equal": "^1.0.1",
     "emoji": "^0.3.2",
     "lastfm": "^0.9.2",
@@ -34,7 +32,7 @@
   "homepage": "http://gamesdonequick.com/",
   "license": "Apache-2.0",
   "nodecg": {
-    "compatibleRange": "~0.7.0",
+    "compatibleRange": "~0.8.0",
     "dashboardPanels": [
       {
         "name": "schedule",
@@ -129,15 +127,35 @@
     ],
     "graphics": [
       {
-        "file": "index.html",
+        "file": "3ds.html",
         "width": 1280,
-        "height": 720,
-        "singleInstance": true
+        "height": 720
       },
       {
         "file": "custom_controls/stopwatches/index.html",
         "width": 1280,
         "height": 720
+      }
+    ],
+    "assetCategories": [
+      {
+        "name": "advertisements",
+        "title": "Advertisements",
+        "allowedTypes": [
+          "jpg",
+          "jpeg",
+          "gif",
+          "png",
+          "webm",
+          "mp4"
+        ]
+      },
+      {
+        "name": "sponsors",
+        "title": "Sponsors",
+        "allowedTypes": [
+          "png"
+        ]
       }
     ]
   },
