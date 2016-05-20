@@ -1,10 +1,11 @@
 'use strict';
 
 const Layout = require('./classes/layout');
-const speedrun = require('./components/speedrun');
-const nameplates = require('./components/nameplates');
 
 module.exports = new Layout('ds', () => {
+	const speedrun = require('./components/speedrun');
+	const nameplates = require('./components/nameplates');
+
 	speedrun.configure(882, 291, 398, 127, {
 		nameY: 18,
 		categoryY: 80,

@@ -5,8 +5,6 @@ const STAGE_HEIGHT = 330;
 const DESCRIPTION_HEIGHT = 53;
 const Stage = require('./classes/stage');
 const Layout = require('./classes/layout');
-const speedrun = require('./components/speedrun');
-const nameplates = require('./components/nameplates');
 const globals = require('./util/globals');
 const nowPlaying = document.querySelector('now-playing');
 const sponsorsAndTwitter = document.getElementById('sponsorsAndTwitter');
@@ -132,6 +130,9 @@ function showPrize(prize) {
 }
 
 module.exports = new Layout('break', () => {
+	const speedrun = require('./components/speedrun');
+	const nameplates = require('./components/nameplates');
+
 	speedrun.disable();
 	nameplates.disable();
 	stage.visible = true;

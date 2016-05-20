@@ -398,7 +398,7 @@ function showCTA(immediate) {
 	// Move PCF logo to center
 	tl.to(pcfLogo, 1.2, {
 		onStart() {
-			ctaLeftText.text = '#AGDQ2016 benefits the';
+			ctaLeftText.text = '#SGDQ2016 benefits the';
 			ctaRightText.text = 'Prevent Cancer Foundation';
 		},
 		x: pcfLogo.ctaX,

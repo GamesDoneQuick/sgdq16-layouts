@@ -1,13 +1,14 @@
 'use strict';
 
 const Layout = require('./classes/layout');
-const speedrun = require('./components/speedrun');
-const nameplates = require('./components/nameplates');
 const sponsorsAndTwitter = document.getElementById('sponsorsAndTwitter');
 const sponsorDisplay = document.querySelector('sponsor-display');
 const twitterDisplay = document.querySelector('twitter-display');
 
 module.exports = new Layout('3ds', () => {
+	const speedrun = require('./components/speedrun');
+	const nameplates = require('./components/nameplates');
+
 	speedrun.configure(0, 567, 335, 98, {
 		scale: 0.834,
 		nameY: 10,

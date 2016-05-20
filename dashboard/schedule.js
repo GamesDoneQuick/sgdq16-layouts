@@ -17,11 +17,11 @@
 			}
 
 			if (updated) {
-				console.info('[agdq16-layouts] Schedule successfully updated');
+				console.info(`[${nodecg.bundleName}] Schedule successfully updated`);
 				toast.text = 'Successfully updated schedule.';
 				toast.show();
 			} else {
-				console.info('[agdq16-layouts] Schedule unchanged, not updated');
+				console.info(`[${nodecg.bundleName}] Schedule unchanged, not updated`);
 				toast.text = 'Schedule unchanged, not updated.';
 				toast.show();
 			}

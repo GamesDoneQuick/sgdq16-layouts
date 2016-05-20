@@ -1,6 +1,5 @@
 'use strict';
 
-const createjs = requirejs('easel');
 const AUDIO_ICON_WIDTH = 36;
 const AUDIO_ICON_HEIGHT = 36;
 const AUDIO_ICON_SCALE = 0.42;
@@ -177,6 +176,10 @@ p.setup = function (index) {
 	});
 
 	globals.gameAudioChannelsRep.on('change', newVal => {
+		if (!newVal || newVal.length <= 0) {
+			return;
+		}
+
 		const channels = newVal[index];
 		const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
 		const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;

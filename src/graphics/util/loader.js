@@ -27,6 +27,7 @@ module.exports.load = function (layoutName, opts = {}) {
 	// RAF_SYNCHED tends to look best in OBS Studio.
 	// This may change in future versions of OBS Studio.
 	createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+	createjs.Ticker.framerate = 60;
 
 	// Preload images
 	const manifest = [{id: `bg-${layoutName}`, src: `img/backgrounds/${layoutName}.png`}];
@@ -85,12 +86,12 @@ module.exports.load = function (layoutName, opts = {}) {
 			checkReplicantsAndPreloader();
 		});
 
-		if (globals.once('replicantsDeclared')) {
+		if (globals.replicantsDeclared) {
 			replicantsDone = true;
 			debug.log('replicants declared');
 			checkReplicantsAndPreloader();
 		} else {
-			document.addEventListener('replicantsDeclared', () => {
+			globals.once('replicantsDeclared', () => {
 				replicantsDone = true;
 				debug.log('replicants declared');
 				checkReplicantsAndPreloader();

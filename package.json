@@ -164,8 +164,8 @@
     "url": "git://github.com/GamesDoneQuick/sgdq16-layouts.git"
   },
   "scripts": {
-    "build": "webpack",
-    "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html graphics/**/*.js --ignore-path .eslintignore",
+    "build": "npm run static && webpack",
+    "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html graphics/**/*.js src/**/*.js --ignore-path .eslintignore",
     "test": "npm run static",
     "watch": "webpack --progress --colors --watch"
   }

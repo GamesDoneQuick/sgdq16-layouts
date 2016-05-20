@@ -3,8 +3,8 @@
 const POLL_INTERVAL = 60 * 1000;
 const BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&event=17';
 const CURRENT_BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&feed=current&event=17';
-// const BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/agdq_mock/allBids.json';
-// const CURRENT_BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/agdq_mock/currentBids.json';
+// const BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/allBids.json';
+// const CURRENT_BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/currentBids.json';
 
 const Q = require('q');
 const request = require('request');

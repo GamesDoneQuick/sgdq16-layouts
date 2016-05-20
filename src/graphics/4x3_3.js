@@ -3,13 +3,14 @@
 const COLUMN_WIDTH = 396;
 const COLUMN_X = 442;
 const Layout = require('./classes/layout');
-const speedrun = require('./components/speedrun');
-const compactNameplates = require('./components/compact_nameplates');
 const sponsorsAndTwitter = document.getElementById('sponsorsAndTwitter');
 const sponsorDisplay = document.querySelector('sponsor-display');
 const twitterDisplay = document.querySelector('twitter-display');
 
 module.exports = new Layout('4x3_3', () => {
+	const speedrun = require('./components/speedrun');
+	const compactNameplates = require('./components/compact_nameplates');
+
 	speedrun.configure(COLUMN_X, 154, COLUMN_WIDTH, 179, {
 		nameY: 17,
 		categoryY: 84,

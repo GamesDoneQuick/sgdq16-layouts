@@ -70,7 +70,7 @@ module.exports = function (nodecg) {
 
 	/**
 	 * Gets the latest schedule info from the GDQ tracker.
-	 * @returns {Promise.<T>|*}
+	 * @returns {Promise.<T>|*} - A Q.spread promise.
 	 */
 	function update() {
 		const deferred = Q.defer();
@@ -104,10 +104,10 @@ module.exports = function (nodecg) {
 			const formattedSchedule = scheduleJSON.map(run => {
 				const boxartName = new Buffer(run.fields.display_name).toString('base64');
 				const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
-				let boxartUrl = '/graphics/agdq16-layouts/img/boxart/default.png';
+				let boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/default.png`;
 
 				if (fs.existsSync(boxartPath)) {
-					boxartUrl = `/graphics/agdq16-layouts/img/boxart/${boxartName}.jpg`;
+					boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
 				}
 
 				const runners = run.fields.runners.map(runnerId => allRunners[runnerId]);

@@ -49,13 +49,14 @@
 	const COLUMN_WIDTH = 396;
 	const COLUMN_X = 442;
 	const Layout = __webpack_require__(1);
-	const speedrun = __webpack_require__(10);
-	const compactNameplates = __webpack_require__(16);
 	const sponsorsAndTwitter = document.getElementById('sponsorsAndTwitter');
 	const sponsorDisplay = document.querySelector('sponsor-display');
 	const twitterDisplay = document.querySelector('twitter-display');
 	
 	module.exports = new Layout('4x3_3', () => {
+		const speedrun = __webpack_require__(10);
+		const compactNameplates = __webpack_require__(16);
+	
 		speedrun.configure(COLUMN_X, 154, COLUMN_WIDTH, 179, {
 			nameY: 17,
 			categoryY: 84,
@@ -163,6 +164,7 @@
 		// RAF_SYNCHED tends to look best in OBS Studio.
 		// This may change in future versions of OBS Studio.
 		createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+		createjs.Ticker.framerate = 60;
 	
 		// Preload images
 		const manifest = [{id: `bg-${layoutName}`, src: `img/backgrounds/${layoutName}.png`}];
@@ -221,12 +223,12 @@
 				checkReplicantsAndPreloader();
 			});
 	
-			if (globals.once('replicantsDeclared')) {
+			if (globals.replicantsDeclared) {
 				replicantsDone = true;
 				debug.log('replicants declared');
 				checkReplicantsAndPreloader();
 			} else {
-				document.addEventListener('replicantsDeclared', () => {
+				globals.once('replicantsDeclared', () => {
 					replicantsDone = true;
 					debug.log('replicants declared');
 					checkReplicantsAndPreloader();
@@ -6412,7 +6414,6 @@
 	let gWidth, gHeight, gOpts, gBoxartImage, boxartHeight;
 	/* eslint-enable one-var */
 	
-	const createjs = requirejs('easel');
 	const stage = new Stage(0, 0, 'speedrun');
 	const shadow = new createjs.Shadow('black', 2, 2, 0);
 	
@@ -7583,6 +7584,10 @@
 		});
 	
 		globals.gameAudioChannelsRep.on('change', newVal => {
+			if (!newVal || newVal.length <= 0) {
+				return;
+			}
+	
 			const channels = newVal[index];
 			const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
 			const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;
@@ -7593,14 +7598,14 @@
 	
 				this.audioIcon.filters = null;
 				this.audioIcon.alpha = 1;
-				this.audioIcon.image = preloader.getResult('nameplate-audio-on');
+				this.audioIcon.image = loader.queue.getResult('nameplate-audio-on');
 				this.audioIcon.uncache();
 			} else {
 				if (this.audioIcon.filters && this.audioIcon.filters.length > 0) {
 					return;
 				}
 	
-				this.audioIcon.image = preloader.getResult('nameplate-audio-off');
+				this.audioIcon.image = loader.queue.getResult('nameplate-audio-off');
 				this.audioIcon.filters = [this.audioIconColorFilter];
 				this.audioIcon.alpha = 0.08;
 				this.audioIcon.cache(0, 0, AUDIO_ICON_WIDTH, AUDIO_ICON_HEIGHT);

@@ -15,7 +15,6 @@ const debug = require('../util/debug');
 let gWidth, gHeight, gOpts, gBoxartImage, boxartHeight;
 /* eslint-enable one-var */
 
-const createjs = requirejs('easel');
 const stage = new Stage(0, 0, 'speedrun');
 const shadow = new createjs.Shadow('black', 2, 2, 0);
 

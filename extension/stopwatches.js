@@ -78,11 +78,11 @@ module.exports = function (nodecg) {
 		nodecg.log.warn('"enableRestApi" is true, the stopwatch REST API will be active.');
 		nodecg.log.warn('This API is COMPLETELY INSECURE. ONLY USE IT ON A SECURE LOCAL NETWORK.');
 
-		app.get('/agdq16-layouts/stopwatches', (req, res) => {
+		app.get(`/${nodecg.bundleName}/stopwatches`, (req, res) => {
 			res.json(stopwatches.value);
 		});
 
-		app.put('/agdq16-layouts/stopwatch/:index/start', (req, res) => {
+		app.put(`/${nodecg.bundleName}/stopwatch/:index/start`, (req, res) => {
 			const result = handleStartTimeRequest(req.params.index);
 			if (result) {
 				res.status(200).json(result);
@@ -91,7 +91,7 @@ module.exports = function (nodecg) {
 			}
 		});
 
-		app.put('/agdq16-layouts/stopwatch/:index/pause', (req, res) => {
+		app.put(`/${nodecg.bundleName}/stopwatch/:index/pause`, (req, res) => {
 			const result = handlePauseTimeRequest(req.params.index);
 			if (result) {
 				res.status(200).json(result);
@@ -100,7 +100,7 @@ module.exports = function (nodecg) {
 			}
 		});
 
-		app.put('/agdq16-layouts/stopwatch/:index/finish', (req, res) => {
+		app.put(`/${nodecg.bundleName}/stopwatch/:index/finish`, (req, res) => {
 			const result = handleFinishTimeRequest(req.params.index);
 			if (result) {
 				res.status(200).json(result);
@@ -109,7 +109,7 @@ module.exports = function (nodecg) {
 			}
 		});
 
-		app.put('/agdq16-layouts/stopwatch/:index/reset', (req, res) => {
+		app.put(`/${nodecg.bundleName}/stopwatch/:index/reset`, (req, res) => {
 			const result = handleResetTimeRequest(req.params.index);
 			if (result) {
 				res.status(200).json(result);
@@ -118,7 +118,7 @@ module.exports = function (nodecg) {
 			}
 		});
 
-		app.put('/agdq16-layouts/stopwatch/:index/startfinish', (req, res) => {
+		app.put(`/${nodecg.bundleName}/stopwatch/:index/startfinish`, (req, res) => {
 			const index = req.params.index;
 			let result;
 
@@ -141,8 +141,8 @@ module.exports = function (nodecg) {
 		nodecg.log.info('"enableRestApi" is false, the stopwatch REST API will be unavailable');
 	}
 
-	app.get('/agdq16-layouts/stopwatches/control', nodecg.util.authCheck, (req, res) => {
-		res.redirect('/graphics/agdq16-layouts/custom_controls/stopwatches/index.html');
+	app.get(`/${nodecg.bundleName}/stopwatches/control`, nodecg.util.authCheck, (req, res) => {
+		res.redirect(`/graphics/${nodecg.bundleName}/custom_controls/stopwatches/index.html`);
 	});
 
 	nodecg.mount(app);

@@ -1,6 +1,6 @@
 /* global moment */
 (function () {
-	moment.locale('en', {
+	moment.updateLocale('en', {
 		relativeTime: {
 			future: 'in %s',
 			past: '%s',

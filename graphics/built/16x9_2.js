@@ -48,13 +48,14 @@
 	
 	const COLUMN_WIDTH = 420;
 	const Layout = __webpack_require__(1);
-	const speedrun = __webpack_require__(10);
-	const nameplates = __webpack_require__(12);
 	const sponsorsAndTwitter = document.getElementById('sponsorsAndTwitter');
 	const sponsorDisplay = document.querySelector('sponsor-display');
 	const twitterDisplay = document.querySelector('twitter-display');
 	
 	module.exports = new Layout('16x9_2', () => {
+		const speedrun = __webpack_require__(10);
+		const nameplates = __webpack_require__(12);
+	
 		speedrun.configure(0, 447, COLUMN_WIDTH, 218, {
 			nameY: 41,
 			categoryY: 133,
@@ -165,6 +166,7 @@
 		// RAF_SYNCHED tends to look best in OBS Studio.
 		// This may change in future versions of OBS Studio.
 		createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+		createjs.Ticker.framerate = 60;
 	
 		// Preload images
 		const manifest = [{id: `bg-${layoutName}`, src: `img/backgrounds/${layoutName}.png`}];
@@ -223,12 +225,12 @@
 				checkReplicantsAndPreloader();
 			});
 	
-			if (globals.once('replicantsDeclared')) {
+			if (globals.replicantsDeclared) {
 				replicantsDone = true;
 				debug.log('replicants declared');
 				checkReplicantsAndPreloader();
 			} else {
-				document.addEventListener('replicantsDeclared', () => {
+				globals.once('replicantsDeclared', () => {
 					replicantsDone = true;
 					debug.log('replicants declared');
 					checkReplicantsAndPreloader();
@@ -6414,7 +6416,6 @@
 	let gWidth, gHeight, gOpts, gBoxartImage, boxartHeight;
 	/* eslint-enable one-var */
 	
-	const createjs = requirejs('easel');
 	const stage = new Stage(0, 0, 'speedrun');
 	const shadow = new createjs.Shadow('black', 2, 2, 0);
 	
@@ -6911,7 +6912,6 @@
 
 	'use strict';
 	
-	const createjs = requirejs('easel');
 	const AUDIO_ICON_WIDTH = 36;
 	const AUDIO_ICON_HEIGHT = 36;
 	const AUDIO_ICON_SCALE = 0.42;
@@ -7088,6 +7088,10 @@
 		});
 	
 		globals.gameAudioChannelsRep.on('change', newVal => {
+			if (!newVal || newVal.length <= 0) {
+				return;
+			}
+	
 			const channels = newVal[index];
 			const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
 			const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;

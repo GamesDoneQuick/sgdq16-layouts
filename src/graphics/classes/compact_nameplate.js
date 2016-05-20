@@ -285,6 +285,10 @@ p.setup = function (index, alignment) {
 	});
 
 	globals.gameAudioChannelsRep.on('change', newVal => {
+		if (!newVal || newVal.length <= 0) {
+			return;
+		}
+
 		const channels = newVal[index];
 		const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
 		const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;
@@ -295,14 +299,14 @@ p.setup = function (index, alignment) {
 
 			this.audioIcon.filters = null;
 			this.audioIcon.alpha = 1;
-			this.audioIcon.image = preloader.getResult('nameplate-audio-on');
+			this.audioIcon.image = loader.queue.getResult('nameplate-audio-on');
 			this.audioIcon.uncache();
 		} else {
 			if (this.audioIcon.filters && this.audioIcon.filters.length > 0) {
 				return;
 			}
 
-			this.audioIcon.image = preloader.getResult('nameplate-audio-off');
+			this.audioIcon.image = loader.queue.getResult('nameplate-audio-off');
 			this.audioIcon.filters = [this.audioIconColorFilter];
 			this.audioIcon.alpha = 0.08;
 			this.audioIcon.cache(0, 0, AUDIO_ICON_WIDTH, AUDIO_ICON_HEIGHT);

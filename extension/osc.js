@@ -26,11 +26,8 @@ module.exports = function (nodecg) {
 		persistent: false
 	});
 
-	if (!nodecg.bundleConfig) {
-		nodecg.log.error('cfg/agdq16-layouts.json was not found. Behringer X32 OSC integration will be disabled.');
-		return;
-	} else if (typeof nodecg.bundleConfig.twitter === 'undefined') {
-		nodecg.log.error('"x32" is not defined in cfg/agdq16-layouts.json! ' +
+	if (Object.keys(nodecg.bundleConfig.osc).length === 0) {
+		nodecg.log.error('"x32" is not defined in cfg/sgdq16-layouts.json! ' +
 			'Behringer X32 OSC integration will be disabled.');
 		return;
 	}
