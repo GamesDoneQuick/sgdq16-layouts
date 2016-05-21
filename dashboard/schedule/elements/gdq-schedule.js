@@ -9,7 +9,7 @@
 
 		ready() {
 			schedule.on('change', newVal => {
-				this.$.typeahead.localCandidates = newVal.map(speedrun => speedrun.name);
+				this.$.typeahead.candidates = newVal.map(speedrun => speedrun.name);
 			});
 
 			currentRun.on('change', newVal => {
@@ -45,14 +45,14 @@
 		takeTypeahead() {
 			this.$.take.setAttribute('disabled', 'true');
 
-			const nameToFind = this.$.typeahead.inputValue;
+			const nameToFind = this.$.typeahead.value;
 
 			// Find the run based on the name.
 			const matched = schedule.value.some(run => {
 				if (run.name.toLowerCase() === nameToFind.toLowerCase()) {
 					nodecg.sendMessage('setCurrentRunByOrder', run.order, () => {
 						this.$.take.removeAttribute('disabled');
-						this.$.typeahead.inputValue = '';
+						this.$.typeahead.value = '';
 						this.$.typeahead._suggestions = [];
 					});
 					return true;
