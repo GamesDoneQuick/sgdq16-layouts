@@ -39,7 +39,7 @@
         "title": "Schedule",
         "width": 4,
         "headerColor": "#2d4e8a",
-        "file": "schedule.html"
+        "file": "schedule/schedule.html"
       },
       {
         "name": "edit-current-run",
@@ -56,7 +56,7 @@
             "type": "dismiss"
           }
         ],
-        "file": "dialogs/edit-current-run.html"
+        "file": "schedule/dialogs/edit-current-run.html"
       },
       {
         "name": "advertisements",
