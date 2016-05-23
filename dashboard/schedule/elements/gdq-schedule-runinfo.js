@@ -12,10 +12,19 @@
 			this.estimate = run.estimate;
 			this.category = run.category;
 			this.order = run.order;
+			this.originalValues = run.originalValues;
 		},
 
 		calcName(name) {
-			return name.split('\\n').join(' ');
+			if (name) {
+				return name.split('\\n').join(' ');
+			}
+
+			return name;
+		},
+
+		calcModified(original) {
+			return typeof original === 'undefined' ? '' : 'modified';
 		}
 	});
 })();

@@ -3,6 +3,7 @@
 
 	const schedule = nodecg.Replicant('schedule');
 	const currentRun = nodecg.Replicant('currentRun');
+	const nextRun = nodecg.Replicant('nextRun');
 
 	Polymer({
 		is: 'gdq-schedule',
@@ -19,20 +20,22 @@
 
 				this.$.currentRun.setRun(newVal);
 
-				// Disable "next" button if at end of schedule
-				if (newVal.nextRun) {
-					this.$.next.removeAttribute('disabled');
-					this.$.nextRun.setRun(newVal.nextRun);
-				} else {
-					this.$.next.setAttribute('disabled', 'true');
-					this.$.nextRun.clear();
-				}
-
 				// Disable "prev" button if at start of schedule
 				if (newVal.order <= 1) {
 					this.$.previous.setAttribute('disabled', 'true');
 				} else {
 					this.$.previous.removeAttribute('disabled');
+				}
+			});
+
+			nextRun.on('change', newVal => {
+				// Disable "next" button if at end of schedule
+				if (newVal) {
+					this.$.next.removeAttribute('disabled');
+					this.$.nextRun.setRun(newVal);
+				} else {
+					this.$.next.setAttribute('disabled', 'true');
+					this.$.nextRun.clear();
 				}
 			});
 		},
@@ -100,6 +103,20 @@
 		previous() {
 			this.$.previous.setAttribute('disabled', 'true');
 			nodecg.sendMessage('previousRun');
+		},
+
+		editCurrent() {
+			const editor = nodecg.getDialogDocument('edit-run').getElementById('editor');
+			editor.title = `Edit Current Run (#${currentRun.value.order})`;
+			editor.loadRun(currentRun.value);
+			nodecg.getDialog('edit-run').open();
+		},
+
+		editNext() {
+			const editor = nodecg.getDialogDocument('edit-run').getElementById('editor');
+			editor.title = `Edit Next Run (#${nextRun.value.order})`;
+			editor.loadRun(nextRun.value);
+			nodecg.getDialog('edit-run').open();
 		},
 
 		_typeaheadKeyup(e) {

@@ -61,7 +61,7 @@ module.exports = function (nodecg) {
 	}
 
 	try {
-		require('./osc')(nodecg);
+		// require('./osc')(nodecg);
 	} catch (e) {
 		nodecg.log.error('Failed to load "osc" lib:', e.stack);
 		process.exit(1);
@@ -82,7 +82,7 @@ module.exports = function (nodecg) {
 	}
 
 	try {
-		require('./state')(nodecg);
+		// require('./state')(nodecg);
 	} catch (e) {
 		nodecg.log.error('Failed to load "state" lib:', e.stack);
 		process.exit(1);

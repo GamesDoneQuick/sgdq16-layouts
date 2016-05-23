@@ -6,6 +6,9 @@ const rp = require('request-promise');
 const clone = require('clone');
 const Q = require('q');
 const equals = require('deep-equal');
+const diff = require('deep-diff').diff;
+const assign = require('lodash.assign');
+const objectPath = require('object-path');
 
 const POLL_INTERVAL = 60 * 1000;
 
@@ -13,6 +16,7 @@ module.exports = function (nodecg) {
 	const checklist = require('./checklist')(nodecg);
 	const scheduleRep = nodecg.Replicant('schedule', {defaultValue: [], persistent: false});
 	const currentRun = nodecg.Replicant('currentRun', {defaultValue: {}});
+	const nextRun = nodecg.Replicant('nextRun', {defaultValue: {}});
 
 	// Get initial data
 	update();
@@ -41,32 +45,117 @@ module.exports = function (nodecg) {
 	});
 
 	nodecg.listenFor('nextRun', cb => {
-		const nextIndex = currentRun.value.nextRun.order - 1;
-		_setCurrentRun(scheduleRep.value[nextIndex]);
-		checklist.reset();
-
+		_seekToNextRun();
 		if (typeof cb === 'function') {
 			cb();
 		}
 	});
 
 	nodecg.listenFor('previousRun', cb => {
-		const prevIndex = currentRun.value.order - 2;
-		_setCurrentRun(scheduleRep.value[prevIndex]);
-		checklist.reset();
-
+		_seekToPreviousRun();
 		if (typeof cb === 'function') {
 			cb();
 		}
 	});
 
 	nodecg.listenFor('setCurrentRunByOrder', (order, cb) => {
-		_setCurrentRun(scheduleRep.value[order - 1]);
+		const run = scheduleRep.value[order - 1];
+		if (run) {
+			_seekToArbitraryRun(scheduleRep.value[order - 1]);
+		} else {
+			nodecg.log.error(`Tried to set currentRun to non-existent order: ${order}`);
+		}
 
 		if (typeof cb === 'function') {
 			cb();
 		}
 	});
+
+	nodecg.listenFor('modifyRun', (data, cb) => {
+		let run;
+		if (currentRun.value.pk === data.pk) {
+			run = currentRun.value;
+		} else if (nextRun.value.pk === data.pk) {
+			run = nextRun.value;
+		}
+
+		if (run) {
+			let original;
+			if (scheduleRep.value[run.order - 1] && scheduleRep.value[run.order - 1].pk === run.pk) {
+				original = scheduleRep.value[run.order - 1];
+			} else {
+				original = scheduleRep.value.find(r => r.pk === run.pk);
+			}
+
+			if (original) {
+				assign(run, data);
+				run.originalValues = calcOriginalValues(run, original);
+			} else {
+				nodecg.log.error('[modifyRun] Found current/next run, but couldn\'t find original in schedule. Aborting.');
+			}
+		} else {
+			console.warn('[modifyRun] run not found:', data);
+		}
+
+		if (typeof cb === 'function') {
+			cb();
+		}
+	});
+
+	/**
+	 * Calculates the original values for a modified run.
+	 * @param {Object} run - The modified run (currentRun or nextRun).
+	 * @param {Object} original - The original run as it exists in the schedule.
+	 * @returns {Object|undefined} - The original values of any modified properties.
+	 */
+	function calcOriginalValues(run, original) {
+		run = clone(run);
+		delete run.originalValues;
+		const differences = diff(original, run);
+		if (!differences) {
+			return;
+		}
+
+		const originalValues = {};
+		differences.forEach(difference => {
+			if (!difference.path) {
+				console.log('hey weird diff!', difference);
+			}
+
+			switch (difference.kind) {
+				case 'A':
+					// The only place that A differences can happen is in the "runners" array.
+					if (difference.path[0] === 'runners' && difference.path.length === 1) {
+						if (!originalValues.runners) {
+							originalValues.runners = {};
+						}
+
+						switch (difference.item.kind) {
+							case 'N':
+								originalValues.runners[difference.index] = {name: '', stream: ''};
+								break;
+							case 'D':
+								originalValues.runners[difference.index] = original.runners[difference.index];
+								break;
+							default:
+								nodecg.log.error('[schedule] Unexpected difference in calcOriginalValues:', difference);
+								console.trace();
+						}
+					}
+					break;
+				case 'E':
+					objectPath.set(originalValues, difference.path, difference.lhs);
+					break;
+				default:
+					nodecg.log.error('[schedule] Unexpected difference in calcOriginalValues:', difference);
+					console.trace();
+					console.error('run', run);
+					console.error('original', original);
+			}
+		});
+
+		return originalValues;
+	}
 
 	/**
 	 * Gets the latest schedule info from the GDQ tracker.
@@ -79,7 +168,7 @@ module.exports = function (nodecg) {
 			uri: 'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'runner',
-				event: 17
+				event: 18
 			},
 			json: true
 		});
@@ -88,7 +177,7 @@ module.exports = function (nodecg) {
 			uri: 'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'run',
-				event: 17
+				event: 18
 			},
 			json: true
 		});
@@ -100,7 +189,6 @@ module.exports = function (nodecg) {
 				allRunners[obj.pk] = obj.fields;
 			});
 
-			/* jshint -W106 */
 			const formattedSchedule = scheduleJSON.map(run => {
 				const boxartName = new Buffer(run.fields.display_name).toString('base64');
 				const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
@@ -110,19 +198,24 @@ module.exports = function (nodecg) {
 					boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
 				}
 
-				const runners = run.fields.runners.map(runnerId => allRunners[runnerId]);
+				const runners = run.fields.runners.map(runnerId => {
+					return {
+						name: allRunners[runnerId].name,
+						stream: allRunners[runnerId].stream
+					};
+				});
 
 				let concatenatedRunners;
 				if (runners.length === 1) {
 					concatenatedRunners = runners[0].name;
 				} else {
-					concatenatedRunners = runners.reduce((prev, curr) => {
-						if (typeof prev === 'object') {
-							return `${prev.name}, ${curr.name}`;
+					concatenatedRunners = runners.slice(1).reduce((prev, curr, index, array) => {
+						if (index === array.length - 1) {
+							return `${prev} & ${curr.name}`;
 						}
 
 						return `${prev}, ${curr.name}`;
-					});
+					}, runners[0].name);
 				}
 
 				return {
@@ -133,16 +226,16 @@ module.exports = function (nodecg) {
 					startTime: Date.parse(run.fields.starttime) || null,
 					order: run.fields.order,
 					estimate: run.fields.run_time || 'Unknown',
-					releaseYear: run.fields.release_year,
+					releaseYear: run.fields.release_year || '',
 					runners,
 					concatenatedRunners,
 					boxart: {
 						url: boxartUrl
 					},
-					type: 'run'
+					type: 'run',
+					pk: run.pk
 				};
 			});
-			/* jshint +W106 */
 
 			// If nothing has changed, return.
 			if (equals(formattedSchedule, scheduleRep.value)) {
@@ -152,54 +245,110 @@ module.exports = function (nodecg) {
 
 			scheduleRep.value = formattedSchedule;
 
-			// If no currentRun is set or if the order of the current run is greater than
-			// the length of the schedule, set current run to the first run.
+			/* If no currentRun is set or if the order of the current run is greater than
+			 * the length of the schedule, set current run to the first run.
+			 * Else, update the currentRun by pk, merging with and local changes.
+			 */
 			if (typeof currentRun.value.order === 'undefined' ||
 				currentRun.value.order > scheduleRep.value.length) {
-				_setCurrentRun(scheduleRep.value[0]);
+				_seekToArbitraryRun(scheduleRep.value[0]);
+			} else {
+				const currentRunAsInSchedule = formattedSchedule.find(run => run.pk === currentRun.value.pk);
+
+				/* If currentRun was found in the schedule, merge any changes from the schedule into currentRun.
+				 * Else if currentRun has been removed from the schedule (determined by its `pk`),
+				 * set currentRun to whatever run now has currentRun's `order` value.
+				 * Else, set currentRun to the final run in the schedule.
+				 */
+				if (currentRunAsInSchedule) {
+					[currentRun, nextRun].forEach(activeRun => {
+						const originalValues = activeRun.value.originalValues;
+						const runFromSchedule = formattedSchedule.find(run => run.pk === activeRun.value.pk);
+
+						/* If a field exists in the `originalValues` object, that means this field
+						 * was modified. For each of these fields, we check if the originalValue we have stored
+						 * matches the current value of that same field in the schedule for this run. If it does not,
+						 * then that means that this field was changed in the schedule. In this case, we throw away our local
+						 * change and adopt the change from the schedule. We then delete this field from the originalValues
+						 * object to indicate that we no longer have a local modification to that field.
+						 */
+						if (originalValues && Object.keys(originalValues).length > 0) {
+							for (const field in originalValues) {
+								if (!originalValues.hasOwnProperty(field)) {
+									continue;
+								}
+
+								if (originalValues[field] !== runFromSchedule[field.name]) {
+									currentRun.value[field.name] = originalValues[field];
+									delete originalValues[field];
+								}
+							}
+						}
+					});
+				} else if (formattedSchedule[currentRun.order - 1]) {
+					_seekToArbitraryRun(formattedSchedule[currentRun.order - 1]);
+				} else {
+					_seekToArbitraryRun(formattedSchedule[formattedSchedule.length - 1]);
+				}
 			}
-
-			// TODO: This is commented out because it blows away any manual edits made to currentRun.
-			// TODO: Need to figure out a merge system that preserves manual edits when they don't conflict.
-			/* // Else, update the currentRun
-			 else {
-			 // First, try to find the current run by name.
-			 const updatedCurrentRun = formattedSchedule.some(function(run) {
-			 if (run.name === currentRun.value.name) {
-			 _setCurrentRun(run);
-			 return true;
-			 }
-			 });
-
-			 // If that fails, try to update it by order.
-			 if (!updatedCurrentRun) {
-			 formattedSchedule.some(function(run) {
-			 if (run.order === currentRun.value.order) {
-			 _setCurrentRun(run);
-			 return true;
-			 }
-			 });
-			 }
-			 }*/
 		}).catch(err => {
 			nodecg.log.error('[schedule] Failed to update:', err.stack);
 		});
 	}
 
 	/**
-	 * Sets the currentRun replicant.
-	 * @param {Object} run - The run to set as the new currentRun.
+	 * Seeks to the previous run in the schedule, updating currentRun and nextRun accordingly.
+	 * Clones the value of currentRun into nextRun.
+	 * Sets currentRun to the predecessor run.
 	 * @private
 	 * @returns {undefined}
 	 */
-	function _setCurrentRun(run) {
-		const cr = clone(run);
+	function _seekToPreviousRun() {
+		const prevIndex = currentRun.value.order - 2;
+		nextRun.value = clone(currentRun.value);
+		currentRun.value = clone(scheduleRep.value[prevIndex]);
+		checklist.reset();
+	}
 
-		// `order` is always `index+1`. So, if there is another run in the schedule after this one, add it as `nextRun`.
-		if (scheduleRep.value[cr.order]) {
-			cr.nextRun = scheduleRep.value[cr.order];
+	/**
+	 * Seeks to the next run in the schedule, updating currentRun and nextRun accordingly.
+	 * Clones the value of nextRun into currentRun.
+	 * Sets nextRun to the new successor run.
+	 * @private
+	 * @returns {undefined}
+	 */
+	function _seekToNextRun() {
+		const newNextIndex = nextRun.value.order;
+		currentRun.value = clone(nextRun.value);
+		nextRun.value = clone(scheduleRep.value[newNextIndex]);
+		checklist.reset();
+	}
+
+	/**
+	 * Sets the currentRun replicant to an arbitrary run, first checking if that run is previous or next,
+	 * relative to any existing currentRun.
+	 * If so, call _seekToPreviousRun or _seekToNextRun, accordingly. This preserves local changes.
+	 * Else, blow away currentRun and nextRun and replace them with the new run and its successor.
+	 * @param {Object} run - The run to set as the new currentRun.
+	 * @returns {undefined}
+	 */
+	function _seekToArbitraryRun(run) {
+		if (run.order === currentRun.value.order + 1) {
+			_seekToNextRun();
+		} else if (run.order === currentRun.value.order - 1) {
+			_seekToPreviousRun();
+		} else {
+			const clonedRun = clone(run);
+			currentRun.value = clonedRun;
+
+			// `order` is always `index+1`. So, if there is another run in the schedule after this one, add it as `nextRun`.
+			if (scheduleRep.value[clonedRun.order]) {
+				nextRun.value = clone(scheduleRep.value[clonedRun.order]);
+			} else {
+				nextRun.value = {};
+			}
+
+			checklist.reset();
 		}
-
-		currentRun.value = cr;
 	}
 };

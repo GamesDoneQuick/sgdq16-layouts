@@ -15,13 +15,20 @@
 				text-align: center;
 			}
 
-			section {
-				@apply(--layout-vertical);
+			.padded {
 				padding: 4px;
 			}
 
-			section.modified {
+			section {
+				@apply(--layout-vertical);
+			}
+
+			.modified {
 				background-color: #CEE0C9;
+			}
+
+			.modified label:after {
+				content: '*';
 			}
 
 			.divider {
@@ -51,9 +58,17 @@
 
 			.runner {
 				@apply(--layout-vertical);
-				width: 50%;
+				width: calc(50% - 4px);
 				padding-right: 8px;
 				box-sizing: border-box;
+			}
+
+			.runner:nth-child(odd) {
+				margin-right: 4px;
+			}
+
+			.runner:nth-child(even) {
+				margin-left: 4px;
 			}
 
 			#misc {
@@ -81,7 +96,7 @@
 
 		<div id="label">[[label]] (#[[order]])</div>
 
-		<section id="name">
+		<section id="name" class$="padded [[calcModified(originalValues.name)]]">
 			<label>Name</label>
 			<span class="value" title="[[calcName(name)]]">[[calcName(name)]]</span>
 		</section>
@@ -89,19 +104,19 @@
 		<div class="divider"></div>
 
 		<section id="runners">
-			<div class="runner" style="margin-bottom: 12px;">
+			<div class$="padded runner [[calcModified(originalValues.runners.0)]]" style="margin-bottom: 12px;">
 				<label>Runner</label>
 				<span class="value" title="[[runners.0.name]]">[[runners.0.name]]&#8203;</span>
 			</div>
-			<div class="runner">
+			<div class$="padded runner [[calcModified(originalValues.runners.1)]]" style="margin-bottom: 12px;">
 				<label>Runner 2</label>
 				<span class="value" title="[[runners.1.name]]">[[runners.1.name]]&#8203;</span>
 			</div>
-			<div class="runner">
+			<div class$="padded runner [[calcModified(originalValues.runners.2)]]">
 				<label>Runner 3</label>
 				<span class="value" title="[[runners.2.name]]">[[runners.2.name]]&#8203;</span>
 			</div>
-			<div class="runner">
+			<div class$="padded runner [[calcModified(originalValues.runners.0)]]">
 				<label>Runner 4</label>
 				<span class="value" title="[[runners.3.name]]">[[runners.3.name]]&#8203;</span>
 			</div>
@@ -109,23 +124,23 @@
 
 		<div class="divider"></div>
 
-		<section>
+		<section class$="padded [[calcModified(originalValues.category)]]">
 			<label>Category</label>
-			<span class="value"  title="[[category]]">[[category]]&#8203;</span>
+			<span class="value" title="[[category]]">[[category]]&#8203;</span>
 		</section>
 
 		<div class="divider"></div>
 
 		<section id="misc">
-			<div>
+			<div class$="padded [[calcModified(originalValues.estimate)]]">
 				<label>Estimate</label>
 				<span class="value">[[estimate]]&#8203;</span>
 			</div>
-			<div>
+			<div class$="padded [[calcModified(originalValues.console)]]">
 				<label>Console</label>
 				<span class="value">[[console]]&#8203;</span>
 			</div>
-			<div>
+			<div class$="padded [[calcModified(originalValues.releaseYear)]]">
 				<label>Release Year</label>
 				<span class="value">[[releaseYear]]&#8203;</span>
 			</div>
