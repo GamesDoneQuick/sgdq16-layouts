@@ -100,6 +100,23 @@ module.exports = function (nodecg) {
 		}
 	});
 
+	nodecg.listenFor('resetRun', (pk, cb) => {
+		let runRep;
+		if (currentRun.value.pk === pk) {
+			runRep = currentRun;
+		} else if (nextRun.value.pk === pk) {
+			runRep = nextRun;
+		}
+
+		if (runRep) {
+			runRep.value = scheduleRep.value.find(r => r.pk === pk);
+		}
+
+		if (typeof cb === 'function') {
+			cb();
+		}
+	});
+
 	/**
 	 * Gets the latest schedule info from the GDQ tracker.
 	 * @returns {Promise.<T>|*} - A Q.spread promise.
@@ -160,7 +177,7 @@ module.exports = function (nodecg) {
 				 * Else, set currentRun to the final run in the schedule.
 				 */
 				if (currentRunAsInSchedule) {
-					[currentRun, nextRun].forEach((activeRun, index) => {
+					[currentRun, nextRun].forEach(activeRun => {
 						const runFromSchedule = formattedSchedule.find(run => run.pk === activeRun.value.pk);
 						activeRun.value = mergeChangesFromTracker(activeRun.value, runFromSchedule);
 					});
