@@ -24,7 +24,7 @@
 		},
 
 		calcModified(original) {
-			return typeof original === 'undefined' ? '' : 'modified';
+			return typeof original === 'undefined' || original === null ? '' : 'modified';
 		}
 	});
 })();

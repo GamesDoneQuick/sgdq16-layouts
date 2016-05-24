@@ -1,16 +1,14 @@
 'use strict';
 
+const POLL_INTERVAL = 60 * 1000;
 const fs = require('fs');
 const path = require('path');
 const rp = require('request-promise');
 const clone = require('clone');
 const Q = require('q');
 const equals = require('deep-equal');
-const diff = require('deep-diff').diff;
 const assign = require('lodash.assign');
-const objectPath = require('object-path');
-
-const POLL_INTERVAL = 60 * 1000;
+const {calcOriginalValues, mergeChangesFromTracker} = require('./lib/diff-run');
 
 module.exports = function (nodecg) {
 	const checklist = require('./checklist')(nodecg);
@@ -103,61 +101,6 @@ module.exports = function (nodecg) {
 	});
 
 	/**
-	 * Calculates the original values for a modified run.
-	 * @param {Object} run - The modified run (currentRun or nextRun).
-	 * @param {Object} original - The original run as it exists in the schedule.
-	 * @returns {Object|undefined} - The original values of any modified properties.
-	 */
-	function calcOriginalValues(run, original) {
-		run = clone(run);
-		delete run.originalValues;
-		const differences = diff(original, run);
-		if (!differences) {
-			return;
-		}
-
-		const originalValues = {};
-		differences.forEach(difference => {
-			if (!difference.path) {
-				console.log('hey weird diff!', difference);
-			}
-
-			switch (difference.kind) {
-				case 'A':
-					// The only place that A differences can happen is in the "runners" array.
-					if (difference.path[0] === 'runners' && difference.path.length === 1) {
-						if (!originalValues.runners) {
-							originalValues.runners = {};
-						}
-
-						switch (difference.item.kind) {
-							case 'N':
-								originalValues.runners[difference.index] = {name: '', stream: ''};
-								break;
-							case 'D':
-								originalValues.runners[difference.index] = original.runners[difference.index];
-								break;
-							default:
-								nodecg.log.error('[schedule] Unexpected difference in calcOriginalValues:', difference);
-								console.trace();
-						}
-					}
-					break;
-				case 'E':
-					objectPath.set(originalValues, difference.path, difference.lhs);
-					break;
-				default:
-					nodecg.log.error('[schedule] Unexpected difference in calcOriginalValues:', difference);
-					console.trace();
-					console.error('run', run);
-					console.error('original', original);
-			}
-		});
-
-		return originalValues;
-	}
-
-	/**
 	 * Gets the latest schedule info from the GDQ tracker.
 	 * @returns {Promise.<T>|*} - A Q.spread promise.
 	 */
@@ -165,6 +108,7 @@ module.exports = function (nodecg) {
 		const deferred = Q.defer();
 
 		const runnersPromise = rp({
+			// uri: 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/runners.json',
 			uri: 'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'runner',
@@ -174,6 +118,7 @@ module.exports = function (nodecg) {
 		});
 
 		const schedulePromise = rp({
+			// uri: 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/schedule.json',
 			uri: 'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'run',
@@ -183,59 +128,13 @@ module.exports = function (nodecg) {
 		});
 
 		return Q.spread([runnersPromise, schedulePromise], (runnersJSON, scheduleJSON) => {
-			const allRunners = [];
+			const formattedRunners = [];
 			runnersJSON.forEach(obj => {
 				obj.fields.stream = obj.fields.stream.split('/').pop();
-				allRunners[obj.pk] = obj.fields;
+				formattedRunners[obj.pk] = obj.fields;
 			});
 
-			const formattedSchedule = scheduleJSON.map(run => {
-				const boxartName = new Buffer(run.fields.display_name).toString('base64');
-				const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
-				let boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/default.png`;
-
-				if (fs.existsSync(boxartPath)) {
-					boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
-				}
-
-				const runners = run.fields.runners.map(runnerId => {
-					return {
-						name: allRunners[runnerId].name,
-						stream: allRunners[runnerId].stream
-					};
-				});
-
-				let concatenatedRunners;
-				if (runners.length === 1) {
-					concatenatedRunners = runners[0].name;
-				} else {
-					concatenatedRunners = runners.slice(1).reduce((prev, curr, index, array) => {
-						if (index === array.length - 1) {
-							return `${prev} & ${curr.name}`;
-						}
-
-						return `${prev}, ${curr.name}`;
-					}, runners[0].name);
-				}
-
-				return {
-					name: run.fields.display_name || 'Unknown',
-					console: run.fields.console || 'Unknown',
-					commentators: run.fields.commentators || 'Unknown',
-					category: run.fields.category || 'Any%',
-					startTime: Date.parse(run.fields.starttime) || null,
-					order: run.fields.order,
-					estimate: run.fields.run_time || 'Unknown',
-					releaseYear: run.fields.release_year || '',
-					runners,
-					concatenatedRunners,
-					boxart: {
-						url: boxartUrl
-					},
-					type: 'run',
-					pk: run.pk
-				};
-			});
+			const formattedSchedule = calcFormattedSchedule(formattedRunners, scheduleJSON);
 
 			// If nothing has changed, return.
 			if (equals(formattedSchedule, scheduleRep.value)) {
@@ -261,29 +160,9 @@ module.exports = function (nodecg) {
 				 * Else, set currentRun to the final run in the schedule.
 				 */
 				if (currentRunAsInSchedule) {
-					[currentRun, nextRun].forEach(activeRun => {
-						const originalValues = activeRun.value.originalValues;
+					[currentRun, nextRun].forEach((activeRun, index) => {
 						const runFromSchedule = formattedSchedule.find(run => run.pk === activeRun.value.pk);
-
-						/* If a field exists in the `originalValues` object, that means this field
-						 * was modified. For each of these fields, we check if the originalValue we have stored
-						 * matches the current value of that same field in the schedule for this run. If it does not,
-						 * then that means that this field was changed in the schedule. In this case, we throw away our local
-						 * change and adopt the change from the schedule. We then delete this field from the originalValues
-						 * object to indicate that we no longer have a local modification to that field.
-						 */
-						if (originalValues && Object.keys(originalValues).length > 0) {
-							for (const field in originalValues) {
-								if (!originalValues.hasOwnProperty(field)) {
-									continue;
-								}
-
-								if (originalValues[field] !== runFromSchedule[field.name]) {
-									currentRun.value[field.name] = originalValues[field];
-									delete originalValues[field];
-								}
-							}
-						}
+						activeRun.value = mergeChangesFromTracker(activeRun.value, runFromSchedule);
 					});
 				} else if (formattedSchedule[currentRun.order - 1]) {
 					_seekToArbitraryRun(formattedSchedule[currentRun.order - 1]);
@@ -350,5 +229,47 @@ module.exports = function (nodecg) {
 
 			checklist.reset();
 		}
+	}
+
+	/**
+	 * Generates a formatted schedule.
+	 * @param {Array} formattedRunners - A pre-formatted array of hydrated runner objects.
+	 * @param {Array} scheduleJSON - The raw schedule array from the Tracker.
+	 * @returns {Array} - A formatted schedule.
+	 */
+	function calcFormattedSchedule(formattedRunners, scheduleJSON) {
+		return scheduleJSON.map((run, index) => {
+			const boxartName = new Buffer(run.fields.display_name).toString('base64');
+			const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
+			let boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/default.png`;
+
+			if (fs.existsSync(boxartPath)) {
+				boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
+			}
+
+			const runners = run.fields.runners.map(runnerId => {
+				return {
+					name: formattedRunners[runnerId].name,
+					stream: formattedRunners[runnerId].stream
+				};
+			});
+
+			return {
+				name: run.fields.display_name || 'Unknown',
+				console: run.fields.console || 'Unknown',
+				commentators: run.fields.commentators || 'Unknown',
+				category: run.fields.category || 'Any%',
+				startTime: Date.parse(run.fields.starttime) || null,
+				order: index + 1,
+				estimate: run.fields.run_time || 'Unknown',
+				releaseYear: run.fields.release_year || '',
+				runners,
+				boxart: {
+					url: boxartUrl
+				},
+				type: 'run',
+				pk: run.pk
+			};
+		});
 	}
 };
