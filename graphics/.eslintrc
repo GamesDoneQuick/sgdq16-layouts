@@ -5,12 +5,13 @@
 	"globals": {
 		"nodecg": true,
 		"Polymer": true,
-		"requirejs": true,
 		"TimelineLite": true,
 		"TweenLite": true,
 		"Power1": true,
 		"Power2": true,
 		"Power3": true,
-		"Power4": true
+		"Power4": true,
+		"Elastic": true,
+		"Back": true
 	}
 }

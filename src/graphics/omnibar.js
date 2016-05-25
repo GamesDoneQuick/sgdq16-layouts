@@ -15,38 +15,6 @@ const globals = require('./util/globals');
 const tabulate = require('./util/tabulate');
 
 loader.load('omnibar', {gameplay: false}).then(() => {
-	const stage = new Stage(1280, OMNIBAR_HEIGHT, 'omnibar');
-	stage.canvas.style.position = 'absolute';
-	stage.canvas.style.bottom = '0px';
-	stage.canvas.style.zIndex = '1';
-
-	const omnibar = new createjs.Container();
-	stage.addChild(omnibar);
-
-	const tl = new TimelineLite({autoRemoveChildren: true});
-	const state = {
-		totalShowing: true,
-		labelShowing: false
-	};
-	let lastShownGrandPrize;
-
-	/* ----- */
-
-	const background = new createjs.Bitmap(loader.queue.getResult('omnibar-background'));
-
-	const gdqLogo = new createjs.Bitmap(loader.queue.getResult('omnibar-logo-gdq'));
-	const GDQ_LOGO_WIDTH = 128;
-	setInterval(() => {
-		gdqLogo.image.play();
-	}, 120 * 1000);
-
-	const charityLogo = new createjs.Bitmap(loader.queue.getResult('omnibar-logo-charity'));
-	const CHARITY_LOGO_WIDTH = charityLogo.getBounds().width;
-	charityLogo.regX = CHARITY_LOGO_WIDTH;
-	charityLogo.x = 1280;
-
-	/* ----- */
-
 	const CTA_CENTER_X = CHARITY_LOGO_WIDTH / 2 + 12;
 	const CTA_TEXT_MASK_WIDTH = OMNIBAR_WIDTH_MINUS_LOGO / 2;
 
@@ -100,75 +68,6 @@ loader.load('omnibar', {gameplay: false}).then(() => {
 	labelText.mask = labelBg;
 
 	label.addChild(labelBg, labelText);
-
-	/**
-	 * Immediately sets the text and font size of the label.
-	 * @param {String} text - The new text to display.
-	 * @param {Number} size - The new font size to set.
-	 * @returns {undefined}
-	 */
-	function setLabelText(text, size) {
-		labelText.font = `900 ${size}px montserrat`;
-		labelText.lineHeight = size - size * 0.2;
-		labelText.text = text;
-		labelText.regY = labelText.getBounds().height / 2;
-	}
-
-	/**
-	 * Creates an animation timeline for showing the label.
-	 * @param {String} text - The text to show.
-	 * @param {Number} size - The font size to use.
-	 * @returns {TimelineLite} - An animation timeline.
-	 */
-	function showLabel(text, size) {
-		const tmpTL = new TimelineLite();
-
-		if (state.labelShowing) {
-			tmpTL.to(labelText, 0.25, {
-				alpha: 0,
-				ease: Power1.easeInOut,
-				onComplete: setLabelText,
-				onCompleteParams: [text, size]
-			});
-
-			tmpTL.to(labelText, 0.25, {
-				alpha: 1,
-				ease: Power1.easeInOut
-			});
-		} else {
-			tmpTL.staggerTo(labelBgLayers, 1.2, {
-				onStart() {
-					state.labelShowing = true;
-					setLabelText(text, size);
-				},
-				w: 180,
-				ease: Elastic.easeOut.config(0.5, 0.5)
-			}, 0.08);
-		}
-
-		return tmpTL;
-	}
-
-	/**
-	 * Creates an animation timeline for hiding the label.
-	 * @returns {TimelineLite} - An animation timeline.
-	 */
-	function hideLabel() {
-		const tmpTL = new TimelineLite();
-
-		if (state.labelShowing) {
-			const reverseLabelBgLayers = labelBgLayers.slice(0).reverse();
-			tmpTL.staggerTo(reverseLabelBgLayers, 0.7, {
-				onStart() {
-					state.labelShowing = false;
-				},
-				w: 0,
-				ease: Back.easeIn.config(1.3)
-			}, 0.08);
-		}
-
-		return tmpTL;
-	}
 
 	/* ----- */
 
@@ -385,12 +284,6 @@ loader.load('omnibar', {gameplay: false}).then(() => {
 	 * @returns {undefined}
 	 */
 	function showCTA(immediate) {
-		tl.call(() => {
-			showTotal();
-			showCurrentBids();
-		}, null, null, '+=0.3');
-		return;
-
 		if (immediate) {
 			tl.clear();
 		}
@@ -458,67 +351,6 @@ loader.load('omnibar', {gameplay: false}).then(() => {
 			showTotal();
 			showCurrentBids();
 		}, null, null, '+=0.3');
-	}
-
-	/**
-	 * Adds an animation to the global timeline for showing the next upcoming speedrun.
-	 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the next run immediately.
-	 * @returns {undefined}
-	 */
-	function showUpNext(immediate) {
-		let upNextRun = globals.nextRun;
-
-		if (window.currentLayout === 'break' || window.currentLayout === 'interview') {
-			upNextRun = globals.currentRun;
-		}
-
-		if (upNextRun) {
-			if (immediate) {
-				tl.clear();
-			}
-
-			tl.to({}, 0.3, {
-				onStart() {
-					showLabel('UP NEXT', 28);
-				}
-			});
-
-			// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
-			tl.to({}, 0.01, {
-				onComplete() {
-					/* Depending on how we enter the very end of the schedule, we might end up in this func
-					 * after window.nextRun has been set to null. In that case, we immediately clear the
-					 * timeline and bail out to showing bids again.
-					 */
-					const upNextRun = window.currentLayout === 'break' ? globals.currentRun : globals.nextRun;
-					if (upNextRun) {
-						showMainLine1(upNextRun.concatenatedRunners);
-						showMainLine2(`${upNextRun.name.replace('\\n', ' ').trim()} - ${upNextRun.category}`);
-					} else {
-						tl.clear();
-
-						tl.to({}, 0.3, {
-							onStart() {
-								showMainLine1('');
-								showMainLine2('');
-							},
-							onComplete: showCurrentBids
-						});
-					}
-				}
-			});
-
-			// Give it some time to show
-			tl.to({}, globals.displayDuration, {});
-		}
-
-		tl.to({}, 0.3, {
-			onStart() {
-				showMainLine1('');
-				showMainLine2('');
-			},
-			onComplete: showCTA
-		});
 	}
 
 	/**
