@@ -16,7 +16,8 @@ module.exports = [{
 		'break': './src/graphics/break.js',
 		'ds': './src/graphics/ds.js',
 		'ds_portrait': './src/graphics/ds_portrait.js',
-		'interview': './src/graphics/interview.js'
+		'interview': './src/graphics/interview.js',
+		'omnibar': './src/graphics/omnibar.js'
 	},
 	output: {
 		filename: '[name].js',

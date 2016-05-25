@@ -1,0 +1,34 @@
+@import 'base.css';
+
+#container {
+    width: 1280px;
+    height: 720px;
+}
+
+#container > #background,
+#container > #foreground {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#container > #background {
+	z-index: -1;
+}
+
+#container > #foreground {
+	z-index: 10;
+}
+
+#sponsorsAndTwitter {
+    position: absolute;
+    overflow: hidden;
+}
+
+.fullscreen {
+    position: absolute;
+    width: 1280px;
+    height: 720px;
+    top: 0;
+    left: 0;
+}

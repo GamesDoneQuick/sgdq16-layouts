@@ -46,62 +46,780 @@
 
 	'use strict';
 	
-	const Layout = __webpack_require__(1);
+	const OMNIBAR_HEIGHT = 55;
+	const OMNIBAR_WIDTH_MINUS_LOGO = 1161;
+	const CTA_VERT_SLIDE_TIME = 0.6;
+	const WHITE = '#ffffff';
+	const GRAY = '#efefef';
+	const RED = '#d38585';
+	const GREEN = '#a7d385';
+	const numeral = __webpack_require__(18);
+	const GDQText = __webpack_require__(19);
+	const Stage = __webpack_require__(11);
+	const loader = __webpack_require__(2);
+	const globals = __webpack_require__(7);
+	const tabulate = __webpack_require__(15);
 	
-	module.exports = new Layout('ds', () => {
-		const speedrun = __webpack_require__(10);
-		const nameplates = __webpack_require__(12);
+	loader.load('omnibar', {gameplay: false}).then(() => {
+		const stage = new Stage(1280, OMNIBAR_HEIGHT, 'omnibar');
+		stage.canvas.style.position = 'absolute';
+		stage.canvas.style.bottom = '0px';
+		stage.canvas.style.zIndex = '1';
 	
-		speedrun.configure(882, 291, 398, 127, {
-			nameY: 18,
-			categoryY: 80,
-			nameMaxHeight: 80
+		const omnibar = new createjs.Container();
+		stage.addChild(omnibar);
+	
+		const tl = new TimelineLite({autoRemoveChildren: true});
+		const state = {
+			totalShowing: true,
+			labelShowing: false
+		};
+		let lastShownGrandPrize;
+	
+		/* ----- */
+	
+		const background = new createjs.Bitmap(loader.queue.getResult('omnibar-background'));
+	
+		const gdqLogo = new createjs.Bitmap(loader.queue.getResult('omnibar-logo-gdq'));
+		const GDQ_LOGO_WIDTH = 128;
+		setInterval(() => {
+			gdqLogo.image.play();
+		}, 120 * 1000);
+	
+		const charityLogo = new createjs.Bitmap(loader.queue.getResult('omnibar-logo-charity'));
+		const CHARITY_LOGO_WIDTH = charityLogo.getBounds().width;
+		charityLogo.regX = CHARITY_LOGO_WIDTH;
+		charityLogo.x = 1280;
+	
+		/* ----- */
+	
+		const CTA_CENTER_X = CHARITY_LOGO_WIDTH / 2 + 12;
+		const CTA_TEXT_MASK_WIDTH = OMNIBAR_WIDTH_MINUS_LOGO / 2;
+	
+		const cta = new createjs.Container();
+		cta.x = GDQ_LOGO_WIDTH + OMNIBAR_WIDTH_MINUS_LOGO / 2 - CTA_CENTER_X;
+		cta.y = 10;
+	
+		const ctaLeftTextMask = new createjs.Shape();
+		ctaLeftTextMask.graphics.drawRect(CTA_CENTER_X - CTA_TEXT_MASK_WIDTH, -cta.y, CTA_TEXT_MASK_WIDTH, OMNIBAR_HEIGHT);
+	
+		const ctaLeftText = new GDQText(800, '32px');
+		ctaLeftText.textAlign = 'right';
+		ctaLeftText.restingX = 0;
+		ctaLeftText.hiddenX = 383 + CTA_CENTER_X;
+		ctaLeftText.x = ctaLeftText.hiddenX;
+		ctaLeftText.mask = ctaLeftTextMask;
+		ctaLeftText.snapToPixel = false;
+	
+		const ctaRightTextMask = new createjs.Shape();
+		ctaRightTextMask.graphics.drawRect(CTA_CENTER_X, -cta.y, CTA_TEXT_MASK_WIDTH, OMNIBAR_HEIGHT);
+	
+		const ctaRightText = new GDQText(800, '32px');
+		ctaRightText.restingX = CHARITY_LOGO_WIDTH + 24;
+		ctaRightText.hiddenX = -297 - CTA_CENTER_X;
+		ctaRightText.x = ctaRightText.hiddenX;
+		ctaRightText.mask = ctaRightTextMask;
+		ctaRightText.snapToPixel = false;
+	
+		charityLogo.ctaX = cta.x + 12;
+	
+		cta.addChild(ctaLeftTextMask, ctaRightTextMask, ctaLeftText, ctaRightText);
+	
+		/* ----- */
+	
+		const label = new createjs.Container();
+		label.x = GDQ_LOGO_WIDTH;
+	
+		const labelBg = new createjs.Shape();
+		labelBg.x = -10;
+	
+		const labelBgLayer3 = labelBg.graphics.beginFill('#80397d').drawRect(0, 0, 0, OMNIBAR_HEIGHT).command;
+		const labelBgLayer2 = labelBg.graphics.beginFill('#523663').drawRect(-5, 0, 0, OMNIBAR_HEIGHT).command;
+		const labelBgLayer1 = labelBg.graphics.beginFill('#80397d').drawRect(-10, 0, 0, OMNIBAR_HEIGHT).command;
+		const labelBgLayers = [labelBgLayer3, labelBgLayer2, labelBgLayer1];
+	
+		const labelText = new GDQText(900, '28px');
+		labelText.color = 'white';
+		labelText.textAlign = 'center';
+		labelText.x = 82;
+		labelText.y = 22;
+		labelText.mask = labelBg;
+	
+		label.addChild(labelBg, labelText);
+	
+		/**
+		 * Immediately sets the text and font size of the label.
+		 * @param {String} text - The new text to display.
+		 * @param {Number} size - The new font size to set.
+		 * @returns {undefined}
+		 */
+		function setLabelText(text, size) {
+			labelText.font = `900 ${size}px montserrat`;
+			labelText.lineHeight = size - size * 0.2;
+			labelText.text = text;
+			labelText.regY = labelText.getBounds().height / 2;
+		}
+	
+		/**
+		 * Creates an animation timeline for showing the label.
+		 * @param {String} text - The text to show.
+		 * @param {Number} size - The font size to use.
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function showLabel(text, size) {
+			const tmpTL = new TimelineLite();
+	
+			if (state.labelShowing) {
+				tmpTL.to(labelText, 0.25, {
+					alpha: 0,
+					ease: Power1.easeInOut,
+					onComplete: setLabelText,
+					onCompleteParams: [text, size]
+				});
+	
+				tmpTL.to(labelText, 0.25, {
+					alpha: 1,
+					ease: Power1.easeInOut
+				});
+			} else {
+				tmpTL.staggerTo(labelBgLayers, 1.2, {
+					onStart() {
+						state.labelShowing = true;
+						setLabelText(text, size);
+					},
+					w: 180,
+					ease: Elastic.easeOut.config(0.5, 0.5)
+				}, 0.08);
+			}
+	
+			return tmpTL;
+		}
+	
+		/**
+		 * Creates an animation timeline for hiding the label.
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function hideLabel() {
+			const tmpTL = new TimelineLite();
+	
+			if (state.labelShowing) {
+				const reverseLabelBgLayers = labelBgLayers.slice(0).reverse();
+				tmpTL.staggerTo(reverseLabelBgLayers, 0.7, {
+					onStart() {
+						state.labelShowing = false;
+					},
+					w: 0,
+					ease: Back.easeIn.config(1.3)
+				}, 0.08);
+			}
+	
+			return tmpTL;
+		}
+	
+		/* ----- */
+	
+		const mainLine1 = new GDQText(600, '18px');
+		mainLine1.restingX = 186;
+		mainLine1.restingY = 2;
+		mainLine1.x = mainLine1.restingX;
+		mainLine1.y = mainLine1.restingY;
+	
+		const mainLine2 = new GDQText(700, '33px');
+		mainLine2.restingX = 186;
+		mainLine2.restingY = 18;
+		mainLine2.x = 186;
+		mainLine2.y = 18;
+	
+		const _latestMainLine1 = {};
+	
+		/**
+		 * Creates an animation timeline for showing mainLine1.
+		 * @param {String} text - The text to show.
+		 * @param {String} [color="#ffffff"] - A hex color string (ex: "#ffffff').
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function showMainLine1(text, color = WHITE) {
+			if (text === _latestMainLine1.text && color === _latestMainLine1.color) {
+				return;
+			}
+	
+			_latestMainLine1.text = text;
+			_latestMainLine1.color = color;
+	
+			const tmpTL = new TimelineLite();
+	
+			if (mainLine1.text) {
+				tmpTL.to(mainLine1, 0.5, {
+					y: -20,
+					ease: Power2.easeIn
+				});
+	
+				// Delay for a sec
+				tmpTL.to({}, 0.25, {});
+			}
+	
+			tmpTL.call(() => {
+				mainLine1.text = text;
+	
+				if (text) {
+					mainLine1.x = mainLine1.restingX - mainLine1.getBounds().width - 20;
+					mainLine1.y = mainLine1.restingY;
+					mainLine1.color = color;
+				}
+			}, null, null, '+=0.01');
+	
+			if (text) {
+				tmpTL.to(mainLine1, 1.2, {
+					x: mainLine1.restingX,
+					ease: Power2.easeOut
+				});
+			}
+	
+			return tmpTL;
+		}
+	
+		const _latestMainLine2 = {};
+	
+		/**
+		 * Creates an animation timeline for showing mainLine2.
+		 * @param {String} text - The text to show.
+		 * @param {String} [color="#ffffff"] - A hex color string (ex: "#ffffff').
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function showMainLine2(text, color = WHITE) {
+			color = color || WHITE;
+	
+			if (text === _latestMainLine2.text && color === _latestMainLine2.color) {
+				return;
+			}
+	
+			_latestMainLine2.text = text;
+			_latestMainLine2.color = color;
+	
+			const tmpTL = new TimelineLite();
+	
+			if (mainLine2.text) {
+				tmpTL.to(mainLine2, 0.5, {
+					y: 50,
+					ease: Power2.easeIn
+				});
+	
+				// Delay for a sec
+				tmpTL.to({}, 0.25, {});
+			}
+	
+			tmpTL.call(() => {
+				mainLine2.text = text;
+	
+				if (text) {
+					mainLine2.x = mainLine2.restingX - mainLine2.getBounds().width - 20;
+					mainLine2.y = mainLine2.restingY;
+					mainLine2.color = color;
+				}
+			}, null, null, '+=0.01');
+	
+			if (text) {
+				tmpTL.to(mainLine2, 1.2, {
+					x: mainLine2.restingX,
+					ease: Power2.easeOut
+				});
+			}
+	
+			return tmpTL;
+		}
+	
+		/* ----- */
+	
+		const totalContainer = new createjs.Container();
+	
+		const totalLeftBorder = new createjs.Shape();
+		totalLeftBorder.graphics.beginFill('white').drawRect(0, 0, 3, OMNIBAR_HEIGHT);
+		
+		const totalText = new GDQText(700, '30px');
+		totalText.rawValue = 0;
+		totalText.x = 13;
+		totalText.y = 10;
+	
+		totalContainer.addChild(totalLeftBorder, totalText);
+	
+		globals.totalRep.on('change', newVal => {
+			const TIME_PER_DOLLAR = 0.03;
+			const delta = newVal.raw - totalText.rawValue;
+			const duration = Math.min(delta * TIME_PER_DOLLAR, 5);
+			TweenLite.to(totalText, duration, {
+				rawValue: newVal.raw,
+				ease: Power2.easeOut,
+				onUpdate() {
+					const formattedTotal = numeral(totalText.rawValue).format('$0,0');
+					totalText.text = tabulate(formattedTotal);
+	
+					const totalContainerWidth = totalContainer.getBounds().width;
+					totalContainer.showingX = OMNIBAR_WIDTH_MINUS_LOGO - totalContainerWidth - CHARITY_LOGO_WIDTH - 36;
+					totalContainer.hiddenX = totalContainer.showingX + OMNIBAR_WIDTH_MINUS_LOGO - totalContainer.showingX;
+	
+					totalContainer.x = state.totalShowing ? totalContainer.showingX : totalContainer.hiddenX;
+	
+					mainLine1.maxWidth = totalContainer.showingX - mainLine1.restingX - 12;
+					mainLine2.maxWidth = mainLine1.maxWidth - 4;
+				}
+			});
 		});
 	
-		nameplates.configure({}, [{
-			x: 882,
-			y: 418,
-			width: 398,
-			height: 54,
-			nameFontSize: 28,
-			estimateFontSize: 18,
-			timeFontSize: 48
-		}]);
+		/**
+		 * Creates an animation timeline for showing the fundraising total.
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function showTotal() {
+			const tmpTL = new TimelineLite();
+	
+			if (!state.totalShowing) {
+				tmpTL.call(() => {
+					TweenLite.to(totalContainer, 0.7, {
+						onStart() {
+							state.totalShowing = true;
+						},
+						x: totalContainer.showingX,
+						ease: Power2.easeOut
+					});
+				}, null, null, '+=0.01');
+	
+				tmpTL.to({}, 0.7, {});
+			}
+	
+			return tmpTL;
+		}
+	
+		/**
+		 * Creates an animation timeline for hiding the fundraising total.
+		 * @returns {TimelineLite} - An animation timeline.
+		 */
+		function hideTotal() {
+			const tmpTL = new TimelineLite();
+	
+			if (state.totalShowing) {
+				tmpTL.call(() => {
+					TweenLite.to(totalContainer, 0.7, {
+						onStart() {
+							state.totalShowing = false;
+						},
+						x: totalContainer.hiddenX,
+						ease: Power2.easeIn
+					});
+				}, null, null, '+=0.01');
+	
+				tmpTL.to({}, 0.7, {});
+			}
+	
+			return tmpTL;
+		}
+	
+		/* ----- */
+	
+		// This is what holds the "Up Next", "Bid War", and "Raffle Prizes" modes.
+		const mainContainer = new createjs.Container();
+		mainContainer.x = GDQ_LOGO_WIDTH;
+		mainContainer.addChild(mainLine1, mainLine2, labelBg, labelText, totalContainer);
+	
+		omnibar.addChild(background, mainContainer, cta, gdqLogo, charityLogo);
+	
+		/* ----- */
+	
+		/**
+		 * Adds an animation to the global timeline for showing the call-to-action.
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the CTA immediately.
+		 * @returns {undefined}
+		 */
+		function showCTA(immediate) {
+			tl.call(() => {
+				showTotal();
+				showCurrentBids();
+			}, null, null, '+=0.3');
+			return;
+	
+			if (immediate) {
+				tl.clear();
+			}
+	
+			tl.call(() => {
+				hideLabel();
+				hideTotal();
+			}, null, null, '+=0.01');
+	
+			// Enter Line 1
+			tl
+				.add('showCTA_Line1Enter')
+				.to(ctaLeftText, CTA_VERT_SLIDE_TIME, {
+					x: ctaLeftText.restingX,
+					ease: Power2.easeOut
+				}, 'showCTA_Line1Enter')
+				.to(ctaRightText, CTA_VERT_SLIDE_TIME, {
+					x: ctaRightText.restingX,
+					ease: Power2.easeOut
+				}, 'showCTA_Line1Enter');
+	
+			// Exit Line 1
+			tl
+				.add('showCTA_Line1Exit', `+=${globals.displayDuration}`)
+				.to(ctaLeftText, CTA_VERT_SLIDE_TIME, {
+					y: -40,
+					ease: Power2.easeIn
+				}, 'showCTA_Line1Exit')
+				.to(ctaRightText, CTA_VERT_SLIDE_TIME, {
+					y: 38,
+					ease: Power2.easeIn,
+					onComplete() {
+						ctaLeftText.y = 38;
+						ctaRightText.y = -40;
+						ctaLeftText.text = 'Donate to PCF at';
+						ctaRightText.text = 'gamesdonequick.com';
+					}
+				}, 'showCTA_Line1Exit');
+	
+			// Enter Line 2
+			tl
+				.add('showCTA_Line2Enter')
+				.to(ctaLeftText, CTA_VERT_SLIDE_TIME, {
+					y: 0,
+					ease: Power2.easeOut
+				}, 'showCTA_Line2Enter')
+				.to(ctaRightText, CTA_VERT_SLIDE_TIME, {
+					y: 0,
+					ease: Power2.easeOut
+				}, 'showCTA_Line2Enter');
+	
+			// Exit Line 2
+			tl
+				.add('showCTA_Line2Exit', `+=${globals.displayDuration}`)
+				.to(ctaLeftText, CTA_VERT_SLIDE_TIME, {
+					x: ctaLeftText.hiddenX,
+					ease: Power2.easeIn
+				}, 'showCTA_Line2Exit')
+				.to(ctaRightText, CTA_VERT_SLIDE_TIME, {
+					x: ctaRightText.hiddenX,
+					ease: Power2.easeIn
+				}, 'showCTA_Line2Exit');
+	
+			tl.call(() => {
+				showTotal();
+				showCurrentBids();
+			}, null, null, '+=0.3');
+		}
+	
+		/**
+		 * Adds an animation to the global timeline for showing the next upcoming speedrun.
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the next run immediately.
+		 * @returns {undefined}
+		 */
+		function showUpNext(immediate) {
+			let upNextRun = globals.nextRun;
+	
+			if (window.currentLayout === 'break' || window.currentLayout === 'interview') {
+				upNextRun = globals.currentRun;
+			}
+	
+			if (upNextRun) {
+				if (immediate) {
+					tl.clear();
+				}
+	
+				tl.to({}, 0.3, {
+					onStart() {
+						showLabel('UP NEXT', 28);
+					}
+				});
+	
+				// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
+				tl.to({}, 0.01, {
+					onComplete() {
+						/* Depending on how we enter the very end of the schedule, we might end up in this func
+						 * after window.nextRun has been set to null. In that case, we immediately clear the
+						 * timeline and bail out to showing bids again.
+						 */
+						const upNextRun = window.currentLayout === 'break' ? globals.currentRun : globals.nextRun;
+						if (upNextRun) {
+							showMainLine1(upNextRun.concatenatedRunners);
+							showMainLine2(`${upNextRun.name.replace('\\n', ' ').trim()} - ${upNextRun.category}`);
+						} else {
+							tl.clear();
+	
+							tl.to({}, 0.3, {
+								onStart() {
+									showMainLine1('');
+									showMainLine2('');
+								},
+								onComplete: showCurrentBids
+							});
+						}
+					}
+				});
+	
+				// Give it some time to show
+				tl.to({}, globals.displayDuration, {});
+			}
+	
+			tl.to({}, 0.3, {
+				onStart() {
+					showMainLine1('');
+					showMainLine2('');
+				},
+				onComplete: showCTA
+			});
+		}
+	
+		/**
+		 * Adds an animation to the global timeline for showing all current bids.
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows bids immediately.
+		 * @returns {undefined}
+		 */
+		function showCurrentBids(immediate) {
+			if (immediate) {
+				tl.clear();
+			}
+	
+			if (globals.currentBids.length > 0) {
+				let showedLabel = false;
+	
+				// Figure out what bids to display in this batch
+				const bidsToDisplay = [];
+	
+				globals.currentBids.forEach(bid => {
+					// Don't show closed bids in the automatic rotation.
+					if (bid.state.toLowerCase() === 'closed') {
+						return;
+					}
+	
+					// We have at least one bid to show, so show the label
+					if (!showedLabel) {
+						showedLabel = true;
+						tl.to({}, 0.3, {
+							onStart() {
+								showLabel('DONATION\nINCENTIVES', 24);
+							}
+						});
+					}
+	
+					// If we have already have our three bids determined, we still need to check
+					// if any of the remaining bids are for the same speedrun as the third bid.
+					// This ensures that we are never displaying a partial list of bids for a given speedrun.
+					if (bidsToDisplay.length < 3) {
+						bidsToDisplay.push(bid);
+					} else if (bid.speedrun === bidsToDisplay[bidsToDisplay.length - 1].speedrun) {
+						bidsToDisplay.push(bid);
+					}
+				});
+	
+				// Loop over each bid and queue it up on the timeline
+				bidsToDisplay.forEach(showBid);
+			}
+	
+			tl.to({}, 0.3, {
+				onStart() {
+					showMainLine1('');
+					showMainLine2('');
+				},
+				onComplete: showCurrentPrizes
+			});
+		}
+	
+		/**
+		 * Adds an animation to the global timeline for showing a specific bid.
+		 * @param {Object} bid - The bid to display.
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the bid immediately.
+		 * @returns {undefined}
+		 */
+		function showBid(bid, immediate) {
+			if (immediate) {
+				tl.clear();
+				tl.call(showLabel, ['BID WAR', 30]);
+			}
+	
+			let mainLine1Text = bid.description;
+			let mainLine1Color = WHITE;
+	
+			// If this bid is closed, we want the text to default to gray.
+			if (bid.state.toLowerCase() === 'closed') {
+				mainLine1Text += ' (CLOSED)';
+				mainLine1Color = GRAY;
+			}
+	
+			// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
+			tl.to({}, 0.01, {
+				onComplete() {
+					showMainLine1(mainLine1Text, mainLine1Color);
+				}
+			});
+	
+			// If this is a donation war, up to three options for it.
+			// Else, it must be a normal incentive, so show its total amount raised and its goal.
+			if (bid.options) {
+				// If there are no options yet, display a message.
+				if (bid.options.length === 0) {
+					tl.call(showMainLine2, ['Be the first to bid!'], null);
+				} else {
+					bid.options.forEach((option, index) => {
+						if (index > 2) {
+							return;
+						}
+	
+						tl.call(() => {
+							// If this bid is closed, the first option (the winner)
+							// should be green and the rest should be red.
+							let mainLine2Color = WHITE;
+							if (bid.state.toLowerCase() === 'closed') {
+								if (index === 0) {
+									mainLine2Color = GREEN;
+								} else {
+									mainLine2Color = RED;
+								}
+							}
+	
+							const mainLine2Text = `${index + 1}. ${option.description || option.name} - ${option.total}`;
+							showMainLine2(mainLine2Text, mainLine2Color);
+						}, null, null, `+=${0.08 + (index * 4)}`);
+					});
+				}
+			} else {
+				tl.call(() => {
+					const mainLine2Color = bid.state.toLowerCase() === 'closed' ? GRAY : WHITE;
+					showMainLine2(`${bid.total} / ${bid.goal}`, mainLine2Color);
+				}, null, null, '+=0.08');
+			}
+	
+			// Give the bid some time to show
+			tl.to({}, globals.displayDuration, {});
+	
+			// If we're just showing this one bid on-demand, show "Prizes" next.
+			if (immediate) {
+				tl.to({}, 0.3, {
+					onStart() {
+						showMainLine1('');
+						showMainLine2('');
+					},
+					onComplete: showCurrentPrizes
+				});
+			}
+		}
+	
+		/**
+		 * Adds an animation to the global timeline for showing the current prizes
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows prizes immediately.
+		 * @returns {undefined}
+		 */
+		function showCurrentPrizes(immediate) {
+			if (immediate) {
+				tl.clear();
+			}
+	
+			if (globals.currentGrandPrizes.length > 0 || globals.currentNormalPrizes.length > 0) {
+				const prizesToDisplay = globals.currentNormalPrizes.slice(0);
+				tl.to({}, 0.3, {
+					onStart() {
+						showLabel('RAFFLE\nPRIZES', 24);
+					}
+				});
+	
+				if (globals.currentGrandPrizes.length) {
+					// Figure out what grand prize to show in this batch.
+					const lastShownGrandPrizeIdx = globals.currentGrandPrizes.indexOf(lastShownGrandPrize);
+					const nextGrandPrizeIdx = lastShownGrandPrizeIdx >= globals.currentGrandPrizes.length - 1 ?
+						0 : lastShownGrandPrizeIdx + 1;
+					const nextGrandPrize = globals.currentGrandPrizes[nextGrandPrizeIdx];
+	
+					if (nextGrandPrize) {
+						prizesToDisplay.unshift(nextGrandPrize);
+						lastShownGrandPrize = nextGrandPrize;
+					}
+				}
+	
+				// Loop over each prize and queue it up on the timeline
+				prizesToDisplay.forEach(showPrize);
+			}
+	
+			tl.to({}, 0.3, {
+				onStart() {
+					showMainLine1('');
+					showMainLine2('');
+				},
+				onComplete: showUpNext
+			});
+		}
+	
+		/**
+		 * Adds an animation to the global timeline for showing a specific prize.
+		 * @param {Object} prize - The prize to display.
+		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the prize immediately.
+		 * @returns {undefined}
+		 */
+		function showPrize(prize, immediate) {
+			if (immediate) {
+				tl.clear();
+				tl.call(showLabel, ['RAFFLE\nPRIZES', 24], null, '+=0.01');
+			}
+	
+			// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
+			tl.to({}, 0.01, {
+				onComplete() {
+					showMainLine1(`Provided by ${prize.provided}`);
+	
+					if (prize.grand) {
+						showMainLine2(`Grand Prize: ${prize.description}`);
+					} else {
+						showMainLine2(prize.description);
+					}
+				}
+			});
+	
+			// Give the prize some time to show
+			tl.to({}, globals.displayDuration, {});
+	
+			// If we're just showing this one prize on-demand, show "Up Next" next.
+			if (immediate) {
+				tl.to({}, 0.3, {
+					onStart() {
+						showMainLine1('');
+						showMainLine2('');
+					},
+					onComplete: showUpNext
+				});
+			}
+		}
+	
+		nodecg.listenFor('barDemand', data => {
+			switch (data.type) {
+				case 'bid':
+					showBid(data, true);
+					break;
+				case 'prize':
+					showPrize(data, true);
+					break;
+				default:
+					throw new Error(`Invalid barDemand type: ${data.type}`);
+			}
+		});
+	
+		nodecg.listenFor('barCurrentBids', () => {
+			showCurrentBids(true);
+		});
+	
+		nodecg.listenFor('barCurrentPrizes', () => {
+			showCurrentPrizes(true);
+		});
+	
+		nodecg.listenFor('barUpNext', () => {
+			showUpNext(true);
+		});
+	
+		nodecg.listenFor('barCTA', () => {
+			showCTA(true);
+		});
+	
+		// CTA is the first thing we show, so we use this to start our loop
+		showCTA();
 	});
 
 
 /***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	const loader = __webpack_require__(2);
-	const setBackground = __webpack_require__(9);
-	
-	/** Class representing a Layout. **/
-	class Layout {
-		/**
-		 * Create a Layout.
-		 * @param {String} name - The name of the layout. Determines which background image to load.
-		 * @param {Function} attachedCallback - The callback to invoke once the layout is loaded.
-		 * @param {Object} [loadOpts] - Options to pass to the "load" function.
-		 */
-		constructor(name, attachedCallback, loadOpts) {
-			window.currentLayout = name;
-			this.name = name;
-	
-			loader.load(name, loadOpts).then(() => {
-				setBackground(this.name);
-				attachedCallback.call(this);
-			});
-		}
-	}
-	
-	module.exports = Layout;
-
-
-/***/ },
+/* 1 */,
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -6339,435 +7057,8 @@
 
 
 /***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	const debug = __webpack_require__(6);
-	const loader = __webpack_require__(2);
-	const containerEl = document.getElementById('container');
-	
-	module.exports = function (bgName) {
-		debug.log('[background] setBackground(%s)', bgName);
-	
-		const background = loader.queue.getResult(`bg-${bgName}`);
-		background.id = 'background';
-		containerEl.appendChild(background);
-	
-		const foreground = loader.queue.getResult(`fg-${bgName}`);
-		foreground.id = 'foreground';
-		containerEl.appendChild(foreground);
-	};
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	const BOXART_WIDTH = 469;
-	const BOXART_ASPECT_RATIO = 1.397;
-	const BOXART_SCROLL_TIME = 30;
-	const BOXART_FADE_TIME = 2;
-	const Stage = __webpack_require__(11);
-	const loader = __webpack_require__(2);
-	const globals = __webpack_require__(7);
-	const debug = __webpack_require__(6);
-	
-	// We'll be changing these every time we switch to a new layout.
-	// The "g" here means "Global". IDK, just some way of signifying these vars are permanent.
-	/* eslint-disable one-var */
-	let gWidth, gHeight, gOpts, gBoxartImage, boxartHeight;
-	/* eslint-enable one-var */
-	
-	const stage = new Stage(0, 0, 'speedrun');
-	const shadow = new createjs.Shadow('black', 2, 2, 0);
-	
-	/* ----- */
-	
-	const boxartContainer1 = new createjs.Container();
-	const boxartContainer2 = new createjs.Container();
-	
-	const color1 = new createjs.Shape();
-	const color2 = new createjs.Shape();
-	
-	const boxart1 = new createjs.Bitmap();
-	boxart1.alpha = 0.3;
-	boxart1.compositeOperation = 'luminosity';
-	const boxart2 = boxart1.clone();
-	
-	boxartContainer1.addChild(color1, boxart1);
-	boxartContainer2.addChild(color2, boxart2);
-	
-	/* ----- */
-	
-	const name = new createjs.Text('', '800 29px proxima-nova', 'white');
-	name.textAlign = 'end';
-	name.shadow = shadow;
-	
-	/* ----- */
-	
-	const categoryContainer = new createjs.Container();
-	categoryContainer.x = -2; // Hide the left stroke
-	
-	const category = new createjs.Text('', '600 18px proxima-nova', 'black');
-	category.x = 34;
-	category.y = 4;
-	
-	const categoryBoxart = new createjs.Shape();
-	categoryBoxart.graphics
-		.beginStroke('#0075a1')
-		.beginFill('white')
-		.drawRect(0, 0, 0, 31);
-	const categoryRect = categoryBoxart.graphics.command;
-	
-	categoryContainer.addChild(categoryBoxart, category);
-	
-	/* ----- */
-	
-	const estimateContainer = new createjs.Container();
-	
-	const estimate = new createjs.Text('', '600 18px proxima-nova', 'black');
-	estimate.textAlign = 'right';
-	estimate.y = 4;
-	
-	const estimateBoxart = new createjs.Shape();
-	estimateBoxart.graphics
-		.beginStroke('#0075a1')
-		.beginFill('white')
-		.drawRect(0, 0, 0, 31);
-	const estimateRect = estimateBoxart.graphics.command;
-	
-	estimateContainer.addChild(estimateBoxart, estimate);
-	window.estimateContainer = estimateContainer;
-	
-	/* ----- */
-	
-	const consoleBitmap = new createjs.Bitmap();
-	
-	/* ----- */
-	
-	const foreground = new createjs.Container();
-	foreground.addChild(name, categoryContainer, estimateContainer, consoleBitmap);
-	
-	/* ----- */
-	
-	const stageMask = new createjs.Shape();
-	const stageMaskRect = stageMask.graphics.drawRect(0, 0, 0, 0).command;
-	stage.mask = stageMask;
-	stage.addChild(boxartContainer1, boxartContainer2, foreground);
-	
-	/**
-	 *  Re-caches the foreground elements (name, console icon, estimate, category)
-	 *  @returns {undefined}
-	 */
-	function recacheForeground() {
-		foreground.cache(0, 0, gWidth, gHeight);
-	}
-	
-	let showingBoxart = boxartContainer1;
-	let hiddenBoxart = boxartContainer2;
-	let currentBoxartScrollTl;
-	let boxartScrollInterval;
-	
-	/**
-	 *  Does one iteration of the boxart scroll animation.
-	 *  @returns {undefined}
-	 */
-	function boxartScroll() {
-		const tl = new TimelineLite();
-		currentBoxartScrollTl = tl;
-	
-		tl.fromTo(showingBoxart, BOXART_SCROLL_TIME + BOXART_FADE_TIME,
-			{y: 0},
-			{
-				immediateRender: false,
-				y: gHeight - boxartHeight,
-				ease: Linear.easeNone
-			}
-		);
-	
-		tl.add('crossfade', BOXART_SCROLL_TIME);
-		tl.to(showingBoxart, BOXART_FADE_TIME, {
-			onStart() {
-				debug.time('boxartCrossfade');
-			},
-			alpha: 0,
-			ease: Power1.easeInOut,
-			onComplete(boxartWeJustHid) {
-				if (boxartWeJustHid.image !== gBoxartImage) {
-					recacheBoxartAfterImageLoad(boxartWeJustHid);
-				}
-			},
-			onCompleteParams: [showingBoxart]
-		}, 'crossfade');
-		tl.to(hiddenBoxart, BOXART_FADE_TIME, {
-			alpha: 1,
-			ease: Power1.easeInOut,
-			onComplete() {
-				debug.timeEnd('boxartCrossfade');
-			}
-		}, 'crossfade');
-	
-		const tmp = showingBoxart;
-		showingBoxart = hiddenBoxart;
-		hiddenBoxart = tmp;
-	}
-	
-	/**
-	 *  Waits for the boxart image to be fully loaded, then redraws both boxart elements.
-	 *  @param {Container} boxartContainer - An EaselJS Container
-	 *  @returns {undefined}
-	 */
-	function recacheBoxartAfterImageLoad(boxartContainer) {
-		// TODO: Figure out if the "after image load" part is still necessary now that I'm using base64 images.
-		const bitmap = boxartContainer.children[1];
-		if (!bitmap.image) {
-			return;
-		}
-	
-		bitmap.image = gBoxartImage;
-		if (bitmap.image.complete) {
-			cacheBoxartContainer(boxartContainer);
-		} else {
-			bitmap.image.addEventListener('load', () => {
-				cacheBoxartContainer(boxartContainer);
-			});
-		}
-	}
-	
-	/**
-	 * Caches the provided boxartContainer.
-	 * @param {Container} boxartContainer - An EaselJS Container
-	 * @returns {undefined}
-	 */
-	function cacheBoxartContainer(boxartContainer) {
-		boxartContainer.cache(0, 0, gWidth, Math.ceil(boxartHeight));
-	}
-	
-	/**
-	 * Reformats the boxart for the currently active layout.
-	 * @returns {undefined}
-	 */
-	function reformatBoxart() {
-		boxartHeight = gWidth * BOXART_ASPECT_RATIO;
-		boxart1.scaleX = boxart2.scaleX = gWidth / BOXART_WIDTH;
-		boxart1.scaleY = boxart2.scaleY = gWidth / BOXART_WIDTH;
-		color1.graphics.clear().beginFill('#00ADEF').drawRect(0, 0, gWidth, boxartHeight);
-		color2.graphics.clear().beginFill('#00ADEF').drawRect(0, 0, gWidth, boxartHeight);
-	
-		// Caching seems to have no discernible performance benefit in this particular case,
-		// and in OBS1 CLR Browser Sources actually seems to make performance far worse.
-		boxart1.image = gBoxartImage;
-		boxart2.image = gBoxartImage;
-		cacheBoxartContainer(boxartContainer1);
-		cacheBoxartContainer(boxartContainer2);
-	
-		// Reset the scroll
-		clearInterval(boxartScrollInterval);
-		if (currentBoxartScrollTl) {
-			currentBoxartScrollTl.clear();
-		}
-	
-		showingBoxart.alpha = 1;
-		hiddenBoxart.alpha = 0;
-	
-		boxartScroll();
-		boxartScrollInterval = setInterval(boxartScroll, BOXART_SCROLL_TIME * 1000);
-	}
-	
-	/**
-	 * Calculates and applies the appropriate styles for the run name.
-	 * @returns {undefined}
-	 */
-	function calcAndSetNameStyle() {
-		if (typeof gOpts === 'undefined') {
-			return;
-		}
-	
-		name.scaleX = name.scaleY = gOpts.scale;
-	
-		if (name.text.indexOf('\n') >= 0) {
-			name.regY = 8;
-			name.textBaseline = 'top';
-			name.y = gOpts.nameY;
-		} else {
-			name.regY = 0;
-			name.textBaseline = 'middle';
-	
-			const maxWidth = gWidth - (gWidth * 0.12);
-			const nameBounds = name.getTransformedBounds();
-			let nameScalar = maxWidth / nameBounds.width;
-	
-			if (nameBounds.height * nameScalar > gOpts.nameMaxHeight) {
-				nameScalar = gOpts.nameMaxHeight / nameBounds.height;
-			}
-	
-			name.scaleX = name.scaleY *= nameScalar;
-			name.y = (gOpts.nameY + (gOpts.categoryY - gOpts.nameY) / 2);
-		}
-	}
-	
-	/**
-	 * Re-positions the Console icon based on the current layout.
-	 * @returns {undefined}
-	 */
-	function repositionConsole() {
-		if (!gOpts) {
-			return;
-		}
-	
-		const bounds = consoleBitmap.getBounds();
-		consoleBitmap.regY = (bounds.height - 4) / 2;
-	
-		if (gOpts.showEstimate) {
-			consoleBitmap.regX = 0;
-			consoleBitmap.x = 8;
-			consoleBitmap.y = estimateContainer.y + (estimateContainer.getBounds().height - 2) / 2;
-		} else {
-			consoleBitmap.regX = consoleBitmap.getBounds().width;
-			consoleBitmap.x = gWidth - 8;
-			consoleBitmap.y = categoryContainer.y + (categoryContainer.getBounds().height - 2) / 2;
-		}
-	}
-	
-	// This needs to be near the bottom of this file.
-	globals.currentRunRep.on('change', newVal => {
-		const img = document.createElement('img');
-		img.src = newVal.boxart.url;
-		gBoxartImage = img;
-	
-		// If we're not currenly in the midst of a fade,
-		// immediately load the new boxart into hiddenBoxart so its shows ASAP.
-		if (currentBoxartScrollTl) {
-			const currentTime = currentBoxartScrollTl.time();
-			if (currentTime > BOXART_FADE_TIME && currentTime < currentBoxartScrollTl.duration() - BOXART_FADE_TIME + 0.1) {
-				// This is confusing. You'd think it'd be hiddenBoxart that we change, but no.
-				// This is because they're flipped immediately every time showBoxart() is called.
-				recacheBoxartAfterImageLoad(showingBoxart);
-			}
-		}
-	
-		name.text = newVal.name.toUpperCase();
-	
-		if (newVal.releaseYear) {
-			name.text += ` (${newVal.releaseYear})`;
-		}
-	
-		name.text = name.text.replace('\\N', '\n');
-	
-		category.text = newVal.category;
-		categoryRect.w = category.x + category.getBounds().width + 43;
-	
-		estimate.text = `EST: ${newVal.estimate}`;
-		estimateRect.w = category.x + estimate.getBounds().width + 43;
-		estimate.x = estimateRect.w - 34;
-		estimateContainer.regX = estimateRect.w - 2;
-	
-		let imgEl = loader.queue.getResult('console-${newVal.console.toLowerCase()}');
-		imgEl = imgEl || loader.queue.getResult('console-unknown');
-		consoleBitmap.image = imgEl;
-	
-		// EaselJS has problems applying shadows to stroked graphics.
-		// To work around this, we remove the shadow, cache the graphic, then apply the shadow to the cache.
-		categoryBoxart.shadow = null;
-		categoryBoxart.cache(0, 0, categoryRect.w, categoryRect.h);
-		categoryBoxart.shadow = shadow;
-		estimateBoxart.shadow = null;
-		estimateBoxart.cache(0, 0, estimateRect.w, estimateRect.h);
-		estimateBoxart.shadow = shadow;
-	
-		calcAndSetNameStyle();
-		repositionConsole();
-		recacheForeground();
-	});
-	
-	module.exports = {
-		disable() {
-			stage.visible = false;
-			stage.paused = true;
-			stage.canvas.style.display = 'none';
-		},
-	
-		enable() {
-			stage.visible = true;
-			stage.paused = false;
-			stage.canvas.style.display = 'block';
-		},
-	
-		/**
-		 *  Sets the position and dimensions of the SpeedRun element.
-		 *  Transitions to the new position and dimenstions with a hard cut, and restarts the boxart scroll anim.
-		 *  @param {Number} x - The x position to set.
-		 *  @param {Number} y - The y position to set.
-		 *  @param {Number} w - The width to set.
-		 *  @param {Number} h - The height to set.
-		 *  @param {Object} opts - The options to set.
-		 *  @param {Number} opts.nameY - How far from the top to place the name.
-		 *  @param {Number} opts.nameMaxHeight - The maximum height of the name.
-		 *  @param {Number} opts.categoryY - Hor far from the top to place the category.
-		 *  @param {Number} [opts.scale=1] - The scale to draw all the individual elements at.
-		 *  @param {Boolean} [opts.showEstimate] - Whether or not to show the run's estimate.
-		 *  @returns {undefined}
-		 */
-		configure(x, y, w, h, opts) {
-			debug.log('[speedun] setSpeedRunDimensions(%s, %s, %s, %s)', x, y, w, h);
-	
-			this.enable();
-			stageMaskRect.w = w;
-			stageMaskRect.h = h;
-	
-			if (typeof opts.nameY === 'undefined') {
-				throw new Error('opts.nameY must be defined');
-			} else if (typeof opts.nameMaxHeight === 'undefined') {
-				throw new Error('opts.nameMaxHeight must be defined');
-			} else if (typeof opts.categoryY === 'undefined') {
-				throw new Error('opts.categoryY must be defined');
-			}
-	
-			gOpts = opts;
-			opts.scale = opts.scale || 1;
-	
-			gWidth = w;
-			gHeight = h;
-	
-			stage.canvas.style.left = `${x}px`;
-			stage.canvas.style.top = `${y}px`;
-	
-			/* Okay, this is a new one.
-			 * Enforcing a minimum canvas width of 330 and rounding the
-			 * canvas height up to the nearest hundred seems to have a dramatic positive impact on performance.
-			 */
-			stage.canvas.width = Math.max(w, 330);
-			stage.canvas.height = Math.max(Math.ceil(h / 100) * 100, 200);
-	
-			name.scaleX = name.scaleY = opts.scale;
-			categoryContainer.scaleX = categoryContainer.scaleY = opts.scale;
-	
-			name.x = w - 10;
-	
-			categoryContainer.y = opts.categoryY;
-	
-			if (opts.showEstimate) {
-				estimateContainer.visible = true;
-				estimateContainer.x = gWidth;
-				estimateContainer.y = categoryContainer.y + categoryRect.h + 14;
-				estimate.x = estimateRect.w - 34;
-			} else {
-				estimateContainer.visible = false;
-			}
-	
-			reformatBoxart();
-			calcAndSetNameStyle();
-			repositionConsole();
-			recacheForeground();
-		}
-	};
-
-
-/***/ },
+/* 9 */,
+/* 10 */,
 /* 11 */
 /***/ function(module, exports) {
 
@@ -6815,833 +7106,9 @@
 
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	const Nameplate = __webpack_require__(13);
-	
-	const nameplates = [
-		new Nameplate(0, 'left'),
-		new Nameplate(1, 'right'),
-		new Nameplate(2, 'left'),
-		new Nameplate(3, 'right')
-	];
-	
-	// Start disabled
-	nameplates.forEach(nameplate => nameplate.disable());
-	
-	/**
-	 * Shallowly extends an object. Overwrites existing properties.
-	 * @param {Object} obj - The base object to extend.
-	 * @param {Object} ext - The object to merge into the base.
-	 * @returns {Object} - A reference to obj.
-	 */
-	function extend(obj, ext) {
-		for (const key in ext) {
-			if (ext.hasOwnProperty(key)) {
-				obj[key] = ext[key];
-			}
-		}
-		return obj;
-	}
-	
-	module.exports = {
-		disable() {
-			nameplates.forEach(nameplate => nameplate.disable());
-		},
-	
-		enable() {
-			nameplates.forEach(nameplate => nameplate.enable());
-		},
-	
-		configure(globalOpts, perNameplateOpts) {
-			const numNameplates = perNameplateOpts.length;
-	
-			// Enable/disable nameplates as appropriate.
-			nameplates.forEach((nameplate, index) => {
-				if (index <= numNameplates - 1) {
-					const opts = extend(perNameplateOpts[index], globalOpts);
-					nameplate.enable();
-					nameplate.configure(opts);
-				} else {
-					nameplate.disable();
-				}
-			});
-		}
-	};
-
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	const AUDIO_ICON_WIDTH = 36;
-	const AUDIO_ICON_HEIGHT = 36;
-	const AUDIO_ICON_SCALE = 0.42;
-	const debounce = __webpack_require__(14);
-	const loader = __webpack_require__(2);
-	const globals = __webpack_require__(7);
-	const Stage = __webpack_require__(11);
-	const tabulate = __webpack_require__(15);
-	
-	/**
-	 * Creates a new Nameplate instance.
-	 * @constructor
-	 * @param {Number} index - Which runner index to pull data for (0-3).
-	 * @extends createjs.Container
-	 */
-	function Nameplate(index) {
-		/* eslint-disable babel/new-cap */
-		this.Container_constructor();
-		this.setup(index);
-		/* eslint-enable babel/new-cap */
-	}
-	
-	const p = createjs.extend(Nameplate, createjs.Container);
-	
-	p.setup = function (index) {
-		const stage = new Stage(0, 0); // Extra height to hit 256x257 minimum for hardware acceleration
-		stage.canvas.classList.add('nameplate');
-	
-		/* ----- */
-	
-		this.cover1 = new createjs.Shape();
-		this.cover1.graphics.beginFill('#6fd8ff');
-		this.cover1Rect = this.cover1.graphics.drawRect(0, 0, 0, 0).command;
-	
-		this.cover2 = new createjs.Shape();
-		this.cover2.graphics.beginFill('white');
-		this.cover2Rect = this.cover2.graphics.drawRect(0, 0, 0, 0).command;
-	
-		/* ----- */
-	
-		this.nameText = new createjs.Text('?', '', 'white');
-		this.nameText.textBaseline = 'alphabetic';
-	
-		/* ----- */
-	
-		this.estimateText = new createjs.Text('EST: ?', '', '#afe2f8');
-	
-		/* ----- */
-	
-		this.twitchContainer = new createjs.Container();
-	
-		this.twitchBackground = new createjs.Shape();
-		this.twitchBackground.graphics.beginFill('#985da6');
-		this.twitchBackgroundRect = this.twitchBackground.graphics.drawRect(0, 0, 0, 0).command;
-	
-		this.twitchIcon = new createjs.Bitmap(loader.queue.getResult('nameplate-twitch-logo'));
-		this.twitchIcon.regY = this.twitchIcon.getBounds().height / 2;
-	
-		this.twitchText = new createjs.Text('', '', 'white');
-		this.twitchText.textBaseline = 'middle';
-	
-		this.twitchContainer.addChild(this.twitchBackground, this.twitchIcon, this.twitchText);
-		this.twitchContainer.visible = false;
-	
-		/* ----- */
-	
-		this.timeText = new createjs.Text('0:00:00', '900 30px proxima-nova', 'white');
-		this.timeText.textBaseline = 'middle';
-	
-		/* ----- */
-	
-		this.audioIcon = new createjs.Bitmap(loader.queue.getResult('nameplate-audio-on'));
-		this.audioIcon.regX = AUDIO_ICON_WIDTH / 2;
-		this.audioIconColorFilter = new createjs.ColorFilter(0, 0, 0);
-		this.audioIcon.visible = false;
-		this.audioIcon.scaleX = AUDIO_ICON_SCALE;
-		this.audioIcon.scaleY = AUDIO_ICON_SCALE;
-	
-		/* ----- */
-	
-		this.bottomBorder = new createjs.Shape();
-		this.bottomBorderRect = this.bottomBorder.graphics.beginFill('white').drawRect(0, 0, 0, 2).command;
-	
-		/* ----- */
-	
-		this.background = new createjs.Shape();
-		this.backgroundFill = this.background.graphics.beginFill('#00AEEF').command;
-		this.backgroundRect = this.background.graphics.drawRect(0, 0, 0, 0).command;
-	
-		this.addChild(this.background, this.nameText, this.timeText, this.estimateText, this.audioIcon,
-			this.twitchContainer, this.bottomBorder, this.cover1, this.cover2);
-		stage.addChild(this);
-	
-		/* ----- */
-	
-		const handleCurrentRunChange = debounce((name, stream, estimate) => {
-			const tl = new TimelineLite();
-			const width = this.stage.canvas.width;
-	
-			tl.add('enter');
-	
-			tl.to(this.cover1Rect, 0.33, {
-				w: width,
-				ease: Power3.easeInOut,
-				onComplete: function () {
-					this.nameText.text = name;
-					this.twitchText.text = stream;
-					this.estimateText.text = `EST: ${estimate}`;
-	
-					this.repositionAudioIcon();
-	
-					if (stream) {
-						this.restartTwitchTimeline();
-					} else if (this.twitchTl) {
-						this.twitchTl.kill();
-						this.twitchContainer.visible = false;
-					}
-				}.bind(this)
-			}, 'enter');
-	
-			tl.to(this.cover2Rect, 0.77, {
-				w: width,
-				ease: Power3.easeInOut
-			}, 'enter');
-	
-			tl.add('exit', '-=0.15');
-	
-			tl.to(this.cover2Rect, 0.33, {
-				x: width,
-				ease: Power3.easeInOut
-			}, 'exit');
-	
-			tl.to(this.cover1Rect, 0.77, {
-				x: width,
-				ease: Power3.easeInOut
-			}, 'exit');
-	
-			tl.call(() => {
-				this.cover1Rect.x = 0;
-				this.cover1Rect.w = 0;
-				this.cover2Rect.x = 0;
-				this.cover2Rect.w = 0;
-			});
-		}, 1000);
-	
-		globals.currentRunRep.on('change', newVal => {
-			const runner = newVal.runners[index];
-			if (runner) {
-				handleCurrentRunChange(runner.name, runner.stream, newVal.estimate);
-			} else {
-				handleCurrentRunChange('?', '', newVal.estimate);
-			}
-		});
-	
-		globals.stopwatchesRep.on('change', newVal => {
-			const stopwatch = newVal[index];
-			this.timeText.text = tabulate(stopwatch.time);
-	
-			this.timeText.color = 'white';
-			this.estimateText.color = '#afe2f8';
-			this.backgroundFill.style = '#00AEEF';
-	
-			switch (stopwatch.state) {
-				case 'paused':
-					this.timeText.color = '#007c9e';
-					break;
-				case 'finished':
-					this.backgroundFill.style = '#60bb46';
-					this.estimateText.color = '#b7dcaf';
-					break;
-				default:
-				// Do nothing.
-			}
-		});
-	
-		globals.gameAudioChannelsRep.on('change', newVal => {
-			if (!newVal || newVal.length <= 0) {
-				return;
-			}
-	
-			const channels = newVal[index];
-			const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
-			const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;
-			if (canHearSd || canHearHd) {
-				if (!this.audioIcon.filters) {
-					return;
-				}
-	
-				this.audioIcon.filters = null;
-				this.audioIcon.alpha = 1;
-				this.audioIcon.image = loader.queue.getResult('nameplate-audio-on');
-				this.audioIcon.uncache();
-			} else {
-				if (this.audioIcon.filters && this.audioIcon.filters.length > 0) {
-					return;
-				}
-	
-				this.audioIcon.image = loader.queue.getResult('nameplate-audio-off');
-				this.audioIcon.filters = [this.audioIconColorFilter];
-				this.audioIcon.alpha = 0.2;
-				this.audioIcon.cache(0, 0, AUDIO_ICON_WIDTH, AUDIO_ICON_HEIGHT);
-			}
-		});
-	};
-	
-	p.configure = function (opts) {
-		this.stage.canvas.width = opts.width;
-		this.stage.canvas.height = (257 * 257) / opts.width;
-		this.stage.canvas.style.top = `${opts.y}px`;
-		this.stage.canvas.style.left = `${opts.x}px`;
-	
-		const verticalCenter = opts.height / 2;
-		const horizontalMargin = opts.width * 0.015;
-	
-		this.alignment = opts.alignment;
-	
-		this.backgroundRect.w = opts.width;
-		this.backgroundRect.h = opts.height;
-	
-		this.timeText.font = `800 ${opts.timeFontSize}px proxima-nova`;
-		this.timeText.y = verticalCenter;
-	
-		this.nameText.font = `900 ${opts.nameFontSize}px proxima-nova`;
-		this.nameText.y = verticalCenter;
-		this.nameText.maxWidth = opts.width - this.timeText.getBounds().width - (horizontalMargin * 2) - (opts.width * 0.03);
-	
-		const nameTextBounds = this.nameText.getTransformedBounds();
-		const twitchRectHeight = nameTextBounds.y + nameTextBounds.height;
-		this.twitchBackgroundRect.w = this.nameText.maxWidth + horizontalMargin + 10;
-		this.twitchBackgroundRect.h = twitchRectHeight;
-		const twitchFontSize = opts.nameFontSize * 0.9;
-		const twitchIconScale = twitchFontSize / this.twitchIcon.getBounds().height;
-		const twitchCenterY = this.twitchBackgroundRect.h / 2;
-		this.twitchText.font = `900 ${twitchFontSize}px proxima-nova`;
-		this.twitchText.y = twitchCenterY;
-		this.twitchIcon.scaleY = twitchIconScale;
-		this.twitchIcon.scaleX = twitchIconScale;
-		this.twitchIcon.y = twitchCenterY;
-	
-		this.estimateText.font = `800 ${opts.estimateFontSize}px proxima-nova`;
-		this.estimateText.y = twitchRectHeight - (opts.nameFontSize * 0.1);
-	
-		this.cover1Rect.h = opts.height;
-		this.cover2Rect.h = opts.height;
-	
-		if (opts.bottomBorder) {
-			this.bottomBorder.visible = true;
-			this.bottomBorderRect.w = opts.width;
-			this.bottomBorder.y = opts.height;
-		} else {
-			this.bottomBorder.visible = false;
-		}
-	
-		if (opts.alignment === 'right') {
-			this.nameText.x = opts.width - horizontalMargin;
-			this.nameText.textAlign = 'right';
-	
-			this.estimateText.textAlign = 'right';
-	
-			this.timeText.x = horizontalMargin;
-			this.timeText.textAlign = 'left';
-	
-			this.twitchIcon.regX = this.twitchIcon.getBounds().width;
-			this.twitchIcon.x = this.nameText.x;
-			this.twitchText.textAlign = 'right';
-			this.twitchText.x = this.twitchIcon.x - this.twitchIcon.getTransformedBounds().width - (twitchFontSize * 0.3);
-			this.twitchBackground.scaleX = -1;
-			this.twitchBackground.x = opts.width + 10;
-			this.twitchBackground.skewX = 10;
-	
-			this.cover1.scaleX = -1;
-			this.cover1.x = opts.width;
-			this.cover2.scaleX = -1;
-			this.cover2.x = opts.width;
-		} else {
-			this.nameText.x = horizontalMargin;
-			this.nameText.textAlign = 'left';
-	
-			this.estimateText.textAlign = 'left';
-	
-			this.timeText.x = opts.width - horizontalMargin;
-			this.timeText.textAlign = 'right';
-	
-			this.twitchIcon.regX = 0;
-			this.twitchIcon.x = this.nameText.x;
-			this.twitchText.textAlign = 'left';
-			this.twitchText.x = this.twitchIcon.x + this.twitchIcon.getTransformedBounds().width + (twitchFontSize * 0.3);
-			this.twitchBackground.scaleX = 1;
-			this.twitchBackground.x = -10;
-			this.twitchBackground.skewX = -10;
-	
-			this.cover1.scaleX = 1;
-			this.cover1.x = 0;
-			this.cover2.scaleX = 1;
-			this.cover2.x = 0;
-		}
-	
-		this.estimateText.x = this.nameText.x;
-		this.twitchText.maxWidth = this.twitchBackgroundRect.w - Math.abs(this.twitchBackground.x - this.twitchText.x) - horizontalMargin;
-	
-		if (opts.audioIcon) {
-			this.audioIcon.visible = true;
-			this.repositionAudioIcon();
-		} else {
-			this.audioIcon.visible = false;
-		}
-	
-		if (this.twitchText.text) {
-			this.restartTwitchTimeline();
-		}
-	};
-	
-	p.repositionAudioIcon = function () {
-		this.audioIcon.y = this.estimateText.y + 3.5;
-	
-		if (this.alignment === 'right') {
-			this.audioIcon.x = this.estimateText.x - this.estimateText.getBounds().width - 16;
-			this.audioIcon.scaleX = -AUDIO_ICON_SCALE;
-		} else {
-			this.audioIcon.x = this.estimateText.x + this.estimateText.getBounds().width + 16;
-			this.audioIcon.scaleX = AUDIO_ICON_SCALE;
-		}
-	};
-	
-	p.restartTwitchTimeline = function () {
-		if (this.twitchTl) {
-			this.twitchTl.kill();
-		}
-	
-		this.twitchTl = new TimelineMax({repeat: -1});
-	
-		const twitchHideX = this.alignment === 'right' ? this.twitchBackgroundRect.w : -this.twitchBackgroundRect.w;
-		this.twitchContainer.visible = true;
-		this.twitchContainer.x = twitchHideX;
-	
-		this.twitchTl.to({}, 90, {});
-	
-		this.twitchTl.to(this.twitchContainer, 1.2, {
-			x: 0,
-			ease: Power2.easeInOut
-		});
-	
-		this.twitchTl.to(this.twitchContainer, 0.9, {
-			x: twitchHideX,
-			ease: Power2.easeIn
-		}, '+=8.5');
-	};
-	
-	p.disable = function () {
-		this.stage.visible = false;
-		this.stage.paused = true;
-		this.stage.canvas.style.display = 'none';
-	};
-	
-	p.enable = function () {
-		this.stage.visible = true;
-		this.stage.paused = false;
-		this.stage.canvas.style.display = 'block';
-	};
-	
-	module.exports = createjs.promote(Nameplate, 'Container');
-
-
-/***/ },
-/* 14 */
-/***/ function(module, exports) {
-
-	/**
-	 * lodash 4.0.6 (Custom Build) <https://lodash.com/>
-	 * Build: `lodash modularize exports="npm" -o ./`
-	 * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-	 * Released under MIT license <https://lodash.com/license>
-	 * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-	 * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	 */
-	
-	/** Used as the `TypeError` message for "Functions" methods. */
-	var FUNC_ERROR_TEXT = 'Expected a function';
-	
-	/** Used as references for various `Number` constants. */
-	var NAN = 0 / 0;
-	
-	/** `Object#toString` result references. */
-	var funcTag = '[object Function]',
-	    genTag = '[object GeneratorFunction]',
-	    symbolTag = '[object Symbol]';
-	
-	/** Used to match leading and trailing whitespace. */
-	var reTrim = /^\s+|\s+$/g;
-	
-	/** Used to detect bad signed hexadecimal string values. */
-	var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-	
-	/** Used to detect binary string values. */
-	var reIsBinary = /^0b[01]+$/i;
-	
-	/** Used to detect octal string values. */
-	var reIsOctal = /^0o[0-7]+$/i;
-	
-	/** Built-in method references without a dependency on `root`. */
-	var freeParseInt = parseInt;
-	
-	/** Used for built-in method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the
-	 * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objectToString = objectProto.toString;
-	
-	/* Built-in method references for those with the same name as other `lodash` methods. */
-	var nativeMax = Math.max,
-	    nativeMin = Math.min;
-	
-	/**
-	 * Gets the timestamp of the number of milliseconds that have elapsed since
-	 * the Unix epoch (1 January 1970 00:00:00 UTC).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 2.4.0
-	 * @type {Function}
-	 * @category Date
-	 * @returns {number} Returns the timestamp.
-	 * @example
-	 *
-	 * _.defer(function(stamp) {
-	 *   console.log(_.now() - stamp);
-	 * }, _.now());
-	 * // => Logs the number of milliseconds it took for the deferred function to be invoked.
-	 */
-	var now = Date.now;
-	
-	/**
-	 * Creates a debounced function that delays invoking `func` until after `wait`
-	 * milliseconds have elapsed since the last time the debounced function was
-	 * invoked. The debounced function comes with a `cancel` method to cancel
-	 * delayed `func` invocations and a `flush` method to immediately invoke them.
-	 * Provide an options object to indicate whether `func` should be invoked on
-	 * the leading and/or trailing edge of the `wait` timeout. The `func` is invoked
-	 * with the last arguments provided to the debounced function. Subsequent calls
-	 * to the debounced function return the result of the last `func` invocation.
-	 *
-	 * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
-	 * on the trailing edge of the timeout only if the debounced function is
-	 * invoked more than once during the `wait` timeout.
-	 *
-	 * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
-	 * for details over the differences between `_.debounce` and `_.throttle`.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 0.1.0
-	 * @category Function
-	 * @param {Function} func The function to debounce.
-	 * @param {number} [wait=0] The number of milliseconds to delay.
-	 * @param {Object} [options={}] The options object.
-	 * @param {boolean} [options.leading=false]
-	 *  Specify invoking on the leading edge of the timeout.
-	 * @param {number} [options.maxWait]
-	 *  The maximum time `func` is allowed to be delayed before it's invoked.
-	 * @param {boolean} [options.trailing=true]
-	 *  Specify invoking on the trailing edge of the timeout.
-	 * @returns {Function} Returns the new debounced function.
-	 * @example
-	 *
-	 * // Avoid costly calculations while the window size is in flux.
-	 * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
-	 *
-	 * // Invoke `sendMail` when clicked, debouncing subsequent calls.
-	 * jQuery(element).on('click', _.debounce(sendMail, 300, {
-	 *   'leading': true,
-	 *   'trailing': false
-	 * }));
-	 *
-	 * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
-	 * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
-	 * var source = new EventSource('/stream');
-	 * jQuery(source).on('message', debounced);
-	 *
-	 * // Cancel the trailing debounced invocation.
-	 * jQuery(window).on('popstate', debounced.cancel);
-	 */
-	function debounce(func, wait, options) {
-	  var lastArgs,
-	      lastThis,
-	      maxWait,
-	      result,
-	      timerId,
-	      lastCallTime = 0,
-	      lastInvokeTime = 0,
-	      leading = false,
-	      maxing = false,
-	      trailing = true;
-	
-	  if (typeof func != 'function') {
-	    throw new TypeError(FUNC_ERROR_TEXT);
-	  }
-	  wait = toNumber(wait) || 0;
-	  if (isObject(options)) {
-	    leading = !!options.leading;
-	    maxing = 'maxWait' in options;
-	    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
-	    trailing = 'trailing' in options ? !!options.trailing : trailing;
-	  }
-	
-	  function invokeFunc(time) {
-	    var args = lastArgs,
-	        thisArg = lastThis;
-	
-	    lastArgs = lastThis = undefined;
-	    lastInvokeTime = time;
-	    result = func.apply(thisArg, args);
-	    return result;
-	  }
-	
-	  function leadingEdge(time) {
-	    // Reset any `maxWait` timer.
-	    lastInvokeTime = time;
-	    // Start the timer for the trailing edge.
-	    timerId = setTimeout(timerExpired, wait);
-	    // Invoke the leading edge.
-	    return leading ? invokeFunc(time) : result;
-	  }
-	
-	  function remainingWait(time) {
-	    var timeSinceLastCall = time - lastCallTime,
-	        timeSinceLastInvoke = time - lastInvokeTime,
-	        result = wait - timeSinceLastCall;
-	
-	    return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
-	  }
-	
-	  function shouldInvoke(time) {
-	    var timeSinceLastCall = time - lastCallTime,
-	        timeSinceLastInvoke = time - lastInvokeTime;
-	
-	    // Either this is the first call, activity has stopped and we're at the
-	    // trailing edge, the system time has gone backwards and we're treating
-	    // it as the trailing edge, or we've hit the `maxWait` limit.
-	    return (!lastCallTime || (timeSinceLastCall >= wait) ||
-	      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-	  }
-	
-	  function timerExpired() {
-	    var time = now();
-	    if (shouldInvoke(time)) {
-	      return trailingEdge(time);
-	    }
-	    // Restart the timer.
-	    timerId = setTimeout(timerExpired, remainingWait(time));
-	  }
-	
-	  function trailingEdge(time) {
-	    clearTimeout(timerId);
-	    timerId = undefined;
-	
-	    // Only invoke if we have `lastArgs` which means `func` has been
-	    // debounced at least once.
-	    if (trailing && lastArgs) {
-	      return invokeFunc(time);
-	    }
-	    lastArgs = lastThis = undefined;
-	    return result;
-	  }
-	
-	  function cancel() {
-	    if (timerId !== undefined) {
-	      clearTimeout(timerId);
-	    }
-	    lastCallTime = lastInvokeTime = 0;
-	    lastArgs = lastThis = timerId = undefined;
-	  }
-	
-	  function flush() {
-	    return timerId === undefined ? result : trailingEdge(now());
-	  }
-	
-	  function debounced() {
-	    var time = now(),
-	        isInvoking = shouldInvoke(time);
-	
-	    lastArgs = arguments;
-	    lastThis = this;
-	    lastCallTime = time;
-	
-	    if (isInvoking) {
-	      if (timerId === undefined) {
-	        return leadingEdge(lastCallTime);
-	      }
-	      if (maxing) {
-	        // Handle invocations in a tight loop.
-	        clearTimeout(timerId);
-	        timerId = setTimeout(timerExpired, wait);
-	        return invokeFunc(lastCallTime);
-	      }
-	    }
-	    if (timerId === undefined) {
-	      timerId = setTimeout(timerExpired, wait);
-	    }
-	    return result;
-	  }
-	  debounced.cancel = cancel;
-	  debounced.flush = flush;
-	  return debounced;
-	}
-	
-	/**
-	 * Checks if `value` is classified as a `Function` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 0.1.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isFunction(_);
-	 * // => true
-	 *
-	 * _.isFunction(/abc/);
-	 * // => false
-	 */
-	function isFunction(value) {
-	  // The use of `Object#toString` avoids issues with the `typeof` operator
-	  // in Safari 8 which returns 'object' for typed array and weak map constructors,
-	  // and PhantomJS 1.9 which returns 'function' for `NodeList` instances.
-	  var tag = isObject(value) ? objectToString.call(value) : '';
-	  return tag == funcTag || tag == genTag;
-	}
-	
-	/**
-	 * Checks if `value` is the
-	 * [language type](http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types)
-	 * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 0.1.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is an object, else `false`.
-	 * @example
-	 *
-	 * _.isObject({});
-	 * // => true
-	 *
-	 * _.isObject([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isObject(_.noop);
-	 * // => true
-	 *
-	 * _.isObject(null);
-	 * // => false
-	 */
-	function isObject(value) {
-	  var type = typeof value;
-	  return !!value && (type == 'object' || type == 'function');
-	}
-	
-	/**
-	 * Checks if `value` is object-like. A value is object-like if it's not `null`
-	 * and has a `typeof` result of "object".
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.0.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-	 * @example
-	 *
-	 * _.isObjectLike({});
-	 * // => true
-	 *
-	 * _.isObjectLike([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isObjectLike(_.noop);
-	 * // => false
-	 *
-	 * _.isObjectLike(null);
-	 * // => false
-	 */
-	function isObjectLike(value) {
-	  return !!value && typeof value == 'object';
-	}
-	
-	/**
-	 * Checks if `value` is classified as a `Symbol` primitive or object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.0.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isSymbol(Symbol.iterator);
-	 * // => true
-	 *
-	 * _.isSymbol('abc');
-	 * // => false
-	 */
-	function isSymbol(value) {
-	  return typeof value == 'symbol' ||
-	    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-	}
-	
-	/**
-	 * Converts `value` to a number.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.0.0
-	 * @category Lang
-	 * @param {*} value The value to process.
-	 * @returns {number} Returns the number.
-	 * @example
-	 *
-	 * _.toNumber(3);
-	 * // => 3
-	 *
-	 * _.toNumber(Number.MIN_VALUE);
-	 * // => 5e-324
-	 *
-	 * _.toNumber(Infinity);
-	 * // => Infinity
-	 *
-	 * _.toNumber('3');
-	 * // => 3
-	 */
-	function toNumber(value) {
-	  if (typeof value == 'number') {
-	    return value;
-	  }
-	  if (isSymbol(value)) {
-	    return NAN;
-	  }
-	  if (isObject(value)) {
-	    var other = isFunction(value.valueOf) ? value.valueOf() : value;
-	    value = isObject(other) ? (other + '') : other;
-	  }
-	  if (typeof value != 'string') {
-	    return value === 0 ? value : +value;
-	  }
-	  value = value.replace(reTrim, '');
-	  var isBinary = reIsBinary.test(value);
-	  return (isBinary || reIsOctal.test(value))
-	    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-	    : (reIsBadHex.test(value) ? NAN : +value);
-	}
-	
-	module.exports = debounce;
-
-
-/***/ },
+/* 12 */,
+/* 13 */,
+/* 14 */,
 /* 15 */
 /***/ function(module, exports) {
 
@@ -7688,6 +7155,729 @@
 	};
 
 
+/***/ },
+/* 16 */,
+/* 17 */,
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	 * numeral.js
+	 * version : 1.5.3
+	 * author : Adam Draper
+	 * license : MIT
+	 * http://adamwdraper.github.com/Numeral-js/
+	 */
+	
+	(function () {
+	
+	    /************************************
+	        Constants
+	    ************************************/
+	
+	    var numeral,
+	        VERSION = '1.5.3',
+	        // internal storage for language config files
+	        languages = {},
+	        currentLanguage = 'en',
+	        zeroFormat = null,
+	        defaultFormat = '0,0',
+	        // check for nodeJS
+	        hasModule = (typeof module !== 'undefined' && module.exports);
+	
+	
+	    /************************************
+	        Constructors
+	    ************************************/
+	
+	
+	    // Numeral prototype object
+	    function Numeral (number) {
+	        this._value = number;
+	    }
+	
+	    /**
+	     * Implementation of toFixed() that treats floats more like decimals
+	     *
+	     * Fixes binary rounding issues (eg. (0.615).toFixed(2) === '0.61') that present
+	     * problems for accounting- and finance-related software.
+	     */
+	    function toFixed (value, precision, roundingFunction, optionals) {
+	        var power = Math.pow(10, precision),
+	            optionalsRegExp,
+	            output;
+	            
+	        //roundingFunction = (roundingFunction !== undefined ? roundingFunction : Math.round);
+	        // Multiply up by precision, round accurately, then divide and use native toFixed():
+	        output = (roundingFunction(value * power) / power).toFixed(precision);
+	
+	        if (optionals) {
+	            optionalsRegExp = new RegExp('0{1,' + optionals + '}$');
+	            output = output.replace(optionalsRegExp, '');
+	        }
+	
+	        return output;
+	    }
+	
+	    /************************************
+	        Formatting
+	    ************************************/
+	
+	    // determine what type of formatting we need to do
+	    function formatNumeral (n, format, roundingFunction) {
+	        var output;
+	
+	        // figure out what kind of format we are dealing with
+	        if (format.indexOf('$') > -1) { // currency!!!!!
+	            output = formatCurrency(n, format, roundingFunction);
+	        } else if (format.indexOf('%') > -1) { // percentage
+	            output = formatPercentage(n, format, roundingFunction);
+	        } else if (format.indexOf(':') > -1) { // time
+	            output = formatTime(n, format);
+	        } else { // plain ol' numbers or bytes
+	            output = formatNumber(n._value, format, roundingFunction);
+	        }
+	
+	        // return string
+	        return output;
+	    }
+	
+	    // revert to number
+	    function unformatNumeral (n, string) {
+	        var stringOriginal = string,
+	            thousandRegExp,
+	            millionRegExp,
+	            billionRegExp,
+	            trillionRegExp,
+	            suffixes = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+	            bytesMultiplier = false,
+	            power;
+	
+	        if (string.indexOf(':') > -1) {
+	            n._value = unformatTime(string);
+	        } else {
+	            if (string === zeroFormat) {
+	                n._value = 0;
+	            } else {
+	                if (languages[currentLanguage].delimiters.decimal !== '.') {
+	                    string = string.replace(/\./g,'').replace(languages[currentLanguage].delimiters.decimal, '.');
+	                }
+	
+	                // see if abbreviations are there so that we can multiply to the correct number
+	                thousandRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.thousand + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                millionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.million + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                billionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.billion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                trillionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.trillion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	
+	                // see if bytes are there so that we can multiply to the correct number
+	                for (power = 0; power <= suffixes.length; power++) {
+	                    bytesMultiplier = (string.indexOf(suffixes[power]) > -1) ? Math.pow(1024, power + 1) : false;
+	
+	                    if (bytesMultiplier) {
+	                        break;
+	                    }
+	                }
+	
+	                // do some math to create our number
+	                n._value = ((bytesMultiplier) ? bytesMultiplier : 1) * ((stringOriginal.match(thousandRegExp)) ? Math.pow(10, 3) : 1) * ((stringOriginal.match(millionRegExp)) ? Math.pow(10, 6) : 1) * ((stringOriginal.match(billionRegExp)) ? Math.pow(10, 9) : 1) * ((stringOriginal.match(trillionRegExp)) ? Math.pow(10, 12) : 1) * ((string.indexOf('%') > -1) ? 0.01 : 1) * (((string.split('-').length + Math.min(string.split('(').length-1, string.split(')').length-1)) % 2)? 1: -1) * Number(string.replace(/[^0-9\.]+/g, ''));
+	
+	                // round if we are talking about bytes
+	                n._value = (bytesMultiplier) ? Math.ceil(n._value) : n._value;
+	            }
+	        }
+	        return n._value;
+	    }
+	
+	    function formatCurrency (n, format, roundingFunction) {
+	        var symbolIndex = format.indexOf('$'),
+	            openParenIndex = format.indexOf('('),
+	            minusSignIndex = format.indexOf('-'),
+	            space = '',
+	            spliceIndex,
+	            output;
+	
+	        // check for space before or after currency
+	        if (format.indexOf(' $') > -1) {
+	            space = ' ';
+	            format = format.replace(' $', '');
+	        } else if (format.indexOf('$ ') > -1) {
+	            space = ' ';
+	            format = format.replace('$ ', '');
+	        } else {
+	            format = format.replace('$', '');
+	        }
+	
+	        // format the number
+	        output = formatNumber(n._value, format, roundingFunction);
+	
+	        // position the symbol
+	        if (symbolIndex <= 1) {
+	            if (output.indexOf('(') > -1 || output.indexOf('-') > -1) {
+	                output = output.split('');
+	                spliceIndex = 1;
+	                if (symbolIndex < openParenIndex || symbolIndex < minusSignIndex){
+	                    // the symbol appears before the "(" or "-"
+	                    spliceIndex = 0;
+	                }
+	                output.splice(spliceIndex, 0, languages[currentLanguage].currency.symbol + space);
+	                output = output.join('');
+	            } else {
+	                output = languages[currentLanguage].currency.symbol + space + output;
+	            }
+	        } else {
+	            if (output.indexOf(')') > -1) {
+	                output = output.split('');
+	                output.splice(-1, 0, space + languages[currentLanguage].currency.symbol);
+	                output = output.join('');
+	            } else {
+	                output = output + space + languages[currentLanguage].currency.symbol;
+	            }
+	        }
+	
+	        return output;
+	    }
+	
+	    function formatPercentage (n, format, roundingFunction) {
+	        var space = '',
+	            output,
+	            value = n._value * 100;
+	
+	        // check for space before %
+	        if (format.indexOf(' %') > -1) {
+	            space = ' ';
+	            format = format.replace(' %', '');
+	        } else {
+	            format = format.replace('%', '');
+	        }
+	
+	        output = formatNumber(value, format, roundingFunction);
+	        
+	        if (output.indexOf(')') > -1 ) {
+	            output = output.split('');
+	            output.splice(-1, 0, space + '%');
+	            output = output.join('');
+	        } else {
+	            output = output + space + '%';
+	        }
+	
+	        return output;
+	    }
+	
+	    function formatTime (n) {
+	        var hours = Math.floor(n._value/60/60),
+	            minutes = Math.floor((n._value - (hours * 60 * 60))/60),
+	            seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
+	        return hours + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds);
+	    }
+	
+	    function unformatTime (string) {
+	        var timeArray = string.split(':'),
+	            seconds = 0;
+	        // turn hours and minutes into seconds and add them all up
+	        if (timeArray.length === 3) {
+	            // hours
+	            seconds = seconds + (Number(timeArray[0]) * 60 * 60);
+	            // minutes
+	            seconds = seconds + (Number(timeArray[1]) * 60);
+	            // seconds
+	            seconds = seconds + Number(timeArray[2]);
+	        } else if (timeArray.length === 2) {
+	            // minutes
+	            seconds = seconds + (Number(timeArray[0]) * 60);
+	            // seconds
+	            seconds = seconds + Number(timeArray[1]);
+	        }
+	        return Number(seconds);
+	    }
+	
+	    function formatNumber (value, format, roundingFunction) {
+	        var negP = false,
+	            signed = false,
+	            optDec = false,
+	            abbr = '',
+	            abbrK = false, // force abbreviation to thousands
+	            abbrM = false, // force abbreviation to millions
+	            abbrB = false, // force abbreviation to billions
+	            abbrT = false, // force abbreviation to trillions
+	            abbrForce = false, // force abbreviation
+	            bytes = '',
+	            ord = '',
+	            abs = Math.abs(value),
+	            suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+	            min,
+	            max,
+	            power,
+	            w,
+	            precision,
+	            thousands,
+	            d = '',
+	            neg = false;
+	
+	        // check if number is zero and a custom zero format has been set
+	        if (value === 0 && zeroFormat !== null) {
+	            return zeroFormat;
+	        } else {
+	            // see if we should use parentheses for negative number or if we should prefix with a sign
+	            // if both are present we default to parentheses
+	            if (format.indexOf('(') > -1) {
+	                negP = true;
+	                format = format.slice(1, -1);
+	            } else if (format.indexOf('+') > -1) {
+	                signed = true;
+	                format = format.replace(/\+/g, '');
+	            }
+	
+	            // see if abbreviation is wanted
+	            if (format.indexOf('a') > -1) {
+	                // check if abbreviation is specified
+	                abbrK = format.indexOf('aK') >= 0;
+	                abbrM = format.indexOf('aM') >= 0;
+	                abbrB = format.indexOf('aB') >= 0;
+	                abbrT = format.indexOf('aT') >= 0;
+	                abbrForce = abbrK || abbrM || abbrB || abbrT;
+	
+	                // check for space before abbreviation
+	                if (format.indexOf(' a') > -1) {
+	                    abbr = ' ';
+	                    format = format.replace(' a', '');
+	                } else {
+	                    format = format.replace('a', '');
+	                }
+	
+	                if (abs >= Math.pow(10, 12) && !abbrForce || abbrT) {
+	                    // trillion
+	                    abbr = abbr + languages[currentLanguage].abbreviations.trillion;
+	                    value = value / Math.pow(10, 12);
+	                } else if (abs < Math.pow(10, 12) && abs >= Math.pow(10, 9) && !abbrForce || abbrB) {
+	                    // billion
+	                    abbr = abbr + languages[currentLanguage].abbreviations.billion;
+	                    value = value / Math.pow(10, 9);
+	                } else if (abs < Math.pow(10, 9) && abs >= Math.pow(10, 6) && !abbrForce || abbrM) {
+	                    // million
+	                    abbr = abbr + languages[currentLanguage].abbreviations.million;
+	                    value = value / Math.pow(10, 6);
+	                } else if (abs < Math.pow(10, 6) && abs >= Math.pow(10, 3) && !abbrForce || abbrK) {
+	                    // thousand
+	                    abbr = abbr + languages[currentLanguage].abbreviations.thousand;
+	                    value = value / Math.pow(10, 3);
+	                }
+	            }
+	
+	            // see if we are formatting bytes
+	            if (format.indexOf('b') > -1) {
+	                // check for space before
+	                if (format.indexOf(' b') > -1) {
+	                    bytes = ' ';
+	                    format = format.replace(' b', '');
+	                } else {
+	                    format = format.replace('b', '');
+	                }
+	
+	                for (power = 0; power <= suffixes.length; power++) {
+	                    min = Math.pow(1024, power);
+	                    max = Math.pow(1024, power+1);
+	
+	                    if (value >= min && value < max) {
+	                        bytes = bytes + suffixes[power];
+	                        if (min > 0) {
+	                            value = value / min;
+	                        }
+	                        break;
+	                    }
+	                }
+	            }
+	
+	            // see if ordinal is wanted
+	            if (format.indexOf('o') > -1) {
+	                // check for space before
+	                if (format.indexOf(' o') > -1) {
+	                    ord = ' ';
+	                    format = format.replace(' o', '');
+	                } else {
+	                    format = format.replace('o', '');
+	                }
+	
+	                ord = ord + languages[currentLanguage].ordinal(value);
+	            }
+	
+	            if (format.indexOf('[.]') > -1) {
+	                optDec = true;
+	                format = format.replace('[.]', '.');
+	            }
+	
+	            w = value.toString().split('.')[0];
+	            precision = format.split('.')[1];
+	            thousands = format.indexOf(',');
+	
+	            if (precision) {
+	                if (precision.indexOf('[') > -1) {
+	                    precision = precision.replace(']', '');
+	                    precision = precision.split('[');
+	                    d = toFixed(value, (precision[0].length + precision[1].length), roundingFunction, precision[1].length);
+	                } else {
+	                    d = toFixed(value, precision.length, roundingFunction);
+	                }
+	
+	                w = d.split('.')[0];
+	
+	                if (d.split('.')[1].length) {
+	                    d = languages[currentLanguage].delimiters.decimal + d.split('.')[1];
+	                } else {
+	                    d = '';
+	                }
+	
+	                if (optDec && Number(d.slice(1)) === 0) {
+	                    d = '';
+	                }
+	            } else {
+	                w = toFixed(value, null, roundingFunction);
+	            }
+	
+	            // format number
+	            if (w.indexOf('-') > -1) {
+	                w = w.slice(1);
+	                neg = true;
+	            }
+	
+	            if (thousands > -1) {
+	                w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' + languages[currentLanguage].delimiters.thousands);
+	            }
+	
+	            if (format.indexOf('.') === 0) {
+	                w = '';
+	            }
+	
+	            return ((negP && neg) ? '(' : '') + ((!negP && neg) ? '-' : '') + ((!neg && signed) ? '+' : '') + w + d + ((ord) ? ord : '') + ((abbr) ? abbr : '') + ((bytes) ? bytes : '') + ((negP && neg) ? ')' : '');
+	        }
+	    }
+	
+	    /************************************
+	        Top Level Functions
+	    ************************************/
+	
+	    numeral = function (input) {
+	        if (numeral.isNumeral(input)) {
+	            input = input.value();
+	        } else if (input === 0 || typeof input === 'undefined') {
+	            input = 0;
+	        } else if (!Number(input)) {
+	            input = numeral.fn.unformat(input);
+	        }
+	
+	        return new Numeral(Number(input));
+	    };
+	
+	    // version number
+	    numeral.version = VERSION;
+	
+	    // compare numeral object
+	    numeral.isNumeral = function (obj) {
+	        return obj instanceof Numeral;
+	    };
+	
+	    // This function will load languages and then set the global language.  If
+	    // no arguments are passed in, it will simply return the current global
+	    // language key.
+	    numeral.language = function (key, values) {
+	        if (!key) {
+	            return currentLanguage;
+	        }
+	
+	        if (key && !values) {
+	            if(!languages[key]) {
+	                throw new Error('Unknown language : ' + key);
+	            }
+	            currentLanguage = key;
+	        }
+	
+	        if (values || !languages[key]) {
+	            loadLanguage(key, values);
+	        }
+	
+	        return numeral;
+	    };
+	    
+	    // This function provides access to the loaded language data.  If
+	    // no arguments are passed in, it will simply return the current
+	    // global language object.
+	    numeral.languageData = function (key) {
+	        if (!key) {
+	            return languages[currentLanguage];
+	        }
+	        
+	        if (!languages[key]) {
+	            throw new Error('Unknown language : ' + key);
+	        }
+	        
+	        return languages[key];
+	    };
+	
+	    numeral.language('en', {
+	        delimiters: {
+	            thousands: ',',
+	            decimal: '.'
+	        },
+	        abbreviations: {
+	            thousand: 'k',
+	            million: 'm',
+	            billion: 'b',
+	            trillion: 't'
+	        },
+	        ordinal: function (number) {
+	            var b = number % 10;
+	            return (~~ (number % 100 / 10) === 1) ? 'th' :
+	                (b === 1) ? 'st' :
+	                (b === 2) ? 'nd' :
+	                (b === 3) ? 'rd' : 'th';
+	        },
+	        currency: {
+	            symbol: '$'
+	        }
+	    });
+	
+	    numeral.zeroFormat = function (format) {
+	        zeroFormat = typeof(format) === 'string' ? format : null;
+	    };
+	
+	    numeral.defaultFormat = function (format) {
+	        defaultFormat = typeof(format) === 'string' ? format : '0.0';
+	    };
+	
+	    /************************************
+	        Helpers
+	    ************************************/
+	
+	    function loadLanguage(key, values) {
+	        languages[key] = values;
+	    }
+	
+	    /************************************
+	        Floating-point helpers
+	    ************************************/
+	
+	    // The floating-point helper functions and implementation
+	    // borrows heavily from sinful.js: http://guipn.github.io/sinful.js/
+	
+	    /**
+	     * Array.prototype.reduce for browsers that don't support it
+	     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce#Compatibility
+	     */
+	    if ('function' !== typeof Array.prototype.reduce) {
+	        Array.prototype.reduce = function (callback, opt_initialValue) {
+	            'use strict';
+	            
+	            if (null === this || 'undefined' === typeof this) {
+	                // At the moment all modern browsers, that support strict mode, have
+	                // native implementation of Array.prototype.reduce. For instance, IE8
+	                // does not support strict mode, so this check is actually useless.
+	                throw new TypeError('Array.prototype.reduce called on null or undefined');
+	            }
+	            
+	            if ('function' !== typeof callback) {
+	                throw new TypeError(callback + ' is not a function');
+	            }
+	
+	            var index,
+	                value,
+	                length = this.length >>> 0,
+	                isValueSet = false;
+	
+	            if (1 < arguments.length) {
+	                value = opt_initialValue;
+	                isValueSet = true;
+	            }
+	
+	            for (index = 0; length > index; ++index) {
+	                if (this.hasOwnProperty(index)) {
+	                    if (isValueSet) {
+	                        value = callback(value, this[index], index, this);
+	                    } else {
+	                        value = this[index];
+	                        isValueSet = true;
+	                    }
+	                }
+	            }
+	
+	            if (!isValueSet) {
+	                throw new TypeError('Reduce of empty array with no initial value');
+	            }
+	
+	            return value;
+	        };
+	    }
+	
+	    
+	    /**
+	     * Computes the multiplier necessary to make x >= 1,
+	     * effectively eliminating miscalculations caused by
+	     * finite precision.
+	     */
+	    function multiplier(x) {
+	        var parts = x.toString().split('.');
+	        if (parts.length < 2) {
+	            return 1;
+	        }
+	        return Math.pow(10, parts[1].length);
+	    }
+	
+	    /**
+	     * Given a variable number of arguments, returns the maximum
+	     * multiplier that must be used to normalize an operation involving
+	     * all of them.
+	     */
+	    function correctionFactor() {
+	        var args = Array.prototype.slice.call(arguments);
+	        return args.reduce(function (prev, next) {
+	            var mp = multiplier(prev),
+	                mn = multiplier(next);
+	        return mp > mn ? mp : mn;
+	        }, -Infinity);
+	    }        
+	
+	
+	    /************************************
+	        Numeral Prototype
+	    ************************************/
+	
+	
+	    numeral.fn = Numeral.prototype = {
+	
+	        clone : function () {
+	            return numeral(this);
+	        },
+	
+	        format : function (inputString, roundingFunction) {
+	            return formatNumeral(this, 
+	                  inputString ? inputString : defaultFormat, 
+	                  (roundingFunction !== undefined) ? roundingFunction : Math.round
+	              );
+	        },
+	
+	        unformat : function (inputString) {
+	            if (Object.prototype.toString.call(inputString) === '[object Number]') { 
+	                return inputString; 
+	            }
+	            return unformatNumeral(this, inputString ? inputString : defaultFormat);
+	        },
+	
+	        value : function () {
+	            return this._value;
+	        },
+	
+	        valueOf : function () {
+	            return this._value;
+	        },
+	
+	        set : function (value) {
+	            this._value = Number(value);
+	            return this;
+	        },
+	
+	        add : function (value) {
+	            var corrFactor = correctionFactor.call(null, this._value, value);
+	            function cback(accum, curr, currI, O) {
+	                return accum + corrFactor * curr;
+	            }
+	            this._value = [this._value, value].reduce(cback, 0) / corrFactor;
+	            return this;
+	        },
+	
+	        subtract : function (value) {
+	            var corrFactor = correctionFactor.call(null, this._value, value);
+	            function cback(accum, curr, currI, O) {
+	                return accum - corrFactor * curr;
+	            }
+	            this._value = [value].reduce(cback, this._value * corrFactor) / corrFactor;            
+	            return this;
+	        },
+	
+	        multiply : function (value) {
+	            function cback(accum, curr, currI, O) {
+	                var corrFactor = correctionFactor(accum, curr);
+	                return (accum * corrFactor) * (curr * corrFactor) /
+	                    (corrFactor * corrFactor);
+	            }
+	            this._value = [this._value, value].reduce(cback, 1);
+	            return this;
+	        },
+	
+	        divide : function (value) {
+	            function cback(accum, curr, currI, O) {
+	                var corrFactor = correctionFactor(accum, curr);
+	                return (accum * corrFactor) / (curr * corrFactor);
+	            }
+	            this._value = [this._value, value].reduce(cback);            
+	            return this;
+	        },
+	
+	        difference : function (value) {
+	            return Math.abs(numeral(this._value).subtract(value).value());
+	        }
+	
+	    };
+	
+	    /************************************
+	        Exposing Numeral
+	    ************************************/
+	
+	    // CommonJS module is defined
+	    if (hasModule) {
+	        module.exports = numeral;
+	    }
+	
+	    /*global ender:false */
+	    if (typeof ender === 'undefined') {
+	        // here, `this` means `window` in the browser, or `global` on the server
+	        // add `numeral` as a global object via a string identifier,
+	        // for Closure Compiler 'advanced' mode
+	        this['numeral'] = numeral;
+	    }
+	
+	    /*global define:false */
+	    if (true) {
+	        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+	            return numeral;
+	        }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	    }
+	}).call(this);
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	function GDQText(weight, fontSize, textStr) {
+		/* eslint-disable babel/new-cap */
+		this.Container_constructor();
+		/* eslint-enable babel/new-cap */
+	
+		console.log(`${weight} ${fontSize} montserrat`);
+	
+		const text = new createjs.Text(textStr, `${weight} ${fontSize} montserrat`, 'white');
+		const outline = text.clone();
+		text.shadow = new createjs.Shadow('black', 0, 2, 0);
+		outline.color = 'black';
+		outline.outline = 1;
+		this.addChild(text, outline);
+	
+		Object.defineProperty(this, 'text', {
+			get() {
+				return text.text;
+			},
+	
+			set(newVal) {
+				text.text = newVal;
+				outline.text = newVal;
+			}
+		});
+	}
+	
+	createjs.extend(GDQText, createjs.Container);
+	module.exports = createjs.promote(GDQText, 'Container');
+
+
 /***/ }
 /******/ ]);
-//# sourceMappingURL=ds.js.map
+//# sourceMappingURL=omnibar.js.map

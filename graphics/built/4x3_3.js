@@ -157,17 +157,25 @@
 			opts.gameplay = true;
 		}
 	
-		if (typeof opts.omnibar === 'undefined') {
-			opts.omnibar = true;
-		}
-	
 		// RAF_SYNCHED tends to look best in OBS Studio.
 		// This may change in future versions of OBS Studio.
 		createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
 		createjs.Ticker.framerate = 60;
 	
 		// Preload images
-		const manifest = [{id: `bg-${layoutName}`, src: `img/backgrounds/${layoutName}.png`}];
+		const manifest = [];
+		if (layoutName === 'omnibar') {
+			manifest.push(
+				{id: 'omnibar-background', src: 'img/omnibar/background.png'},
+				{id: 'omnibar-logo-gdq', src: 'img/omnibar/logo-gdq.mp4'},
+				{id: 'omnibar-logo-charity', src: 'img/omnibar/logo-charity.png'}
+			);
+		} else {
+			manifest.push(
+				{id: `bg-${layoutName}`, src: `img/backgrounds/${layoutName}_bg.png`},
+				{id: `fg-${layoutName}`, src: `img/backgrounds/${layoutName}_fg.png`}
+			);
+		}
 	
 		if (opts.gameplay) {
 			manifest.push(
@@ -201,13 +209,6 @@
 				{id: 'nameplate-audio-on', src: 'img/nameplate/audio-on.png'},
 				{id: 'nameplate-audio-off', src: 'img/nameplate/audio-off.png'},
 				{id: 'nameplate-twitch-logo', src: 'img/nameplate/twitch-logo.png'}
-			);
-		}
-	
-		if (opts.omnibar) {
-			manifest.push(
-				{id: 'omnibar-logo-gdq', src: 'img/omnibar/logo-gdq.png'},
-				{id: 'omnibar-logo-pcf', src: 'img/omnibar/logo-pcf.png'}
 			);
 		}
 	
@@ -6376,20 +6377,17 @@
 	const debug = __webpack_require__(6);
 	const loader = __webpack_require__(2);
 	const containerEl = document.getElementById('container');
-	let lastBg;
 	
 	module.exports = function (bgName) {
 		debug.log('[background] setBackground(%s)', bgName);
 	
-		// Remove the last background, if any.
-		if (lastBg) {
-			lastBg.remove();
-		}
+		const background = loader.queue.getResult(`bg-${bgName}`);
+		background.id = 'background';
+		containerEl.appendChild(background);
 	
-		const newBg = loader.queue.getResult(`bg-${bgName}`);
-		newBg.id = 'background';
-		containerEl.appendChild(newBg);
-		lastBg = newBg;
+		const foreground = loader.queue.getResult(`fg-${bgName}`);
+		foreground.id = 'foreground';
+		containerEl.appendChild(foreground);
 	};
 
 
