@@ -1,10 +1,8 @@
 'use strict';
 
 const POLL_INTERVAL = 60 * 1000;
-const BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&event=18';
-const CURRENT_BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&feed=current&event=18';
-// const BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/allBids.json';
-// const CURRENT_BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/currentBids.json';
+let BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&event=18';
+let CURRENT_BIDS_URL = 'https://gamesdonequick.com/tracker/search/?type=allbids&feed=current&event=18';
 
 const Q = require('q');
 const request = require('request');
@@ -12,6 +10,11 @@ const equal = require('deep-equal');
 const numeral = require('numeral');
 
 module.exports = function (nodecg) {
+	if (nodecg.bundleConfig.useMockData) {
+		BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/allBids.json';
+		CURRENT_BIDS_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/currentBids.json';
+	}
+
 	const currentBids = nodecg.Replicant('currentBids', {defaultValue: []});
 	const allBids = nodecg.Replicant('allBids', {defaultValue: []});
 

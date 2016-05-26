@@ -125,8 +125,9 @@ module.exports = function (nodecg) {
 		const deferred = Q.defer();
 
 		const runnersPromise = rp({
-			// uri: 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/runners.json',
-			uri: 'https://gamesdonequick.com/tracker/search',
+			uri: nodecg.bundleConfig.useMockData ?
+				'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/runners.json' :
+				'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'runner',
 				event: 18
@@ -135,8 +136,9 @@ module.exports = function (nodecg) {
 		});
 
 		const schedulePromise = rp({
-			// uri: 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/schedule.json',
-			uri: 'https://gamesdonequick.com/tracker/search',
+			uri: nodecg.bundleConfig.useMockData ?
+				'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/schedule.json' :
+				'https://gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'run',
 				event: 18

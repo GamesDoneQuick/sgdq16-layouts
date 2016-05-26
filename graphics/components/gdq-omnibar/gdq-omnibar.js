@@ -5,6 +5,13 @@
 	const currentRun = nodecg.Replicant('currentRun');
 	const nextRun = nodecg.Replicant('nextRun');
 	const displayDuration = nodecg.Replicant('displayDuration');
+	const currentBids = nodecg.Replicant('currentBids');
+	const currentPrizes = nodecg.Replicant('currentPrizes');
+
+	let displayDurationDeclared = false;
+	displayDuration.once('declared', () => {
+		displayDurationDeclared = true;
+	});
 
 	Polymer({
 		is: 'gdq-omnibar',
@@ -46,6 +53,15 @@
 
 			this.$.totalText.rawValue = 0;
 			total.on('change', this.totalChanged.bind(this));
+
+			// CTA is the first thing we show, so we use this to start our loop
+			if (displayDurationDeclared) {
+				this.showCTA();
+			} else {
+				displayDuration.once('declared', () => {
+					this.showCTA();
+				});
+			}
 		},
 
 		totalChanged(newVal) {
@@ -161,16 +177,14 @@
 		/**
 		 * Creates an animation timeline for showing mainLine1.
 		 * @param {String} text - The text to show.
-		 * @param {String} [color="white"] - A CSS color string (ex: "#ffffff').
 		 * @returns {TimelineLite|undefined} - An animation timeline.
 		 */
-		showMainLine1(text, color = 'white') {
-			if (text === this._latestMainLine1.text && color === this._latestMainLine1.color) {
+		showMainLine1(text) {
+			if (text === this._latestMainLine1.text) {
 				return;
 			}
 
 			this._latestMainLine1.text = text;
-			this._latestMainLine1.color = color;
 
 			const tmpTL = new TimelineLite();
 
@@ -189,7 +203,6 @@
 
 				if (text) {
 					TweenLite.set(this.$.mainLine1, {x: '-115%', y: '0%'});
-					this.$.mainLine1.style.color = color;
 				}
 			}, null, null, '+=0.01');
 
@@ -207,16 +220,14 @@
 		/**
 		 * Creates an animation timeline for showing mainLine2.
 		 * @param {String} text - The text to show.
-		 * @param {String} [color="white"] - A CSS color string (ex: "#ffffff').
 		 * @returns {TimelineLite|undefined} - An animation timeline.
 		 */
-		showMainLine2(text, color = 'white') {
-			if (text === this._latestMainLine2.text && color === this._latestMainLine2.color) {
+		showMainLine2(text) {
+			if (text === this._latestMainLine2.text) {
 				return;
 			}
 
 			this._latestMainLine2.text = text;
-			this._latestMainLine2.color = color;
 
 			const tmpTL = new TimelineLite();
 
@@ -235,7 +246,6 @@
 
 				if (text) {
 					TweenLite.set(this.$.mainLine2, {x: '-115%', y: '0%'});
-					this.$.mainLine2.style.color = color;
 				}
 			}, null, null, '+=0.01');
 
@@ -317,8 +327,156 @@
 			});
 		},
 
+		/**
+		 * Adds an animation to the global timeline for showing all current bids.
+		 * @returns {undefined}
+		 */
 		showCurrentBids() {
+			if (currentBids.value.length > 0) {
+				let showedLabel = false;
 
+				// Figure out what bids to display in this batch
+				const bidsToDisplay = [];
+
+				currentBids.value.forEach(bid => {
+					// Don't show closed bids in the automatic rotation.
+					if (bid.state.toLowerCase() === 'closed') {
+						return;
+					}
+
+					// We have at least one bid to show, so show the label
+					if (!showedLabel) {
+						showedLabel = true;
+						this.tl.to({}, 0.3, {
+							onStart: this.showLabel.bind(this),
+							onStartParams: ['DONATION INCENTIVES', '21px']
+						});
+					}
+
+					// If we have already have our three bids determined, we still need to check
+					// if any of the remaining bids are for the same speedrun as the third bid.
+					// This ensures that we are never displaying a partial list of bids for a given speedrun.
+					if (bidsToDisplay.length < 3) {
+						bidsToDisplay.push(bid);
+					} else if (bid.speedrun === bidsToDisplay[bidsToDisplay.length - 1].speedrun) {
+						bidsToDisplay.push(bid);
+					}
+				});
+
+				// Loop over each bid and queue it up on the timeline
+				const showBid = this.showBid.bind(this);
+				bidsToDisplay.forEach(showBid);
+			}
+
+			this.tl.to({}, 0.3, {
+				onStart: function () {
+					this.showMainLine1('');
+					this.showMainLine2('');
+				}.bind(this),
+				onComplete: this.showCurrentPrizes.bind(this)
+			});
+		},
+
+		/**
+		 * Adds an animation to the global timeline for showing a specific bid.
+		 * @param {Object} bid - The bid to display.
+		 * @returns {undefined}
+		 */
+		showBid(bid) {
+			// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
+			this.tl.to({}, 0.01, {
+				onComplete: this.showMainLine1.bind(this),
+				onCompleteParams: [bid.description]
+			});
+
+			// If this is a donation war, up to three options for it.
+			// Else, it must be a normal incentive, so show its total amount raised and its goal.
+			if (bid.options) {
+				// If there are no options yet, display a message.
+				if (bid.options.length === 0) {
+					this.tl.call(this.showMainLine2, ['Be the first to bid!'], this);
+				} else {
+					bid.options.forEach((option, index) => {
+						if (index > 2) {
+							return;
+						}
+
+						this.tl.call(this.showMainLine2, [
+							`${index + 1}. ${option.description || option.name} - ${option.total}`
+						], this, `+=${0.08 + (index * 4)}`);
+					});
+				}
+			} else {
+				this.tl.call(this.showMainLine2, [`${bid.total} / ${bid.goal}`], this, '+=0.08');
+			}
+
+			// Give the bid some time to show
+			this.tl.to({}, displayDuration.value, {});
+		},
+
+		/**
+		 * Adds an animation to the global timeline for showing the current prizes
+		 * @returns {undefined}
+		 */
+		showCurrentPrizes() {
+			const currentGrandPrizes = currentPrizes.value.filter(prize => prize.grand);
+			const currentNormalPrizes = currentPrizes.value.filter(prize => !prize.grand);
+
+			if (currentGrandPrizes.length > 0 || currentNormalPrizes.length > 0) {
+				const prizesToDisplay = currentNormalPrizes.slice(0);
+				this.tl.to({}, 0.3, {
+					onStart: this.showLabel.bind(this),
+					onStartParams: ['RAFFLE PRIZES', '21px']
+				});
+
+				if (currentGrandPrizes.length) {
+					// Figure out what grand prize to show in this batch.
+					const lastShownGrandPrizeIdx = currentGrandPrizes.indexOf(this.lastShownGrandPrize);
+					const nextGrandPrizeIdx = lastShownGrandPrizeIdx >= currentGrandPrizes.length - 1 ?
+						0 : lastShownGrandPrizeIdx + 1;
+					const nextGrandPrize = currentGrandPrizes[nextGrandPrizeIdx];
+
+					if (nextGrandPrize) {
+						prizesToDisplay.unshift(nextGrandPrize);
+						this.lastShownGrandPrize = nextGrandPrize;
+					}
+				}
+
+				// Loop over each prize and queue it up on the timeline
+				const showPrize = this.showPrize.bind(this);
+				prizesToDisplay.forEach(showPrize);
+			}
+
+			this.tl.to({}, 0.3, {
+				onStart: function () {
+					this.showMainLine1('');
+					this.showMainLine2('');
+				}.bind(this),
+				onComplete: this.showUpNext.bind(this)
+			});
+		},
+
+		/**
+		 * Adds an animation to the global timeline for showing a specific prize.
+		 * @param {Object} prize - The prize to display.
+		 * @returns {undefined}
+		 */
+		showPrize(prize) {
+			// GSAP is dumb with `call` sometimes. Putting this in a near-zero duration tween seems to be more reliable.
+			this.tl.to({}, 0.01, {
+				onComplete: function () {
+					this.showMainLine1(`Provided by ${prize.provided}`);
+
+					if (prize.grand) {
+						this.showMainLine2(`Grand Prize: ${prize.description}`);
+					} else {
+						this.showMainLine2(prize.description);
+					}
+				}.bind(this)
+			});
+
+			// Give the prize some time to show
+			this.tl.to({}, displayDuration.value, {});
 		},
 
 		/**

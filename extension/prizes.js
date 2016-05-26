@@ -1,10 +1,8 @@
 'use strict';
 
 const POLL_INTERVAL = 60 * 1000;
-const PRIZES_URL = 'https://gamesdonequick.com/tracker/search/?type=prize&event=18';
-const CURRENT_PRIZES_URL = 'https://gamesdonequick.com/tracker/search/?type=prize&feed=current&event=18';
-// const PRIZES_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/allPrizes.json';
-// const CURRENT_PRIZES_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/currentPrizes.json';
+let PRIZES_URL = 'https://gamesdonequick.com/tracker/search/?type=prize&event=18';
+let CURRENT_PRIZES_URL = 'https://gamesdonequick.com/tracker/search/?type=prize&feed=current&event=18';
 
 const Q = require('q');
 const request = require('request');
@@ -12,6 +10,11 @@ const equal = require('deep-equal');
 const numeral = require('numeral');
 
 module.exports = function (nodecg) {
+	if (nodecg.bundleConfig.useMockData) {
+		PRIZES_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/allPrizes.json';
+		CURRENT_PRIZES_URL = 'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/currentPrizes.json';
+	}
+
 	const currentPrizes = nodecg.Replicant('currentPrizes', {defaultValue: []});
 	const allPrizes = nodecg.Replicant('allPrizes', {defaultValue: []});
 
