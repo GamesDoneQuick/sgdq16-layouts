@@ -207,6 +207,7 @@
 
 				if (text) {
 					TweenLite.set(this.$.mainLine1, {x: '-115%', y: '0%'});
+					this.fitMainText();
 				}
 			}, null, null, '+=0.01');
 
@@ -250,6 +251,7 @@
 
 				if (text) {
 					TweenLite.set(this.$.mainLine2, {x: '-115%', y: '0%'});
+					this.fitMainText();
 				}
 			}, null, null, '+=0.01');
 
