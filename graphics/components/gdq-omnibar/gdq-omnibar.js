@@ -48,7 +48,11 @@
 
 			// Play the shine animation every 2 minutes.
 			setInterval(() => {
-				this.$.gdqLogo.play();
+				this.$.gdqLogo.classList.add('animate');
+
+				setTimeout(() => {
+					this.$.gdqLogo.classList.remove('animate');
+				}, 1000);
 			}, 120 * 1000);
 
 			this.$.totalText.rawValue = 0;
