@@ -4,6 +4,7 @@
 	const total = nodecg.Replicant('total');
 	const currentRun = nodecg.Replicant('currentRun');
 	const nextRun = nodecg.Replicant('nextRun');
+	const displayDuration = nodecg.Replicant('displayDuration');
 
 	Polymer({
 		is: 'gdq-omnibar',
@@ -14,12 +15,24 @@
 				value() {
 					return {
 						totalShowing: true,
-						labelShowing: true
+						labelShowing: false
 					};
 				}
 			},
 			lastShownGrandPrize: {
 				type: Object
+			},
+			_latestMainLine1: {
+				type: Object,
+				value() {
+					return {};
+				}
+			},
+			_latestMainLine2: {
+				type: Object,
+				value() {
+					return {};
+				}
 			}
 		},
 
@@ -146,11 +159,101 @@
 		},
 
 		/**
+		 * Creates an animation timeline for showing mainLine1.
+		 * @param {String} text - The text to show.
+		 * @param {String} [color="white"] - A CSS color string (ex: "#ffffff').
+		 * @returns {TimelineLite|undefined} - An animation timeline.
+		 */
+		showMainLine1(text, color = 'white') {
+			if (text === this._latestMainLine1.text && color === this._latestMainLine1.color) {
+				return;
+			}
+
+			this._latestMainLine1.text = text;
+			this._latestMainLine1.color = color;
+
+			const tmpTL = new TimelineLite();
+
+			if (this.$.mainLine1.textContent) {
+				tmpTL.to(this.$.mainLine1, 0.5, {
+					y: -20,
+					ease: Power2.easeIn
+				});
+
+				// Delay for a bit
+				tmpTL.to({}, 0.25, {});
+			}
+
+			tmpTL.call(() => {
+				this.$.mainLine1.textContent = text;
+
+				if (text) {
+					TweenLite.set(this.$.mainLine1, {x: '-115%', y: '0%'});
+					this.$.mainLine1.style.color = color;
+				}
+			}, null, null, '+=0.01');
+
+			if (text) {
+				tmpTL.to(this.$.mainLine1, 1.2, {
+					x: '0%',
+					ease: Power2.easeOut,
+					autoRound: false
+				});
+			}
+
+			return tmpTL;
+		},
+
+		/**
+		 * Creates an animation timeline for showing mainLine2.
+		 * @param {String} text - The text to show.
+		 * @param {String} [color="white"] - A CSS color string (ex: "#ffffff').
+		 * @returns {TimelineLite|undefined} - An animation timeline.
+		 */
+		showMainLine2(text, color = 'white') {
+			if (text === this._latestMainLine2.text && color === this._latestMainLine2.color) {
+				return;
+			}
+
+			this._latestMainLine2.text = text;
+			this._latestMainLine2.color = color;
+
+			const tmpTL = new TimelineLite();
+
+			if (this.$.mainLine2.textContent) {
+				tmpTL.to(this.$.mainLine2, 0.5, {
+					y: 50,
+					ease: Power2.easeIn
+				});
+
+				// Delay for a bit
+				tmpTL.to({}, 0.25, {});
+			}
+
+			tmpTL.call(() => {
+				this.$.mainLine2.textContent = text;
+
+				if (text) {
+					TweenLite.set(this.$.mainLine2, {x: '-115%', y: '0%'});
+					this.$.mainLine2.style.color = color;
+				}
+			}, null, null, '+=0.01');
+
+			if (text) {
+				tmpTL.to(this.$.mainLine2, 1.2, {
+					x: '0%',
+					ease: Power2.easeOut
+				});
+			}
+
+			return tmpTL;
+		},
+
+		/**
 		 * Adds an animation to the global timeline for showing the next upcoming speedrun.
-		 * @param {Boolean} [immediate] - If true, clears all pending animations and shows the next run immediately.
 		 * @returns {undefined}
 		 */
-		showUpNext(immediate) {
+		showUpNext() {
 			let upNextRun = nextRun.value;
 
 			if (window.currentLayout === 'break' || window.currentLayout === 'interview') {
@@ -158,12 +261,8 @@
 			}
 
 			if (upNextRun) {
-				if (immediate) {
-					this.tl.clear();
-				}
-
 				this.tl.to({}, 0.3, {
-					onStart: this.showLabel,
+					onStart: this.showLabel.bind(this),
 					onStartParams: ['UP NEXT', '28px']
 				});
 
@@ -174,26 +273,39 @@
 						 * after window.nextRun has been set to null. In that case, we immediately clear the
 						 * timeline and bail out to showing bids again.
 						 */
-						const upNextRun = window.currentLayout === 'break' ? globals.currentRun : globals.nextRun;
+						const upNextRun = window.currentLayout === 'break' ? currentRun.value : nextRun.value;
 						if (upNextRun) {
-							this.showMainLine1(upNextRun.concatenatedRunners);
+							let concatenatedRunners;
+							if (upNextRun.runners.length === 1) {
+								concatenatedRunners = upNextRun.runners[0].name;
+							} else {
+								concatenatedRunners = upNextRun.runners.slice(1).reduce((prev, curr, index, array) => {
+									if (index === array.length - 1) {
+										return `${prev} & ${curr.name}`;
+									}
+
+									return `${prev}, ${curr.name}`;
+								}, upNextRun.runners[0].name);
+							}
+
+							this.showMainLine1(concatenatedRunners);
 							this.showMainLine2(`${upNextRun.name.replace('\\n', ' ').trim()} - ${upNextRun.category}`);
 						} else {
 							this.tl.clear();
 
 							this.tl.to({}, 0.3, {
-								onStart() {
-									showMainLine1('');
-									showMainLine2('');
-								},
-								onComplete: showCurrentBids
+								onStart: function () {
+									this.showMainLine1('');
+									this.showMainLine2('');
+								}.bind(this),
+								onComplete: this.showCurrentBids.bind(this)
 							});
 						}
 					}.bind(this)
 				});
 
 				// Give it some time to show
-				this.tl.to({}, globals.displayDuration, {});
+				this.tl.to({}, displayDuration.value, {});
 			}
 
 			this.tl.to({}, 0.3, {
@@ -201,8 +313,39 @@
 					this.showMainLine1('');
 					this.showMainLine2('');
 				}.bind(this),
-				onComplete: showCTA
+				onComplete: this.showCTA.bind(this)
 			});
+		},
+
+		showCurrentBids() {
+
+		},
+
+		/**
+		 * Adds an animation to the global timeline for showing the call-to-action.
+		 * @returns {undefined}
+		 */
+		showCTA() {
+			this.tl.call(this.hideLabel, null, this, '+=0.01');
+
+			this.tl.set(this.$.cta, {y: '100%'});
+
+			this.tl.to(this.$.cta, 0.55, {
+				y: '0%',
+				ease: Power2.easeOut
+			}, '+=1');
+
+			this.tl.to(this.$.cta, 0.8, {
+				y: '-100%',
+				ease: Power2.easeInOut
+			}, `+=${displayDuration.value}`);
+
+			this.tl.to(this.$.cta, 0.55, {
+				y: '-200%',
+				ease: Power2.easeIn
+			}, `+=${displayDuration.value}`);
+
+			this.tl.call(this.showCurrentBids, null, this, '+=0.3');
 		}
 	});
 })();
