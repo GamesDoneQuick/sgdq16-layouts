@@ -2,7 +2,7 @@
 
 #container {
     width: 1280px;
-    height: 720px;
+    height: 665px;
 }
 
 #container > #background,
@@ -17,6 +17,7 @@
 }
 
 #container > #foreground {
+	pointer-events: none;
 	z-index: 10;
 }
 
@@ -28,7 +29,7 @@
 .fullscreen {
     position: absolute;
     width: 1280px;
-    height: 720px;
+    height: 665px;
     top: 0;
     left: 0;
 }

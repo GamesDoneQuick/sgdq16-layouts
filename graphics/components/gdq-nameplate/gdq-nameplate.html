@@ -1,0 +1,143 @@
+<!-- TODO: change this to bower_components route, less confusing -->
+<link rel="import" href="../../components/polymer/polymer.html">
+
+<!--
+Attached left, right, or none
+	No greebles on attachment side
+	Placement indicator comes out from attachment side w/ constant margin
+	Placement indicators & audio indicators only used when attached to a side
+
+Width configurable
+Height constant
+
+Audio indicator comes out from side opposide placement indicator
+-->
+
+<dom-module id="gdq-nameplate">
+	<template>
+		<style>
+			:host {
+				position: absolute;
+				display: flex;
+				height: 35px;
+				background: url("img/center.png");
+				font-size: 25px;
+				text-transform: uppercase;
+				-webkit-filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.33));
+			}
+
+			:host:before {
+				content: '';
+				height: 100%;
+				width: 10px;
+				background: url("img/left.png");
+			}
+
+			:host:after {
+				content: '';
+				height: 100%;
+				width: 10px;
+				background: url("img/right.png");
+			}
+
+			#names {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-grow: 1;
+				white-space: nowrap;
+				padding: 0 16px;
+				width: var(--gdq-nameplate-width);
+			}
+
+			#time {
+				position: absolute;
+				display: flex;
+				width: 127px;
+				height: 100%;
+				background: url("img/time-center.png");
+				visibility: hidden;
+			}
+
+			#time:before {
+				content: '';
+				height: 100%;
+				width: 1px;
+				background: url("img/time-left.png");
+			}
+
+			#time:after {
+				content: '';
+				height: 100%;
+				width: 1px;
+				background: url("img/time-right.png");
+			}
+
+			#time span {
+				font-weight: 700;
+				flex-grow: 1;
+				text-align: center;
+			}
+
+			#medal {
+				position: absolute;
+				top: 5px;
+				right: -10px;
+			}
+
+			/* attachment styles */
+			:host[attach-left]:before {
+				content: none;
+			}
+
+			:host[attach-right]:after {
+				content: none;
+			}
+
+			:host[attach-left]:after {
+				order: 2;
+			}
+
+			:host[attach-left] #names {
+				order: 1;
+			}
+
+			:host[attach-left] #time {
+				order: 0;
+				left: -127px;
+			}
+
+			:host[attach-left] #medal {
+				left: -10px;
+				right: auto;
+			}
+
+			/* state styles */
+			:host[stopped] #time,
+			:host[finished] #time {
+				visibility: visible;
+			}
+
+			:host[stopped] #time {
+				background: url("img/time-center-stopped.png");
+			}
+
+			:host[stopped] #time:before {
+				background: url("img/time-left-stopped.png");
+			}
+
+			:host[stopped] #time:after {
+				background: url("img/time-right-stopped.png");
+			}
+		</style>
+
+		<div id="names" class="shadow"></div>
+
+		<div id="time">
+			<span class="shadow">[[time]]</span>
+			<img id="medal" src="[[calcPlaceImage(place, stopped)]]">
+		</div>
+	</template>
+
+	<script src="gdq-nameplate.js"></script>
+</dom-module>

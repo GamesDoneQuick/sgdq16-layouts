@@ -194,7 +194,7 @@
 
 			if (this.$.mainLine1.textContent) {
 				tmpTL.to(this.$.mainLine1, 0.5, {
-					y: -20,
+					y: -24,
 					ease: Power2.easeIn
 				});
 

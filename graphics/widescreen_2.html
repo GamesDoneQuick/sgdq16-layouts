@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="style/layout.css">
+	<!-- TODO: change this to bower_components route, less confusing -->
+	<script src="components/gsap/src/minified/TweenMax.min.js"></script>
+
+	<link rel="import" href="components/gdq-nameplate/gdq-nameplate.html">
+	<link rel="import" href="components/gdq-runinfo/gdq-runinfo.html">
+	<style is="custom-style">
+		gdq-nameplate {
+			top: 405px;
+			--gdq-nameplate-width: 330px;
+		}
+
+		gdq-nameplate:nth-of-type(1) {
+			right: 855px;
+		}
+
+		gdq-nameplate:nth-of-type(2) {
+			left: 855px;
+		}
+
+		gdq-runinfo {
+			bottom: 58px;
+			width: 425px;
+			height: 152px;
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<img id="background" src="img/backgrounds/widescreen_2_bg.png">
+		<gdq-nameplate index="0" attach-right time="2:35:59" finished place="1"
+					   name="Spootybiscuit" twitch="Spootybiscuit"></gdq-nameplate>
+		<gdq-nameplate index="1" attach-left time="2:35:59" stopped place="2"
+					   name="MudJoe2" twitch="MudJoe2"></gdq-nameplate>
+		<gdq-runinfo></gdq-runinfo>
+		<gdq-timer></gdq-timer>
+		<img id="foreground" src="img/backgrounds/widescreen_2_fg.png">
+	</div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!-- TODO: change this to bower_components route, less confusing -->
+<link rel="import" href="../../components/polymer/polymer.html">
+
+<dom-module id="gdq-runinfo">
+	<template>
+		<style>
+			:host {
+				position: absolute;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+			}
+
+			#name {
+				font-size: 37px;
+				line-height: 1;
+				text-transform: uppercase;
+				text-align: center;
+			}
+
+			#category {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 35px;
+				background: url("img/category-bg.png");
+			}
+
+			#misc {
+				display: flex;
+				justify-content: space-around;
+			}
+
+			#estimate {
+				display: flex;
+				align-items: center;
+			}
+		</style>
+
+		<span id="name" class="shadow">[[name]]</span>
+		<div id="category">
+			<span class="shadow">[[category]]</span>
+		</div>
+		<div id="misc">
+			<span class="shadow">[[console]] - [[releaseYear]]</span>
+			<div id="estimate">
+				<img src="img/clock.png">
+				&nbsp;<span class="shadow">[[estimate]]</span>
+			</div>
+		</div>
+	</template>
+
+	<script src="gdq-runinfo.js"></script>
+</dom-module>

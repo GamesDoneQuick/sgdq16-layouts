@@ -34,8 +34,7 @@
     "eslint-plugin-babel": "^3.2.0",
     "eslint-plugin-html": "^1.4.0",
     "istanbul": "^0.4.3",
-    "mocha": "^2.5.1",
-    "webpack": "^1.13.0"
+    "mocha": "^2.5.1"
   },
   "homepage": "http://gamesdonequick.com/",
   "license": "Apache-2.0",
@@ -131,9 +130,9 @@
     ],
     "graphics": [
       {
-        "file": "16x9_2.html",
+        "file": "widescreen_2.html",
         "width": 1280,
-        "height": 720
+        "height": 665
       },
       {
         "file": "omnibar.html",
@@ -173,9 +172,7 @@
     "url": "git://github.com/GamesDoneQuick/sgdq16-layouts.git"
   },
   "scripts": {
-    "build": "npm run static && webpack",
     "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html graphics/**/*.js src/**/*.js test/**/*.js --ignore-path .eslintignore",
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
-    "watch": "webpack --progress --colors --watch"
+    "test": "npm run static && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
   }
 }
