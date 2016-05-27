@@ -50,13 +50,42 @@ Audio indicator comes out from side opposide placement indicator
 				width: var(--gdq-nameplate-width);
 			}
 
-			#time {
+			#timeClip {
 				position: absolute;
+				width: 150px;
+				height: 100%;
+				-webkit-clip-path: polygon(0 0, 0% 0%, calc(0% - 15px) 100%, 0% 100%);
+				-webkit-mask: url("img/time-mask-right.png");
+				transition: -webkit-clip-path 1000ms linear;
+			}
+
+			#timeShine {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 0;
+				height: 100%;
+				transition: width 1000ms linear;
+			}
+
+			#timeShine:after {
+				position: absolute;
+				top: 0;
+				right: 0;
+				content: '';
+				width: 37px;
+				height: 100%;
+				background: white;
+				transform: skewX(-22deg);
+			}
+
+			#time {
 				display: flex;
-				width: 127px;
+				width: 121px;
 				height: 100%;
 				background: url("img/time-center.png");
 				visibility: hidden;
+				position: relative;
 			}
 
 			#time:before {
@@ -77,12 +106,14 @@ Audio indicator comes out from side opposide placement indicator
 				font-weight: 700;
 				flex-grow: 1;
 				text-align: center;
+				padding-right: 10px;
+				line-height: 36px;
 			}
 
 			#medal {
 				position: absolute;
 				top: 5px;
-				right: -10px;
+				right: -8px;
 			}
 
 			/* attachment styles */
@@ -102,13 +133,36 @@ Audio indicator comes out from side opposide placement indicator
 				order: 1;
 			}
 
-			:host[attach-left] #time {
+			:host[attach-left] #timeClip {
 				order: 0;
-				left: -127px;
+				left: -150px;
+				-webkit-mask: url("img/time-mask-left.png");
+				-webkit-clip-path: polygon(100% 0, 100% 0%, 100% 100%, calc(100% + 15px) 100%);
+			}
+
+			:host[attach-left] #time {
+				position: absolute;
+				right: 0;
+			}
+
+			:host[attach-left] #time span {
+				padding-right: 0;
+				padding-left: 10px;
+			}
+
+			:host[attach-left] #timeShine {
+				right: 0;
+				left: auto;
+			}
+
+			:host[attach-left] #timeShine:after {
+				transform: skewX(22deg);
+				left: 0px;
+				right: auto;
 			}
 
 			:host[attach-left] #medal {
-				left: -10px;
+				left: -8px;
 				right: auto;
 			}
 
@@ -133,9 +187,12 @@ Audio indicator comes out from side opposide placement indicator
 
 		<div id="names" class="shadow"></div>
 
-		<div id="time">
-			<span class="shadow">[[time]]</span>
-			<img id="medal" src="[[calcPlaceImage(place, stopped)]]">
+		<div id="timeClip">
+			<div id="time">
+				<span class="shadow">[[time]]</span>
+				<img id="medal" src="[[calcPlaceImage(place, stopped)]]">
+			</div>
+			<div id="timeShine"></div>
 		</div>
 	</template>
 

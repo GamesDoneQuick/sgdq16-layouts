@@ -102,6 +102,19 @@
 			 gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this)); */
 			/*this.tl = new TimelineMax({repeat: -1});
 			this.tl.to(this.$.content)*/
+
+			const tl = new TimelineLite();
+			tl.to({}, 1, {});
+			console.log(this, this.attachRight);
+			tl.call(() => {
+				if (this.attachRight) {
+					this.$.timeClip.style.webkitClipPath = 'polygon(0 0, 140% 0%, calc(140% - 15px) 100%, 0% 100%)';
+					this.$.timeShine.style.width = '140%';
+				} else {
+					this.$.timeClip.style.webkitClipPath = 'polygon(-40% 0, 100% 0, 100% 100%, calc(-40% + 15px) 100%)';
+					this.$.timeShine.style.width = '140%';
+				}
+			});
 		},
 
 		/*
@@ -136,8 +149,8 @@
 		},
 
 		stopwatchesChanged(newVal) {
-			const stopwatch = newVal[index];
-			this.timeText.text = tabulate(stopwatch.time);
+			const stopwatch = newVal[this.index];
+			this.timeText.text = stopwatch.time;
 
 			this.timeText.color = 'white';
 			this.estimateText.color = '#afe2f8';
