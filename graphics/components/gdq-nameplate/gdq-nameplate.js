@@ -115,6 +115,16 @@
 					this.$.timeShine.style.width = '140%';
 				}
 			});
+
+			tl.set(this.$.timeShine, {
+				transition: 'none',
+				width: 0
+			}, '+=1');
+			tl.set(this.$.timeShine, {
+				clearProps: 'transition',
+				width: '140%',
+				opacity: 0.50
+			}, '+=0.1');
 		},
 
 		/*
