@@ -40,11 +40,19 @@
 			twitch: {
 				type: String,
 				value: ''
+			},
+			timeTL: {
+				type: TimelineLite,
+				value() {
+					return new TimelineLite({autoRemoveChildren: true});
+				},
+				readOnly: true
 			}
 		},
 
 		observers: [
-			'namesChanged(name, twitch)'
+			'namesChanged(name, twitch)',
+			'finishedOrStoppedChanged(finished, stopped)'
 		],
 
 		attachLeftChanged(newVal) {
@@ -60,29 +68,77 @@
 		},
 
 		finishedChanged(newVal) {
-			if (newVal && this.stopped) {
+			if (newVal) {
 				this.stopped = false;
 			}
 		},
 
 		stoppedChanged(newVal) {
-			if (newVal && this.finished) {
+			if (newVal) {
 				this.finished = false;
 			}
 		},
 
-		calcPlaceImage(newVal, stopped) {
+		finishedOrStoppedChanged(finished, stopped) {
+			if (finished || stopped) {
+				this.showTime();
+			} else {
+				this.hideTime();
+			}
+		},
+
+		showTime() {
+			if (this._timeShowing) {
+				return;
+			}
+
+			this._timeShowing = true;
+
+			this.timeTL.clear();
+			this.timeTL.call(() => {
+				this.$.timeShine.style.width = '140%';
+				if (this.attachRight) {
+					this.$.timeClip.style.webkitClipPath = 'polygon(0 0, 140% 0%, calc(140% - 15px) 100%, 0% 100%)';
+				} else {
+					this.$.timeClip.style.webkitClipPath = 'polygon(-40% 0, 100% 0, 100% 100%, calc(-40% + 15px) 100%)';
+				}
+			});
+
+			this.timeTL.set(this.$.timeShine, {transition: 'none', width: 0}, '+=1');
+			this.timeTL.set(this.$.medal, {zIndex: 1});
+			this.timeTL.set(this.$.timeShine, {transition: 'width 400ms linear', width: '140%', opacity: 0.5});
+			this.timeTL.set(this.$.medal, {className: '+=shine'}, '+=0.25');
+			this.timeTL.set(this.$.medal, {className: '-=shine'}, '+=0.35');
+		},
+
+		hideTime() {
+			if (!this._timeShowing) {
+				return;
+			}
+
+			this._timeShowing = false;
+
+			this.timeTL.clear();
+			this.timeTL.set(this.$.medal, {clearProps: 'zIndex'});
+			this.timeTL.set(this.$.timeShine, {width: 0, clearProps: 'opacity', transition: 'width 325ms ease-in'});
+			this.timeTL.set(this.$.timeClip, {
+				clearProps: 'webkitClipPath',
+				transition: '-webkit-clip-path 325ms ease-in'
+			});
+		},
+
+		calcMedalImage(newVal, stopped) {
 			if (stopped) {
 				return '';
 			}
 
 			switch (newVal) {
 				case 1:
-					return 'components/gdq-nameplate/img/finished-gold.png';
+					return 'components/gdq-nameplate/img/medal-gold.png';
 				case 2:
-					return 'components/gdq-nameplate/img/finished-silver.png';
+					return 'components/gdq-nameplate/img/medal-silver.png';
 				case 3:
-					return 'components/gdq-nameplate/img/finished-bronze.png';
+					return 'components/gdq-nameplate/img/medal-bronze.png';
 				default:
 					return '';
 			}
@@ -101,30 +157,7 @@
 			 stopwatches.on('change', this.stopwatchesChanged.bind(this));
 			 gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this)); */
 			/*this.tl = new TimelineMax({repeat: -1});
-			this.tl.to(this.$.content)*/
-
-			const tl = new TimelineLite();
-			tl.to({}, 1, {});
-			console.log(this, this.attachRight);
-			tl.call(() => {
-				if (this.attachRight) {
-					this.$.timeClip.style.webkitClipPath = 'polygon(0 0, 140% 0%, calc(140% - 15px) 100%, 0% 100%)';
-					this.$.timeShine.style.width = '140%';
-				} else {
-					this.$.timeClip.style.webkitClipPath = 'polygon(-40% 0, 100% 0, 100% 100%, calc(-40% + 15px) 100%)';
-					this.$.timeShine.style.width = '140%';
-				}
-			});
-
-			tl.set(this.$.timeShine, {
-				transition: 'none',
-				width: 0
-			}, '+=1');
-			tl.set(this.$.timeShine, {
-				clearProps: 'transition',
-				width: '140%',
-				opacity: 0.50
-			}, '+=0.1');
+			 this.tl.to(this.$.content)*/
 		},
 
 		/*
@@ -151,11 +184,11 @@
 			}
 
 			/*if (stream) {
-				this.restartTwitchTimeline();
-			} else if (this.twitchTl) {
-				this.twitchTl.kill();
-				this.twitchContainer.visible = false;
-			}*/
+			 this.restartTwitchTimeline();
+			 } else if (this.twitchTl) {
+			 this.twitchTl.kill();
+			 this.twitchContainer.visible = false;
+			 }*/
 		},
 
 		stopwatchesChanged(newVal) {
