@@ -1,6 +1,9 @@
 (function () {
 	'use strict';
 
+	const NAME_FADE_DURATION = 0.33;
+	const NAME_FADE_IN_EASE = Power1.easeOut;
+	const NAME_FADE_OUT_EASE = Power1.easeIn;
 	const currentRun = nodecg.Replicant('currentRun');
 	const stopwatches = nodecg.Replicant('stopwatches');
 	const gameAudioChannels = nodecg.Replicant('gameAudioChannels');
@@ -153,11 +156,35 @@
 		},
 
 		ready() {
-			/* currentRun.on('change', this.currentRunChanged.bind(this));
-			 stopwatches.on('change', this.stopwatchesChanged.bind(this));
-			 gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this)); */
-			/*this.tl = new TimelineMax({repeat: -1});
-			 this.tl.to(this.$.content)*/
+			this.nameTL = new TimelineMax({repeat: -1, paused: true});
+			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
+				onStart: function () {
+					this.$.namesTwitch.style.display = 'block';
+					this.$.namesName.style.display = 'none';
+				}.bind(this),
+				opacity: 1,
+				ease: NAME_FADE_IN_EASE
+			});
+			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
+				opacity: 0,
+				ease: NAME_FADE_OUT_EASE
+			}, '+=10');
+			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
+				onStart: function () {
+					this.$.namesTwitch.style.display = 'none';
+					this.$.namesName.style.display = 'block';
+				}.bind(this),
+				opacity: 1,
+				ease: NAME_FADE_IN_EASE
+			});
+			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
+				opacity: 0,
+				ease: NAME_FADE_OUT_EASE
+			}, '+=80');
+
+			currentRun.on('change', this.currentRunChanged.bind(this));
+			//stopwatches.on('change', this.stopwatchesChanged.bind(this));
+			//gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this));
 		},
 
 		/*
@@ -165,30 +192,45 @@
 		 * 2) For races, if everyone matches (ignoring capitalization), show only twitch, otherwise,
 		 *    if even one person needs to show both, everyone shows both.
 		 */
-		currentRunChanged(newVal) {
-			const canConflateAllRunners = newVal.runners.forEach(runner => {
-				if (runner) {
-					return runner.name.toLowerCase() === runner.stream.toLowerCase();
-				}
+		currentRunChanged(newVal, oldVal) {
+			console.log('currentRunChanged', newVal.runners);
 
-				return true;
-			});
-
-			const runner = newVal.runners[this.index];
-			if (runner) {
-				this.name = runner.name;
-				this.twitch = runner.stream;
-			} else {
-				this.name = '?';
-				this.twitch = '';
+			// If nothing has changed, do nothing.
+			if (oldVal && JSON.stringify(newVal.runners) === JSON.stringify(oldVal.runners)) {
+				return;
 			}
 
-			/*if (stream) {
-			 this.restartTwitchTimeline();
-			 } else if (this.twitchTl) {
-			 this.twitchTl.kill();
-			 this.twitchContainer.visible = false;
-			 }*/
+			let canConflateAllRunners = true;
+			newVal.runners.forEach(runner => {
+				if (runner && runner.name.toLowerCase() !== runner.stream.toLowerCase()) {
+					canConflateAllRunners = false;
+				}
+			});
+
+			TweenLite.to(this.$.names, NAME_FADE_DURATION, {
+				opacity: 0,
+				ease: NAME_FADE_OUT_EASE,
+				onComplete: function () {
+					this.$.namesName.style.display = 'none';
+					this.$.namesTwitch.style.display = 'block';
+
+					const runner = newVal.runners[this.index];
+					if (runner) {
+						this.name = runner.name;
+						this.twitch = runner.stream;
+					} else {
+						this.name = '?';
+						this.twitch = '?';
+					}
+
+					if (canConflateAllRunners) {
+						this.nameTL.pause();
+						TweenLite.to(this.$.names, NAME_FADE_DURATION, {opacity: 1, ease: NAME_FADE_IN_EASE});
+					} else {
+						this.nameTL.restart();
+					}
+				}.bind(this)
+			});
 		},
 
 		stopwatchesChanged(newVal) {

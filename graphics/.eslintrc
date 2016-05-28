@@ -5,6 +5,7 @@
 	"globals": {
 		"nodecg": true,
 		"Polymer": true,
+		"TimelineMax": true,
 		"TimelineLite": true,
 		"TweenLite": true,
 		"Power1": true,

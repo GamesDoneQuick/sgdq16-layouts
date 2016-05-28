@@ -48,10 +48,7 @@ Audio indicator comes out from side opposide placement indicator
 				white-space: nowrap;
 				padding: 0 16px;
 				width: var(--gdq-nameplate-width);
-			}
-
-			#names-twitch {
-				display: none;
+				opacity: 0;
 			}
 
 			#timeClip {
@@ -197,9 +194,12 @@ Audio indicator comes out from side opposide placement indicator
 			}
 		</style>
 
-		<div id="names" class="shadow">
-			<div id="names-name">[[name]]</div>
-			<div id="names-twitch">[[twitch]]</div>
+		<div id="names">
+			<div id="namesName" class="shadow">[[name]]</div>
+			<div id="namesTwitch">
+				<img src="img/twitch.png" style="position: relative; top: 2px;">
+				<span class="shadow">[[twitch]]</span>
+			</div>
 		</div>
 
 		<div id="timeClip">
