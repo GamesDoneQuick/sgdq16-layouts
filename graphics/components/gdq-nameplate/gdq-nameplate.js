@@ -215,7 +215,6 @@
 			const twitchSpan = this.$.namesTwitch.querySelector('span');
 			twitchSpan.style.width = 'auto';
 			const twitchWidth = twitchSpan.clientWidth;
-			console.log(twitchWidth);
 			if (twitchWidth > MAX_TWITCH_WIDTH) {
 				const scale = MAX_TWITCH_WIDTH / twitchWidth;
 				TweenLite.set(twitchSpan, {scaleX: scale, width: twitchWidth * scale});
