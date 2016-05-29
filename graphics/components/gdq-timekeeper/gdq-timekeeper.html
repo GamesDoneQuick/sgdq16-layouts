@@ -3,6 +3,8 @@
 <link rel="import" href="../../components/iron-icons/editor-icons.html">
 <link rel="import" href="../../components/iron-icons/av-icons.html">
 <link rel="import" href="../../components/paper-button/paper-button.html">
+<link rel="import" href="../../components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../components/paper-input/paper-input.html">
 
 <dom-module id="gdq-timekeeper">
 	<template>
@@ -125,7 +127,8 @@
 				--iron-icon-width: 42px;
 			}
 
-			paper-button {
+			#timerButtons paper-button,
+			.runner paper-button {
 				@apply(--layout-horizontal);
 				@apply(--layout-center-center);
 				--paper-button: {
@@ -160,14 +163,36 @@
 				&nbsp;Pause
 			</paper-button>
 
-			<paper-button raised class="purple" on-tap="resetTimer">
+			<paper-button raised class="purple" on-tap="confirmReset">
 				<iron-icon icon="refresh" title="Reset"></iron-icon>
 				&nbsp;Reset
 			</paper-button>
 		</div>
 
+		<paper-dialog id="resetDialog" with-backdrop>
+			<p>
+				Are you sure you want to reset the timer and each runner's final time? This cannot be undone!
+			</p>
+			<div class="buttons">
+				<paper-button dialog-confirm on-tap="resetTimer">Yes, reset</paper-button>
+				<paper-button dialog-dismiss autofocus>No, do not reset</paper-button>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog id="editDialog" with-backdrop>
+			<p>
+				Enter a new final time for <b id="editDialog-name"></b>.
+			</p>
+			<paper-input id="editDialog-input" label="Final Time" placeholder="00:00:00" auto-validate
+						 prevent-invalid-input allowed-pattern="[0-9:]"></paper-input>
+			<div class="buttons">
+				<paper-button dialog-confirm on-tap="saveEditedTime">Save</paper-button>
+				<paper-button dialog-dismiss autofocus>Cancel</paper-button>
+			</div>
+		</paper-dialog>
+
 		<template is="dom-repeat" items="[[runners]]" as="runner">
-			<div class="runner" data-index$="[[index]]">
+			<div class="runner" data-index$="[[index]]" data-name$="[[runner.name]]">
 				<template is="dom-if" if="[[runner]]">
 					<div class="runner-info">
 						<div class="runner-info-name">[[runner.name]]</div>
@@ -195,7 +220,8 @@
 							&nbsp;Forfeit
 						</paper-button>
 
-						<paper-button raised class="purple" disabled="[[calcEditDisabled(index)]]">
+						<paper-button raised class="purple" on-tap="editTime"
+									  disabled="[[calcEditDisabled(results, index)]]">
 							<iron-icon icon="editor:mode-edit"></iron-icon>
 							&nbsp;Edit
 						</paper-button>

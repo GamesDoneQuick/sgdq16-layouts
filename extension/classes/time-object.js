@@ -111,6 +111,10 @@ class TimeObject {
 			return parseInt(timeParts[0] * 60, 10) + parseInt(timeParts[1], 10);
 		}
 
+		if (timeParts.length === 1) {
+			return parseInt(timeParts[0], 10);
+		}
+
 		throw new Error(`Unexpected format of timeString argument: ${timeString}`);
 	}
 }

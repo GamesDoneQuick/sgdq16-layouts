@@ -22,8 +22,10 @@ module.exports = function (nodecg) {
 
 	nodecg.listenFor('startTimer', start);
 	nodecg.listenFor('stopTimer', stop);
+	nodecg.listenFor('resetTimer', reset);
 	nodecg.listenFor('completeRunner', completeRunner);
 	nodecg.listenFor('resumeRunner', resumeRunner);
+	nodecg.listenFor('editResult', editResult);
 
 	/**
 	 * Starts the timer.
@@ -56,6 +58,16 @@ module.exports = function (nodecg) {
 	}
 
 	/**
+	 * Stops and resets the timer, clearing the time and results.
+	 * @returns {undefined}
+	 */
+	function reset() {
+		stop();
+		TimeObject.setSeconds(stopwatch.value, 0);
+		stopwatch.value.results = [];
+	}
+
+	/**
 	 * Marks a runner as complete.
 	 * @param {Number} index - The runner to modify (0-3).
 	 * @param {Boolean} forfeit - Whether or not the runner forfeit.
@@ -77,6 +89,19 @@ module.exports = function (nodecg) {
 	 */
 	function resumeRunner(index) {
 		stopwatch.value.results[index] = null;
+	}
+
+	/**
+	 * Edits the final time of a result.
+	 * @param {Number} index - The result index to edit.
+	 * @param {String} newTime - A hh:mm:ss (or mm:ss) formatted new time.
+	 * @returns {undefined}
+	 */
+	function editResult({index, newTime}) {
+		if (newTime && stopwatch.value.results[index]) {
+			TimeObject.setSeconds(stopwatch.value.results[index], TimeObject.parseSeconds(newTime));
+			recalcPlaces();
+		}
 	}
 
 	/**

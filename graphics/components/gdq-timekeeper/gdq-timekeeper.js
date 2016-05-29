@@ -37,6 +37,10 @@
 			this.results = newVal.results.slice(0);
 		},
 
+		confirmReset() {
+			this.$.resetDialog.open();
+		},
+
 		startTimer() {
 			nodecg.sendMessage('startTimer');
 		},
@@ -57,8 +61,8 @@
 			return state !== 'running';
 		},
 
-		calcEditDisabled(runnerIndex) {
-			return !stopwatch.value.results[runnerIndex];
+		calcEditDisabled(results, runnerIndex) {
+			return !results[runnerIndex];
 		},
 
 		calcRunnerStatus(results, index) {
@@ -102,6 +106,23 @@
 		resumeRunner(e) {
 			const index = e.target.closest('.runner').getAttribute('data-index');
 			nodecg.sendMessage('resumeRunner', index);
+		},
+
+		editTime(e) {
+			const runnerEl = e.target.closest('.runner');
+			const index = runnerEl.getAttribute('data-index');
+			this.$['editDialog-name'].textContent = runnerEl.getAttribute('data-name');
+			this.$.editDialog.setAttribute('data-index', index);
+			this.$['editDialog-input'].value = this.results[index].formatted;
+			this.$.editDialog.open();
+		},
+
+		saveEditedTime() {
+			nodecg.sendMessage('editResult', {
+				index: this.$.editDialog.getAttribute('data-index'),
+				newTime: this.$['editDialog-input'].value
+			});
+			this.$['editDialog-input'].value = '';
 		}
 	});
 })();
