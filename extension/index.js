@@ -37,9 +37,9 @@ module.exports = function (nodecg) {
 	}
 
 	try {
-		require('./stopwatches')(nodecg);
+		require('./timekeeping')(nodecg);
 	} catch (e) {
-		nodecg.log.error('Failed to load "stopwatches" lib:', e.stack);
+		nodecg.log.error('Failed to load "timekeeping" lib:', e.stack);
 		process.exit(1);
 	}
 

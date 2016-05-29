@@ -8,11 +8,6 @@
 			"description": "Whether or not to use mock data instead of the real tracker API. If true, pulls from Lange's Dropbox.",
 			"default": false
 		},
-		"enableRestApi": {
-			"type": "boolean",
-			"description": "Whether or not to enable the Stopwatch REST API.",
-			"default": false
-		},
 		"x32": {
 			"type": "object",
 			"properties": {
