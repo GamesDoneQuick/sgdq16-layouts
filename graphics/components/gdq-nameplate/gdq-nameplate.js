@@ -125,8 +125,8 @@
 			this.nameTL = new TimelineMax({repeat: -1, paused: true});
 			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
 				onStart: function () {
-					this.$.namesTwitch.style.display = 'block';
-					this.$.namesName.style.display = 'none';
+					this.$.namesTwitch.classList.remove('hidden');
+					this.$.namesName.classList.add('hidden');
 				}.bind(this),
 				opacity: 1,
 				ease: NAME_FADE_IN_EASE
@@ -137,8 +137,8 @@
 			}, '+=10');
 			this.nameTL.to(this.$.names, NAME_FADE_DURATION, {
 				onStart: function () {
-					this.$.namesTwitch.style.display = 'none';
-					this.$.namesName.style.display = 'block';
+					this.$.namesTwitch.classList.add('hidden');
+					this.$.namesName.classList.remove('hidden');
 				}.bind(this),
 				opacity: 1,
 				ease: NAME_FADE_IN_EASE
@@ -166,8 +166,10 @@
 
 			let canConflateAllRunners = true;
 			newVal.runners.forEach(runner => {
-				if (runner && runner.name.toLowerCase() !== runner.stream.toLowerCase()) {
-					canConflateAllRunners = false;
+				if (runner) {
+					if (!runner.stream || runner.name.toLowerCase() !== runner.stream.toLowerCase()) {
+						canConflateAllRunners = false;
+					}
 				}
 			});
 
@@ -175,8 +177,8 @@
 				opacity: 0,
 				ease: NAME_FADE_OUT_EASE,
 				onComplete: function () {
-					this.$.namesName.style.display = 'none';
-					this.$.namesTwitch.style.display = 'block';
+					this.$.namesName.classList.add('hidden');
+					this.$.namesTwitch.classList.remove('hidden');
 
 					const runner = newVal.runners[this.index];
 					if (runner) {
@@ -193,8 +195,33 @@
 					} else {
 						this.nameTL.restart();
 					}
+
+					this.async(this.fitName);
 				}.bind(this)
 			});
+		},
+
+		fitName() {
+			Polymer.dom.flush();
+			const MAX_NAME_WIDTH = this.$.names.clientWidth - 32;
+			const nameWidth = this.$.namesName.clientWidth;
+			if (nameWidth > MAX_NAME_WIDTH) {
+				TweenLite.set(this.$.namesName, {scaleX: MAX_NAME_WIDTH / nameWidth});
+			} else {
+				TweenLite.set(this.$.namesName, {scaleX: 1});
+			}
+
+			const MAX_TWITCH_WIDTH = MAX_NAME_WIDTH - 20;
+			const twitchSpan = this.$.namesTwitch.querySelector('span');
+			twitchSpan.style.width = 'auto';
+			const twitchWidth = twitchSpan.clientWidth;
+			console.log(twitchWidth);
+			if (twitchWidth > MAX_TWITCH_WIDTH) {
+				const scale = MAX_TWITCH_WIDTH / twitchWidth;
+				TweenLite.set(twitchSpan, {scaleX: scale, width: twitchWidth * scale});
+			} else {
+				TweenLite.set(twitchSpan, {scaleX: 1});
+			}
 		},
 
 		stopwatchChanged(newVal) {

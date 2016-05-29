@@ -51,6 +51,11 @@ Audio indicator comes out from side opposide placement indicator
 				opacity: 0;
 			}
 
+			#namesTwitch span {
+				display: inline-block;
+				transform-origin: left;
+			}
+
 			#timeClip {
 				position: absolute;
 				width: 150px;
@@ -127,6 +132,11 @@ Audio indicator comes out from side opposide placement indicator
 			@keyframes shine {
 				from { background-position-x: 0; }
 				to { background-position-x: -520px; } /* <-- width of spritesheet */
+			}
+
+			.hidden {
+				position: absolute;
+				visibility: hidden;
 			}
 
 			/* attachment styles */
