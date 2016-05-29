@@ -5,7 +5,7 @@
 	const NAME_FADE_IN_EASE = Power1.easeOut;
 	const NAME_FADE_OUT_EASE = Power1.easeIn;
 	const currentRun = nodecg.Replicant('currentRun');
-	const stopwatches = nodecg.Replicant('stopwatches');
+	const stopwatch = nodecg.Replicant('stopwatch');
 	const gameAudioChannels = nodecg.Replicant('gameAudioChannels');
 
 	Polymer({
@@ -23,15 +23,9 @@
 				reflectToAttribute: true,
 				observer: 'attachRightChanged'
 			},
-			finished: {
+			forfeit: {
 				type: Boolean,
 				reflectToAttribute: true,
-				observer: 'finishedChanged'
-			},
-			stopped: {
-				type: Boolean,
-				reflectToAttribute: true,
-				observer: 'stoppedChanged',
 				value: false
 			},
 			time: String,
@@ -53,11 +47,6 @@
 			}
 		},
 
-		observers: [
-			'namesChanged(name, twitch)',
-			'finishedOrStoppedChanged(finished, stopped)'
-		],
-
 		attachLeftChanged(newVal) {
 			if (newVal && this.attachRight) {
 				this.attachRight = false;
@@ -67,26 +56,6 @@
 		attachRightChanged(newVal) {
 			if (newVal && this.attachLeft) {
 				this.attachLeft = false;
-			}
-		},
-
-		finishedChanged(newVal) {
-			if (newVal) {
-				this.stopped = false;
-			}
-		},
-
-		stoppedChanged(newVal) {
-			if (newVal) {
-				this.finished = false;
-			}
-		},
-
-		finishedOrStoppedChanged(finished, stopped) {
-			if (finished || stopped) {
-				this.showTime();
-			} else {
-				this.hideTime();
 			}
 		},
 
@@ -130,28 +99,25 @@
 			});
 		},
 
-		calcMedalImage(newVal, stopped) {
-			if (stopped) {
+		calcMedalImage(newVal, forfeit) {
+			if (forfeit) {
+				this.showTime();
 				return '';
 			}
 
 			switch (newVal) {
 				case 1:
+					this.showTime();
 					return 'components/gdq-nameplate/img/medal-gold.png';
 				case 2:
+					this.showTime();
 					return 'components/gdq-nameplate/img/medal-silver.png';
 				case 3:
+					this.showTime();
 					return 'components/gdq-nameplate/img/medal-bronze.png';
 				default:
+					this.hideTime();
 					return '';
-			}
-		},
-
-		namesChanged(name, twitch) {
-			name = name.toUpperCase();
-			twitch = twitch.toUpperCase();
-			if (name === twitch) {
-
 			}
 		},
 
@@ -183,7 +149,7 @@
 			}, '+=80');
 
 			currentRun.on('change', this.currentRunChanged.bind(this));
-			//stopwatches.on('change', this.stopwatchesChanged.bind(this));
+			stopwatch.on('change', this.stopwatchChanged.bind(this));
 			//gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this));
 		},
 
@@ -193,8 +159,6 @@
 		 *    if even one person needs to show both, everyone shows both.
 		 */
 		currentRunChanged(newVal, oldVal) {
-			console.log('currentRunChanged', newVal.runners);
-
 			// If nothing has changed, do nothing.
 			if (oldVal && JSON.stringify(newVal.runners) === JSON.stringify(oldVal.runners)) {
 				return;
@@ -233,24 +197,14 @@
 			});
 		},
 
-		stopwatchesChanged(newVal) {
-			const stopwatch = newVal[this.index];
-			this.timeText.text = stopwatch.time;
-
-			this.timeText.color = 'white';
-			this.estimateText.color = '#afe2f8';
-			this.backgroundFill.style = '#00AEEF';
-
-			switch (stopwatch.state) {
-				case 'paused':
-					this.timeText.color = '#007c9e';
-					break;
-				case 'finished':
-					this.backgroundFill.style = '#60bb46';
-					this.estimateText.color = '#b7dcaf';
-					break;
-				default:
-				// Do nothing.
+		stopwatchChanged(newVal) {
+			if (newVal.results[this.index]) {
+				this.forfeit = newVal.results[this.index].forfeit;
+				this.place = newVal.results[this.index].place;
+				this.time = newVal.results[this.index].formatted;
+			} else {
+				this.forfeit = false;
+				this.place = 0;
 			}
 		},
 

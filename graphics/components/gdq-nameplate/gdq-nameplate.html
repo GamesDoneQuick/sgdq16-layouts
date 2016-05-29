@@ -181,16 +181,16 @@ Audio indicator comes out from side opposide placement indicator
 			}
 
 			/* state styles */
-			:host[stopped] #time {
-				background: url("img/time-center-stopped.png");
+			:host[forfeit] #time {
+				background: url("img/time-center-forfeit.png");
 			}
 
-			:host[stopped] #time:before {
-				background: url("img/time-left-stopped.png");
+			:host[forfeit] #time:before {
+				background: url("img/time-left-forfeit.png");
 			}
 
-			:host[stopped] #time:after {
-				background: url("img/time-right-stopped.png");
+			:host[forfeit] #time:after {
+				background: url("img/time-right-forfeit.png");
 			}
 		</style>
 
@@ -205,7 +205,7 @@ Audio indicator comes out from side opposide placement indicator
 		<div id="timeClip">
 			<div id="time">
 				<span class="shadow">[[time]]</span>
-				<div id="medal" style$="background-image: url([[calcMedalImage(place, stopped)]])"></div>
+				<div id="medal" style$="background-image: url([[calcMedalImage(place, forfeit)]])"></div>
 			</div>
 			<div id="timeShine"></div>
 		</div>

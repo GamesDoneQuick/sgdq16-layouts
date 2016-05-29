@@ -89,6 +89,7 @@ module.exports = function (nodecg) {
 	 */
 	function resumeRunner(index) {
 		stopwatch.value.results[index] = null;
+		recalcPlaces();
 	}
 
 	/**
