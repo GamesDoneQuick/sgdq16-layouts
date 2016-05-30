@@ -2,26 +2,9 @@
 'use strict';
 
 const path = require('path');
-const app = require('express')();
-const jEmoji = require('emoji');
 const TwitterStream = require('twitter-stream-api');
 
 module.exports = function (nodecg) {
-	// Create a route to serve the emoji lib
-	app.get(`/${nodecg.bundleName}/emoji.png`, (req, res) => {
-		const emojiPNGPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.png');
-		res.sendFile(emojiPNGPath);
-	});
-	app.get(`/${nodecg.bundleName}/emoji.css`, (req, res) => {
-		const emojiCSSPath = path.resolve(__dirname, '../../node_modules/emoji/lib/emoji.css');
-		res.sendFile(emojiCSSPath);
-	});
-	app.get(`/${nodecg.bundleName}/twitter/shared.css`, (req, res) => {
-		const sharedCSSPath = path.resolve(__dirname, 'shared.css');
-		res.sendFile(sharedCSSPath);
-	});
-	nodecg.mount(app);
-
 	if (Object.keys(nodecg.bundleConfig.twitter).length === 0) {
 		nodecg.log.error('"twitter" is not defined in cfg/sgdq16-layouts.json! ' +
 			'Twitter integration will be disabled.');
@@ -29,7 +12,6 @@ module.exports = function (nodecg) {
 	}
 
 	const TARGET_USER_ID = nodecg.bundleConfig.twitter.userId;
-
 	const tweets = nodecg.Replicant('tweets', {defaultValue: []});
 
 	// Clear queue of tweets when currentRun changes
@@ -153,7 +135,8 @@ module.exports = function (nodecg) {
 	}, 90 * 60 * 1000);
 
 	nodecg.listenFor('acceptTweet', tweet => {
-		removeTweetById(tweet.id_str);
+		// TODO: uncomment this line
+		// removeTweetById(tweet.id_str);
 		nodecg.sendMessage('showTweet', tweet);
 	});
 
@@ -181,11 +164,11 @@ module.exports = function (nodecg) {
 		// Highlight the #SGDQ2016 hashtag
 		const HASHTAG = '#SGDQ2016';
 		const hashtag = '#sgdq2016';
-		tweet.text = tweet.text.split(HASHTAG).join(`<span class="sgdqHashtag">${HASHTAG}</span>`);
-		tweet.text = tweet.text.split(hashtag).join(`<span class="sgdqHashtag">${hashtag}</span>`);
+		tweet.text = tweet.text.split(HASHTAG).join(`<span class="hashtag">${HASHTAG}</span>`);
+		tweet.text = tweet.text.split(hashtag).join(`<span class="hashtag">${hashtag}</span>`);
 
 		// Parse emoji in tweet body
-		tweet.text = jEmoji.unifiedToHTML(tweet.text);
+		// tweet.text = jEmoji.unifiedToHTML(tweet.text);
 
 		// Add the tweet to the list
 		tweets.value.push(tweet);

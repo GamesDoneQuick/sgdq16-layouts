@@ -13,6 +13,7 @@
 		"Power3": true,
 		"Power4": true,
 		"Elastic": true,
-		"Back": true
+		"Back": true,
+		"textFit": true
 	}
 }

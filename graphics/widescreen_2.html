@@ -9,6 +9,7 @@
 	<link rel="import" href="components/gdq-nameplate/gdq-nameplate.html">
 	<link rel="import" href="components/gdq-runinfo/gdq-runinfo.html">
 	<link rel="import" href="components/gdq-timer/gdq-timer.html">
+	<link rel="import" href="components/gdq-twitter/gdq-twitter.html">
 	<style is="custom-style">
 		gdq-nameplate {
 			top: 405px;
@@ -38,15 +39,36 @@
 			width: 425px;
 			padding-left: 12px;
 		}
+
+		gdq-twitter {
+			bottom: 0;
+			right: 0;
+			width: 426px;
+			height: 264px;
+			padding-right: 12px;
+
+			--gdq-twitter-body: {
+				font-size: 22px;
+				padding-top: 60px;
+			};
+			--gdq-twitter-namebar: {
+				width: 344px;
+				height: 55px;
+				margin-bottom: -12px;
+				padding-bottom: 12px;
+				font-size: 21px;
+			};
+		}
 	</style>
 </head>
 <body>
 	<div id="container">
 		<img id="background" src="img/backgrounds/widescreen_2_bg.png">
-		<gdq-nameplate index="0" attach-right time="2:35:59"></gdq-nameplate>
-		<gdq-nameplate index="1" attach-left time="2:35:59"></gdq-nameplate>
 		<gdq-runinfo></gdq-runinfo>
 		<gdq-timer></gdq-timer>
+		<gdq-twitter></gdq-twitter>
+		<gdq-nameplate index="0" attach-right time="2:35:59"></gdq-nameplate>
+		<gdq-nameplate index="1" attach-left time="2:35:59"></gdq-nameplate>
 		<img id="foreground" src="img/backgrounds/widescreen_2_fg.png">
 	</div>
 </body>

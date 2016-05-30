@@ -1,0 +1,82 @@
+<link rel="import" href="../../components/polymer/polymer.html">
+<link rel="import" href="../../components/iron-image/iron-image.html">
+
+<dom-module id="gdq-twitter">
+	<template>
+		<style>
+			:host {
+				position: absolute;
+				display: flex;
+				flex-direction: column;
+				color: white;
+				overflow: hidden;
+				width: 100%;
+				height: 100%;
+				background: rgba(0,0,0,0.5);
+				box-sizing: border-box;
+				opacity: 0;
+			}
+
+			#bodyWrapper {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				flex-direction: column;
+				padding: 0 16px 1em 16px;
+				flex-grow: 1;
+				@apply(--gdq-twitter-body);
+			}
+
+			#body {
+				font-weight: 400;
+				letter-spacing: -0.025em;
+				word-wrap: break-word;
+				word-break: break-word;
+				text-align: center;
+				line-height: 1.2em;
+				flex-shrink: 1;
+				min-height: 0;
+				transform: rotate(0.01deg); /* fix janky anims */
+			}
+
+			#namebar {
+				display: flex;
+				align-items: center;
+				background-color: #0075a1;
+				box-shadow: inset -1px 0 0 0 #005676,
+				            inset 0 1px 0 0 #3f97b8,
+							4px 4px 0 0 rgba(0,0,0,0.33);
+				box-sizing: border-box;
+				border: 1px solid black;
+				flex-shrink: 0;
+				@apply(--gdq-twitter-namebar);
+			}
+
+			#icon {
+				position: relative;
+				top: -6px;
+				padding-left: 0.4em;
+			}
+
+			#username {
+				line-height: 33px;
+				padding-left: 3px;
+				font-weight: 700;
+			}
+
+			.hashtag {
+				color: #6fcff5;
+			}
+		</style>
+
+		<div id="bodyWrapper">
+			<div id="body" class="shadow"></div>
+		</div>
+		<div id="namebar">
+			<img id="icon" src="img/twitter-logo.png">
+			<span id="username" class="shadow"></span>
+		</div>
+	</template>
+
+	<script src="gdq-twitter.js"></script>
+</dom-module>
