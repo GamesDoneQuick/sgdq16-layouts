@@ -4,6 +4,7 @@ const TimeObject = require('./classes/time-object');
 let interval;
 
 module.exports = function (nodecg) {
+	const currentRun = nodecg.Replicant('currentRun');
 	const stopwatch = nodecg.Replicant('stopwatch', {
 		defaultValue: (function () {
 			const to = new TimeObject(0);
@@ -15,7 +16,7 @@ module.exports = function (nodecg) {
 
 	// Load the existing time and start the stopwatch at that.
 	if (stopwatch.value.state === 'running') {
-		const missedSeconds = (Date.now() - stopwatch.value.timestamp) / 1000;
+		const missedSeconds = Math.round((Date.now() - stopwatch.value.timestamp) / 1000);
 		TimeObject.setSeconds(stopwatch.value, stopwatch.value.seconds + missedSeconds);
 		start();
 	}
@@ -90,6 +91,12 @@ module.exports = function (nodecg) {
 	function resumeRunner(index) {
 		stopwatch.value.results[index] = null;
 		recalcPlaces();
+
+		if (stopwatch.value.state === 'finished') {
+			const missedSeconds = Math.round((Date.now() - stopwatch.value.timestamp) / 1000);
+			TimeObject.setSeconds(stopwatch.value, stopwatch.value.seconds + missedSeconds);
+			start();
+		}
 	}
 
 	/**
@@ -126,5 +133,22 @@ module.exports = function (nodecg) {
 		finishedResults.forEach((r, index) => {
 			r.place = index + 1;
 		});
+
+		// If every runner is finished, stop ticking and set timer state to "finished".
+		let allRunnersFinished = true;
+		currentRun.value.runners.forEach((runner, index) => {
+			if (!runner) {
+				return;
+			}
+
+			if (!stopwatch.value.results[index]) {
+				allRunnersFinished = false;
+			}
+		});
+
+		if (allRunnersFinished) {
+			stop();
+			stopwatch.value.state = 'finished';
+		}
 	}
 };
