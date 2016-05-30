@@ -6,7 +6,7 @@
  */
 
 const X32_UDP_PORT = 10023;
-const FADE_THRESHOLD = 0.12;
+const FADE_THRESHOLD = 0.10;
 const DEFAULT_CHANNEL_OBJ = {
 	sd: {muted: true, fadedBelowThreshold: true},
 	hd: {muted: true, fadedBelowThreshold: true}
@@ -32,14 +32,14 @@ module.exports = function (nodecg) {
 		return;
 	}
 
-	const channelNumberToReplicantObject = {};
+	const channelToReplicantMap = {};
 	nodecg.bundleConfig.x32.gameAudioChannels.forEach((item, index) => {
 		if (typeof item.sd === 'number') {
-			channelNumberToReplicantObject[item.sd] = gameAudioChannels.value[index].sd;
+			channelToReplicantMap[item.sd] = gameAudioChannels.value[index].sd;
 		}
 
 		if (typeof item.hd === 'number') {
-			channelNumberToReplicantObject[item.hd] = gameAudioChannels.value[index].hd;
+			channelToReplicantMap[item.hd] = gameAudioChannels.value[index].hd;
 		}
 	});
 
@@ -66,7 +66,7 @@ module.exports = function (nodecg) {
 				const muted = !valueBytes.readFloatBE(i);
 				valueArray.push(muted);
 
-				replicantObject = channelNumberToReplicantObject[String(channelNumber + 1)];
+				replicantObject = channelToReplicantMap[String(channelNumber + 1)];
 				if (replicantObject) {
 					replicantObject.muted = muted;
 				}
@@ -81,7 +81,7 @@ module.exports = function (nodecg) {
 				const fadedBelowThreshold = valueBytes.readFloatLE(i) < FADE_THRESHOLD;
 				valueArray.push(fadedBelowThreshold);
 
-				replicantObject = channelNumberToReplicantObject[String(channelNumber + 1)];
+				replicantObject = channelToReplicantMap[String(channelNumber + 1)];
 				if (replicantObject) {
 					replicantObject.fadedBelowThreshold = fadedBelowThreshold;
 				}
