@@ -3,6 +3,7 @@
 
 const path = require('path');
 const TwitterStream = require('twitter-stream-api');
+const twemoji = require('twemoji');
 
 module.exports = function (nodecg) {
 	if (Object.keys(nodecg.bundleConfig.twitter).length === 0) {
@@ -148,27 +149,16 @@ module.exports = function (nodecg) {
 	 * @returns {undefined}
 	 */
 	function addTweet(tweet) {
-		// Parse pictures and add them to the tweet object as a simply array of URL strings.
-		const imageUrls = [];
-		if (tweet.extended_entities) {
-			tweet.extended_entities.media.forEach(medium => {
-				if (medium.type === 'photo') {
-					imageUrls.push(`${medium.media_url}:large`);
-					tweet.text = tweet.text.split(medium.url).join('');
-				}
-			});
-			tweet.text.trim();
+		// Reject tweets with media.
+		if (tweet.extended_entities && tweet.extended_entities.media.length > 0) {
+			return;
 		}
-		tweet.imageUrls = imageUrls;
 
-		// Highlight the #SGDQ2016 hashtag
-		const HASHTAG = '#SGDQ2016';
-		const hashtag = '#sgdq2016';
-		tweet.text = tweet.text.split(HASHTAG).join(`<span class="hashtag">${HASHTAG}</span>`);
-		tweet.text = tweet.text.split(hashtag).join(`<span class="hashtag">${hashtag}</span>`);
+		// Parse emoji.
+		tweet.text = twemoji.parse(tweet.text);
 
-		// Parse emoji in tweet body
-		// tweet.text = jEmoji.unifiedToHTML(tweet.text);
+		// Highlight the #SGDQ2016 hashtag.
+		tweet.text.replace(/(#sgdq2016)/ig, '<span class="hashtag">#SGDQ2016</span>');
 
 		// Add the tweet to the list
 		tweets.value.push(tweet);
