@@ -26,7 +26,7 @@ module.exports = function (nodecg) {
 		persistent: false
 	});
 
-	if (Object.keys(nodecg.bundleConfig.osc).length === 0) {
+	if (!nodecg.bundleConfig.osc || Object.keys(nodecg.bundleConfig.osc).length === 0) {
 		nodecg.log.error('"x32" is not defined in cfg/sgdq16-layouts.json! ' +
 			'Behringer X32 OSC integration will be disabled.');
 		return;

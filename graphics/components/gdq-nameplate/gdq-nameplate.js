@@ -150,7 +150,7 @@
 
 			currentRun.on('change', this.currentRunChanged.bind(this));
 			stopwatch.on('change', this.stopwatchChanged.bind(this));
-			//gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this));
+			gameAudioChannels.on('change', this.gameAudioChannelsChanged.bind(this));
 		},
 
 		/*
@@ -239,28 +239,10 @@
 				return;
 			}
 
-			const channels = newVal[index];
+			const channels = newVal[this.index];
 			const canHearSd = !channels.sd.muted && !channels.sd.fadedBelowThreshold;
 			const canHearHd = !channels.hd.muted && !channels.hd.fadedBelowThreshold;
-			if (canHearSd || canHearHd) {
-				if (!this.audioIcon.filters) {
-					return;
-				}
-
-				this.audioIcon.filters = null;
-				this.audioIcon.alpha = 1;
-				this.audioIcon.image = loader.queue.getResult('nameplate-audio-on');
-				this.audioIcon.uncache();
-			} else {
-				if (this.audioIcon.filters && this.audioIcon.filters.length > 0) {
-					return;
-				}
-
-				this.audioIcon.image = loader.queue.getResult('nameplate-audio-off');
-				this.audioIcon.filters = [this.audioIconColorFilter];
-				this.audioIcon.alpha = 0.2;
-				this.audioIcon.cache(0, 0, AUDIO_ICON_WIDTH, AUDIO_ICON_HEIGHT);
-			}
+			this.audio = canHearSd || canHearHd;
 		}
 	});
 })();

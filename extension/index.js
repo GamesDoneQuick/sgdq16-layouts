@@ -65,7 +65,7 @@ module.exports = function (nodecg) {
 	}
 
 	try {
-		// require('./osc')(nodecg);
+		require('./osc')(nodecg);
 	} catch (e) {
 		nodecg.log.error('Failed to load "osc" lib:', e.stack);
 		process.exit(1);
