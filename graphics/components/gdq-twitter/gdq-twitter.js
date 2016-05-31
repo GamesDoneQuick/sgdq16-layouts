@@ -2,7 +2,6 @@
 	'use strict';
 
 	const BODY_DISPLAY_DURATION = 9;
-	const MIN_BOTTOM_BODY_MARGIN = 28;
 
 	Polymer({
 		is: 'gdq-twitter',

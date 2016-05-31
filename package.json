@@ -223,8 +223,8 @@
     "url": "git://github.com/GamesDoneQuick/sgdq16-layouts.git"
   },
   "scripts": {
-    "static": "eslint extension/**/*.js dashboard/**/*.js dashboard/**/*.html graphics/**/*.js src/**/*.js test/**/*.js --ignore-path .eslintignore",
-    "test": "npm run static && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
+    "static": "eslint ./**/*.js ./**/*.html --ignore-path .eslintignore",
+    "test": "npm run static && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
     "list-serial-ports": "node ./scripts/list-serial-ports"
   }
 }

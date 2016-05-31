@@ -1,4 +1,4 @@
 node_modules
 bower_components
-/graphics/lib
-/graphics/built
+coverage
+src

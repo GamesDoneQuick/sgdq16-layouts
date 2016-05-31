@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 'use strict';
 
-const path = require('path');
 const TwitterStream = require('twitter-stream-api');
 const twemoji = require('twemoji');
 
@@ -136,8 +135,7 @@ module.exports = function (nodecg) {
 	}, 90 * 60 * 1000);
 
 	nodecg.listenFor('acceptTweet', tweet => {
-		// TODO: uncomment this line
-		// removeTweetById(tweet.id_str);
+		removeTweetById(tweet.id_str);
 		nodecg.sendMessage('showTweet', tweet);
 	});
 
