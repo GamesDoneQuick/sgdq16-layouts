@@ -1,15 +1,13 @@
 @font-face {
 	font-family: 'montserrat';
-	src: url('montserrat-regular-webfont.woff2') format('woff2'),
-	url('montserrat-regular-webfont.woff') format('woff');
+	src: url('Montserrat-Regular.woff') format('woff');
 	font-weight: 400;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'montserrat';
-	src: url('montserrat-semibold-webfont.woff2') format('woff2'),
-		 url('montserrat-semibold-webfont.woff') format('woff');
+	src: url('Montserrat-SemiBold.woff') format('woff');
 	font-weight: 600;
 	font-style: normal;
 }
@@ -24,16 +22,14 @@
 
 @font-face {
 	font-family: 'montserrat';
-	src: url('montserrat-extrabold-webfont.woff2') format('woff2'),
-		 url('montserrat-extrabold-webfont.woff') format('woff');
+	src: url('Montserrat-ExtraBold.woff') format('woff');
 	font-weight: 800;
 	font-style: normal;
 }
 
 @font-face {
     font-family: 'montserrat';
-    src: url('montserrat-black-webfont.woff2') format('woff2'),
-         url('montserrat-black-webfont.woff') format('woff');
+    src: url('Montserrat-Black.woff') format('woff');
     font-weight: 900;
     font-style: normal;
 }
