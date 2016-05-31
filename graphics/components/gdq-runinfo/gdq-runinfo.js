@@ -18,17 +18,13 @@
 		},
 
 		currentRunChanged(newVal) {
-			this.name = newVal.name;
+			this.name = newVal.name.replace('\\n', '<br/>');
 			this.category = newVal.category;
 			this.console = newVal.console;
 			this.releaseYear = newVal.releaseYear;
 			this.estimate = newVal.estimate;
 
-			if (this.$.name.firstElementChild) {
-				this.$.name.firstElementChild.innerText = newVal.name;
-			} else {
-				this.$.name.innerText = newVal.name;
-			}
+			this.$.name.innerHTML = this.name;
 
 			if (this.initialized) {
 				this.fitText();
