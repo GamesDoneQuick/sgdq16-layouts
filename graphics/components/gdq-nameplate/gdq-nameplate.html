@@ -85,12 +85,13 @@ Audio indicator comes out from side opposide placement indicator
 			}
 
 			#timeClip {
+				display: none;
 				position: absolute;
 				width: 150px;
 				height: 39px;
 				-webkit-clip-path: polygon(0 0, 0% 0%, calc(0% - 15px) 100%, 0% 100%);
-				-webkit-mask: url("img/time-mask-right.png");
 				transition: -webkit-clip-path 1700ms cubic-bezier(0.86, 0, 0.07, 1);
+				z-index: -1;
 			}
 
 			#timeShine {
@@ -100,6 +101,7 @@ Audio indicator comes out from side opposide placement indicator
 				width: 0;
 				height: 100%;
 				transition: width 1700ms cubic-bezier(0.86, 0, 0.07, 1);
+				-webkit-mask: url("img/time-mask-right.png") no-repeat;
 			}
 
 			#timeShine:after {
@@ -189,10 +191,14 @@ Audio indicator comes out from side opposide placement indicator
 				order: 1;
 			}
 
+			:host[attach-left] #timeClip,
+			:host[attach-right] #timeClip {
+				display: block;
+			}
+
 			:host[attach-left] #timeClip {
 				order: 0;
 				left: -150px;
-				-webkit-mask: url("img/time-mask-left.png");
 				-webkit-clip-path: polygon(100% 0, 100% 0%, 100% 100%, calc(100% + 15px) 100%);
 			}
 
@@ -209,6 +215,7 @@ Audio indicator comes out from side opposide placement indicator
 			:host[attach-left] #timeShine {
 				right: 0;
 				left: auto;
+				-webkit-mask: url("img/time-mask-left.png") no-repeat right;
 			}
 
 			:host[attach-left] #timeShine:after {
@@ -266,7 +273,7 @@ Audio indicator comes out from side opposide placement indicator
 		<div id="boxShadow" class="box-shadow"></div>
 
 		<div id="timeClip">
-			<div id="time">
+			<div id="time" class="box-shadow">
 				<span class="shadow">[[time]]</span>
 				<div id="medal" style$="background-image: url([[calcMedalImage(place, forfeit)]])"></div>
 			</div>

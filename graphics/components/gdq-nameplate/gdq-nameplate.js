@@ -183,13 +183,23 @@
 					const runner = newVal.runners[this.index];
 					if (runner) {
 						this.name = runner.name;
-						this.twitch = runner.stream;
+
+						if (runner.stream) {
+							this.twitch = runner.stream;
+						} else {
+							this.twitch = '';
+						}
 					} else {
 						this.name = '?';
 						this.twitch = '?';
 					}
 
-					if (canConflateAllRunners) {
+					if (!this.twitch) {
+						this.nameTL.pause();
+						this.$.namesName.classList.remove('hidden');
+						this.$.namesTwitch.classList.add('hidden');
+						TweenLite.to(this.$.names, NAME_FADE_DURATION, {opacity: 1, ease: NAME_FADE_IN_EASE});
+					} else if (canConflateAllRunners) {
 						this.nameTL.pause();
 						TweenLite.to(this.$.names, NAME_FADE_DURATION, {opacity: 1, ease: NAME_FADE_IN_EASE});
 					} else {
