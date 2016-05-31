@@ -13,73 +13,67 @@
 	<link rel="import" href="components/gdq-sponsors/gdq-sponsors.html">
 	<style is="custom-style">
 		gdq-nameplate {
-			top: 405px;
-			--gdq-nameplate-width: 310px;
-		}
-
-		gdq-nameplate:nth-of-type(1) {
-			right: 855px;
-		}
-
-		gdq-nameplate:nth-of-type(2) {
-			left: 855px;
+			left: 368px;
+			bottom: 70px;
+			--gdq-nameplate-width: 320px;
 		}
 
 		gdq-runinfo {
-			left: 12px;
-			bottom: 58px;
-			width: 413px;
-			height: 152px;
-			--gdq-runinfo-misc-height: 42px;
+			right: 0px;
+			bottom: 8px;
+			width: 473px;
+			height: 110px;
+			padding-right: 7px;
+			--gdq-runinfo-misc-height: 14px;
 		}
 
 		gdq-timer {
-			left: 0;
-			bottom: 0;
-			height: 58px;
-			width: 425px;
-			padding-left: 12px;
+			left: 320px;
+			bottom: 24px;
+			height: 50px;
+			width: 473px;
+			font-size: 38px;
+			border-bottom: 1px solid #000000;
+			padding-top: 5px;
 		}
 
 		gdq-twitter {
-			bottom: 0;
-			right: 0;
-			width: 426px;
-			height: 264px;
-			padding-right: 12px;
+			bottom: 7px;
+			left: 0;
+			width: 312px;
+			height: 326px;
 
 			--gdq-twitter-body: {
-				font-size: 22px;
-				padding-top: 60px;
+				font-size: 19px;
+				padding: 20px 25px 0 25px;
 			};
 			--gdq-twitter-namebar: {
-				width: 344px;
-				height: 55px;
-				margin-bottom: -12px;
-				padding-bottom: 12px;
+				width: 288px;
+				height: 40px;
+				margin-bottom: 50px;
+				padding-bottom: 2px;
+				padding-left: 12px;
 				font-size: 21px;
 			};
 		}
 
 		gdq-sponsors {
-			bottom: 0;
-			right: 0;
-			width: 426px;
-			height: 219px;
-			padding-right: 12px;
+			bottom: 7px;
+			left: 0;
+			width: 301px;
+			height: 326px;
 		}
 	</style>
 </head>
 <body>
 	<div id="container">
-		<img id="background" src="img/backgrounds/widescreen_2_bg.png">
+		<img id="background" src="img/backgrounds/widescreen_1_bg.png">
 		<gdq-runinfo></gdq-runinfo>
 		<gdq-timer></gdq-timer>
 		<gdq-sponsors></gdq-sponsors>
 		<gdq-twitter></gdq-twitter>
-		<gdq-nameplate index="0" attach-right></gdq-nameplate>
-		<gdq-nameplate index="1" attach-left></gdq-nameplate>
-		<img id="foreground" src="img/backgrounds/widescreen_2_fg.png">
+		<gdq-nameplate index="0"></gdq-nameplate>
+		<img id="foreground" src="img/backgrounds/widescreen_1_fg.png">
 	</div>
 </body>
 </html>

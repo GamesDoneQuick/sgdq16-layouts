@@ -9,7 +9,7 @@
 		properties: {
 			maxNameSize: {
 				type: Number,
-				value: 80
+				value: 45
 			}
 		},
 

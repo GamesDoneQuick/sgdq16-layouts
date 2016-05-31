@@ -129,7 +129,57 @@
     ],
     "graphics": [
       {
+        "file": "standard_1.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "standard_2.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "standard_3.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "standard_4.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "widescreen_1.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
         "file": "widescreen_2.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "gba_1.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "gba_2.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "gameboy.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "3ds.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "ds.html",
         "width": 1280,
         "height": 665
       },
