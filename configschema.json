@@ -72,10 +72,9 @@
 			"description": "Configuration object for Last.fm API, used by nowplaying graphic.",
 			"required": ["apiKey", "secret", "targetAccount"]
 		},
-		"debug": {
-			"type": "boolean",
-			"default": false,
-			"description": "Whether or not to enable the client-side debug logging."
+		"serialCOMName": {
+			"type": "string",
+			"description": "The COMName of the serial port to communicate timekeeping info with. Used with TestRunner's timerbox."
 		}
 	}
 }

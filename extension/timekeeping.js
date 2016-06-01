@@ -21,6 +21,58 @@ module.exports = function (nodecg) {
 		start();
 	}
 
+	let serialPort;
+	if (nodecg.bundleConfig.serialCOMName) {
+		nodecg.log.info(`[timekeeping] Setting up serial communications via ${nodecg.bundleConfig.serialCOMName}`);
+		const SerialPort = require('serialport').SerialPort;
+		serialPort = new SerialPort(nodecg.bundleConfig.serialCOMName, {
+			parser: SerialPort.parsers.readline('\n')
+		}, err => {
+			if (err) {
+				return nodecg.log.error(err.message);
+			}
+		});
+
+		serialPort.on('data', data => {
+			switch (data) {
+				case 'startFinish':
+					if (stopwatch.value.state === 'running') {
+						// Finish all runners.
+						currentRun.value.runners.forEach((runner, index) => {
+							if (!runner) {
+								return;
+							}
+
+							completeRunner({index, forfeit: false});
+						});
+					} else {
+						start();
+					}
+					break;
+				default:
+					nodecg.log.error('[timekeeping] Unexpected data from serial port:', ${data});
+			}
+		});
+
+		let lastState;
+		stopwatch.on('change', newVal => {
+			if (newVal.state !== lastState) {
+				lastState = newVal.state;
+				
+				const args = [];
+				switch (newVal.state) {
+					case 'finished':
+						args.push(stopwatch.value.results);
+						break;
+					default:
+						// Do nothing.
+				}
+
+				serialPort.write(JSON.stringify({event: newVal.state, arguments: args}));
+			}
+		});
+	}
+
 	nodecg.listenFor('startTimer', start);
 	nodecg.listenFor('stopTimer', stop);
 	nodecg.listenFor('resetTimer', reset);
@@ -47,6 +99,13 @@ module.exports = function (nodecg) {
 	 */
 	function tick() {
 		TimeObject.increment(stopwatch.value);
+
+		if (serialPort) {
+			serialPort.write(JSON.stringify({
+				event: 'tick',
+				arguments: [stopwatch.value.raw]
+			}));
+		}
 	}
 
 	/**
