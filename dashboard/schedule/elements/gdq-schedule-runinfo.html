@@ -80,6 +80,14 @@
 				@apply(--layout-vertical);
 			}
 
+			#console {
+				flex-shrink: 1;
+				flex-grow: 1;
+				flex-basis: 1px;
+				overflow: hidden;
+				white-space: nowrap;
+			}
+
 			label {
 				font-size: 13px;
 			}
@@ -136,9 +144,9 @@
 				<label>Estimate</label>
 				<span class="value">[[estimate]]&#8203;</span>
 			</div>
-			<div class$="padded [[calcModified(originalValues.console)]]">
+			<div id="console" class$="padded [[calcModified(originalValues.console)]]">
 				<label>Console</label>
-				<span class="value">[[console]]&#8203;</span>
+				<span title="[[console]]" class="value">[[console]]&#8203;</span>
 			</div>
 			<div class$="padded [[calcModified(originalValues.releaseYear)]]">
 				<label>Release Year</label>
