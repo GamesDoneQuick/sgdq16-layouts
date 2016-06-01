@@ -16,30 +16,34 @@ module.exports = function (nodecg) {
 	const currentRun = nodecg.Replicant('currentRun', {defaultValue: {}});
 	const nextRun = nodecg.Replicant('nextRun', {defaultValue: {}});
 
+	// If a "streamTitle" template has been defined in the bundle config, and if lfg-twitch api is present,
+	// automatically update the Twitch game and title when currentRun changes.
 	if (nodecg.bundleConfig.streamTitle) {
-		const twitchApi = nodecg.extensions['lfg-twitchapi'];
-		if (!twitchApi) {
-			return nodecg.log.warning('Automatic stream title updating is disabled because lfg-twitchapi is not installed.');
-		}
-
-		nodecg.log.info('Automatic stream title updating is enabled.');
-		let lastLongName;
-		currentRun.on('change', newVal => {
-			if (newVal.longName !== lastLongName) {
-				lastLongName = newVal.longName;
-				twitchApi.put('/channels/{{username}}', {
-					channel: {
-						status: nodecg.bundleConfig.streamTitle.replace('${gameName}', newVal.longName),
-						game: newVal.longName
-					}
-				}).then(response => {
-					if (response.statusCode !== 200) {
-						return nodecg.log.error(response.body.error, response.body.message);
-					}
-				}).catch(err => {
-					nodecg.log.error(err);
-				});
+		server.on('extensionsLoaded', () => {
+			const twitchApi = nodecg.extensions['lfg-twitchapi'];
+			if (!twitchApi) {
+				return nodecg.log.warn('Automatic stream title updating is disabled because lfg-twitchapi is not installed.');
 			}
+
+			nodecg.log.info('Automatic stream title updating is enabled.');
+			let lastLongName;
+			currentRun.on('change', newVal => {
+				if (newVal.longName !== lastLongName) {
+					lastLongName = newVal.longName;
+					twitchApi.put('/channels/{{username}}', {
+						channel: {
+							status: nodecg.bundleConfig.streamTitle.replace('${gameName}', newVal.longName),
+							game: newVal.longName
+						}
+					}).then(response => {
+						if (response.statusCode !== 200) {
+							return nodecg.log.error(response.body.error, response.body.message);
+						}
+					}).catch(err => {
+						nodecg.log.error(err);
+					});
+				}
+			});
 		});
 	}
 
