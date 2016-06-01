@@ -32,10 +32,12 @@
 				// Disable "next" button if at end of schedule
 				if (newVal) {
 					this.$.next.removeAttribute('disabled');
+					this.$.editNext.removeAttribute('disabled');
 					this.$.nextRun.setRun(newVal);
 				} else {
 					this.$.next.setAttribute('disabled', 'true');
-					this.$.nextRun.clear();
+					this.$.editNext.setAttribute('disabled', 'true');
+					this.$.nextRun.setRun({});
 				}
 			});
 		},
