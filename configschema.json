@@ -75,6 +75,10 @@
 		"serialCOMName": {
 			"type": "string",
 			"description": "The COMName of the serial port to communicate timekeeping info with. Used with TestRunner's timerbox."
+		},
+		"streamTitle": {
+			"type": "string",
+			"description": "The template used to set the title of the stream whenever the current run changes."
 		}
 	}
 }

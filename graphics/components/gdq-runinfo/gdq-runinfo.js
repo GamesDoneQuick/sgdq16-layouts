@@ -15,8 +15,7 @@
 				type: Boolean,
 				reflectToAttribute: true
 			}
-		}
-		,
+		},
 
 		ready() {
 			currentRun.on('change', this.currentRunChanged.bind(this));
