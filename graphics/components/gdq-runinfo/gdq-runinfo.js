@@ -10,15 +10,20 @@
 			maxNameSize: {
 				type: Number,
 				value: 45
+			},
+			singleLineName: {
+				type: Boolean,
+				reflectToAttribute: true
 			}
-		},
+		}
+		,
 
 		ready() {
 			currentRun.on('change', this.currentRunChanged.bind(this));
 		},
 
 		currentRunChanged(newVal) {
-			this.name = newVal.name.replace('\\n', '<br/>');
+			this.name = newVal.name.replace('\\n', this.singleLineName ? ' ' : '<br/>');
 			this.category = newVal.category;
 			this.console = newVal.console;
 			this.releaseYear = newVal.releaseYear;
