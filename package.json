@@ -132,6 +132,11 @@
     ],
     "graphics": [
       {
+        "file": "break.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
         "file": "standard_1.html",
         "width": 1280,
         "height": 665
