@@ -60,6 +60,8 @@
 				ease: Power1.easeOut
 			}, '-=0.25');
 
+			return;
+
 			tl.add('exit', `+=${BODY_DISPLAY_DURATION}`);
 			tl.to(this, 0.4, {
 				opacity: 0,
