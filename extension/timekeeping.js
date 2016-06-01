@@ -26,7 +26,7 @@ module.exports = function (nodecg) {
 		nodecg.log.info(`[timekeeping] Setting up serial communications via ${nodecg.bundleConfig.serialCOMName}`);
 		const SerialPort = require('serialport').SerialPort;
 		serialPort = new SerialPort(nodecg.bundleConfig.serialCOMName, {
-			parser: SerialPort.parsers.readline('\n')
+			parser: require('serialport').parsers.readline('\n')
 		}, err => {
 			if (err) {
 				return nodecg.log.error(err.message);
@@ -50,7 +50,7 @@ module.exports = function (nodecg) {
 					}
 					break;
 				default:
-					nodecg.log.error('[timekeeping] Unexpected data from serial port:', ${data});
+					nodecg.log.error('[timekeeping] Unexpected data from serial port:', data);
 			}
 		});
 
@@ -58,7 +58,7 @@ module.exports = function (nodecg) {
 		stopwatch.on('change', newVal => {
 			if (newVal.state !== lastState) {
 				lastState = newVal.state;
-				
+
 				const args = [];
 				switch (newVal.state) {
 					case 'finished':
@@ -68,7 +68,9 @@ module.exports = function (nodecg) {
 						// Do nothing.
 				}
 
-				serialPort.write(JSON.stringify({event: newVal.state, arguments: args}));
+				if (serialPort && serialPort.isOpen()) {
+					serialPort.write(JSON.stringify({event: newVal.state, arguments: args}));
+				}
 			}
 		});
 	}
@@ -100,7 +102,7 @@ module.exports = function (nodecg) {
 	function tick() {
 		TimeObject.increment(stopwatch.value);
 
-		if (serialPort) {
+		if (serialPort && serialPort.isOpen()) {
 			serialPort.write(JSON.stringify({
 				event: 'tick',
 				arguments: [stopwatch.value.raw]
