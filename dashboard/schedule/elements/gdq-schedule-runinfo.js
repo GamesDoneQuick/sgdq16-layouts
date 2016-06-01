@@ -12,6 +12,7 @@
 			this.estimate = run.estimate;
 			this.category = run.category;
 			this.order = run.order;
+			this.notes = run.notes;
 			this.originalValues = run.originalValues;
 		},
 

@@ -79,6 +79,20 @@
 		"streamTitle": {
 			"type": "string",
 			"description": "The template used to set the title of the stream whenever the current run changes."
+		},
+		"tracker": {
+			"type": "object",
+			"properties": {
+				"username": {
+					"type": "string"
+				},
+				"password": {
+					"type": "string"
+				}
+			},
+			"description": "Login information for the private areas of the tracker API.",
+			"required": ["username", "password"]
 		}
-	}
+	},
+	"required": ["tracker"]
 }

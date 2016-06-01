@@ -1,14 +1,18 @@
 'use strict';
 
+const LOGIN_URL = 'https://private.gamesdonequick.com/tracker/admin/login/?next=/tracker/admin/';
 const POLL_INTERVAL = 60 * 1000;
 const fs = require('fs');
 const path = require('path');
-const rp = require('request-promise');
+const request = require('request-promise').defaults({jar: true}); // <= Automatically saves and re-uses cookies.
 const clone = require('clone');
 const Q = require('q');
 const equals = require('deep-equal');
 const assign = require('lodash.assign');
+const cheerio = require('cheerio');
 const {calcOriginalValues, mergeChangesFromTracker} = require('./lib/diff-run');
+const server = require('../../../lib/server');
+let updateInterval;
 
 module.exports = function (nodecg) {
 	const checklist = require('./checklist')(nodecg);
@@ -47,30 +51,53 @@ module.exports = function (nodecg) {
 		});
 	}
 
-	// Get initial data
-	update();
+	// Fetch the login page, and run the response body through cheerio
+	// so we can extract the CSRF token from the hidden input field.
+	// Then, POST with our username, password, and the csrfmiddlewaretoken.
+	request({
+		uri: LOGIN_URL,
+		transform(body) {
+			return cheerio.load(body);
+		}
+	}).then($ => request({
+		method: 'POST',
+		uri: LOGIN_URL,
+		form: {
+			username: nodecg.bundleConfig.tracker.username,
+			password: nodecg.bundleConfig.tracker.password,
+			csrfmiddlewaretoken: $('#login-form > input[name="csrfmiddlewaretoken"]').val()
+		},
+		headers: {
+			Referer: LOGIN_URL
+		},
+		resolveWithFullResponse: true
+	})).then(() => {
+		update();
 
-	// Get latest schedule data every POLL_INTERVAL milliseconds
-	nodecg.log.info('Polling schedule every %d seconds...', POLL_INTERVAL / 1000);
-	let updateInterval = setInterval(update.bind(this), POLL_INTERVAL);
-
-	// Dashboard can invoke manual updates
-	nodecg.listenFor('updateSchedule', (data, cb) => {
-		nodecg.log.info('Manual schedule update button pressed, invoking update...');
-		clearInterval(updateInterval);
+		// Get latest schedule data every POLL_INTERVAL milliseconds
+		nodecg.log.info('Polling schedule every %d seconds...', POLL_INTERVAL / 1000);
 		updateInterval = setInterval(update.bind(this), POLL_INTERVAL);
-		update()
-			.then(updated => {
-				if (updated) {
-					nodecg.log.info('Schedule successfully updated');
-				} else {
-					nodecg.log.info('Schedule unchanged, not updated');
-				}
 
-				cb(null, updated);
-			}, error => {
-				cb(error);
-			});
+		// Dashboard can invoke manual updates
+		nodecg.listenFor('updateSchedule', (data, cb) => {
+			nodecg.log.info('Manual schedule update button pressed, invoking update...');
+			clearInterval(updateInterval);
+			updateInterval = setInterval(update.bind(this), POLL_INTERVAL);
+			update()
+				.then(updated => {
+					if (updated) {
+						nodecg.log.info('Schedule successfully updated');
+					} else {
+						nodecg.log.info('Schedule unchanged, not updated');
+					}
+
+					cb(null, updated);
+				}, error => {
+					cb(error);
+				});
+		});
+	}).catch(err => {
+		console.error(err);
 	});
 
 	nodecg.listenFor('nextRun', cb => {
@@ -155,10 +182,10 @@ module.exports = function (nodecg) {
 	function update() {
 		const deferred = Q.defer();
 
-		const runnersPromise = rp({
+		const runnersPromise = request({
 			uri: nodecg.bundleConfig.useMockData ?
 				'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/runners.json' :
-				'https://gamesdonequick.com/tracker/search',
+				'https://private.gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'runner',
 				event: 18
@@ -166,10 +193,10 @@ module.exports = function (nodecg) {
 			json: true
 		});
 
-		const schedulePromise = rp({
+		const schedulePromise = request({
 			uri: nodecg.bundleConfig.useMockData ?
 				'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/schedule.json' :
-				'https://gamesdonequick.com/tracker/search',
+				'https://private.gamesdonequick.com/tracker/search',
 			qs: {
 				type: 'run',
 				event: 18
@@ -198,7 +225,7 @@ module.exports = function (nodecg) {
 			 * the length of the schedule, set current run to the first run.
 			 * Else, update the currentRun by pk, merging with and local changes.
 			 */
-			if (typeof currentRun.value.order === 'undefined' ||
+			if (!currentRun.value || typeof currentRun.value.order === 'undefined' ||
 				currentRun.value.order > scheduleRep.value.length) {
 				_seekToArbitraryRun(scheduleRep.value[0]);
 			} else {
@@ -319,6 +346,8 @@ module.exports = function (nodecg) {
 					url: boxartUrl
 				},
 				type: 'run',
+				notes: run.fields.tech_notes || '',
+				coop: run.fields.coop || false,
 				pk: run.pk
 			};
 		});
