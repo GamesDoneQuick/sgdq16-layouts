@@ -33,11 +33,22 @@
 			tl.set(this.$.namebar, {opacity: 0, y: '100%'});
 			tl.set(this.$.body, {opacity: 0, y: '-5%'});
 
-			tl.call(() => {
-				this.$.body.innerHTML = tweet.text;
-				this.$.username.innerText = `@${tweet.user.screen_name}`;
-				textFit(this.$.body);
-			}, null, null, '+=0.2'); // Small delay to give `will-change` time to do its optimizations.
+			tl.to({}, 0.2, {
+				onStart: function () {
+					this.$.body.innerHTML = tweet.text;
+					this.$.username.innerText = `@${tweet.user.screen_name}`;
+				}.bind(this),
+				onComplete: function () {
+					const maxNameWidth = this.$.username.clientWidth;
+					const nameWidth = this.$.username.scrollWidth;
+					if (nameWidth > maxNameWidth) {
+						TweenLite.set(this.$.username, {scaleX: maxNameWidth / nameWidth});
+					} else {
+						TweenLite.set(this.$.username, {scaleX: 1});
+					}
+					textFit(this.$.body);
+				}.bind(this)
+			});
 
 			tl.to(this, 0.33, {
 				opacity: 1,
@@ -59,6 +70,8 @@
 				opacity: 1,
 				ease: Power1.easeOut
 			}, '-=0.25');
+
+			return;
 
 			tl.add('exit', `+=${BODY_DISPLAY_DURATION}`);
 			tl.to(this, 0.4, {
