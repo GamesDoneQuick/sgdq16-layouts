@@ -56,7 +56,6 @@
 		},
 
 		_resizeContainers() {
-			return;
 			this.$.titleContainer.style.width = 'auto';
 
 			const titleContainerWidth = this.$.titleContainer.getBoundingClientRect().width;
