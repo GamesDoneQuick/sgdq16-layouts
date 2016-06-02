@@ -23,6 +23,10 @@
 				reflectToAttribute: true,
 				observer: 'attachRightChanged'
 			},
+			coop: {
+				type: Boolean,
+				reflectToAttribute: true
+			},
 			forfeit: {
 				type: Boolean,
 				reflectToAttribute: true,
@@ -163,6 +167,8 @@
 			if (oldVal && JSON.stringify(newVal.runners) === JSON.stringify(oldVal.runners)) {
 				return;
 			}
+
+			this.coop = newVal.coop;
 
 			let canConflateAllRunners = true;
 			newVal.runners.forEach(runner => {
