@@ -55,7 +55,7 @@
 				}, 1000);
 			}, 120 * 1000);
 
-			this.$.totalText.rawValue = 0;
+			this.$.totalTextAmount.rawValue = 0;
 			total.on('change', this.totalChanged.bind(this));
 
 			// CTA is the first thing we show, so we use this to start our loop
@@ -70,22 +70,20 @@
 
 		totalChanged(newVal) {
 			const TIME_PER_DOLLAR = 0.03;
-			const delta = newVal.raw - this.$.totalText.rawValue;
+			const delta = newVal.raw - this.$.totalTextAmount.rawValue;
 			const duration = Math.min(delta * TIME_PER_DOLLAR, 5);
-			let strLen = this.$.totalText.textContent.length;
-			TweenLite.to(this.$.totalText, duration, {
+			let strLen = this.$.totalTextAmount.textContent.length;
+			TweenLite.to(this.$.totalTextAmount, duration, {
 				rawValue: newVal.raw,
 				ease: Power2.easeOut,
 				onUpdate: function () {
-					this.$.totalText.textContent = this.$.totalText.rawValue.toLocaleString('en-US', {
-						style: 'currency',
-						currency: 'USD',
+					this.$.totalTextAmount.textContent = this.$.totalTextAmount.rawValue.toLocaleString('en-US', {
 						maximumFractionDigits: 0
 					});
 
-					if (this.$.totalText.textContent.length !== strLen) {
+					if (this.$.totalTextAmount.textContent.length !== strLen) {
 						this.fitMainText();
-						strLen = this.$.totalText.textContent.length;
+						strLen = this.$.totalTextAmount.textContent.length;
 					}
 				}.bind(this)
 			});
