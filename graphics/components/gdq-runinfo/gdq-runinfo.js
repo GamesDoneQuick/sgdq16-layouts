@@ -13,7 +13,8 @@
 			},
 			singleLineName: {
 				type: Boolean,
-				reflectToAttribute: true
+				reflectToAttribute: true,
+				value: false
 			}
 		},
 
