@@ -12,7 +12,6 @@
     "clone": "^1.0.2",
     "deep-diff": "^0.3.4",
     "deep-equal": "^1.0.1",
-    "lastfm": "^0.9.2",
     "lodash.assign": "^4.0.9",
     "lodash.debounce": "^4.0.6",
     "lodash.merge": "^4.4.0",

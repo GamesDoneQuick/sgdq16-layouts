@@ -56,22 +56,6 @@
 			},
 			"required": ["userId", "consumerKey", "consumerSecret", "accessTokenKey", "accessTokenSecret"]
 		},
-		"lastfm": {
-			"type": "object",
-			"properties": {
-				"apiKey": {
-					"type": "string"
-				},
-				"secret": {
-					"type": "string"
-				},
-				"targetAccount": {
-					"type": "string"
-				}
-			},
-			"description": "Configuration object for Last.fm API, used by nowplaying graphic.",
-			"required": ["apiKey", "secret", "targetAccount"]
-		},
 		"serialCOMName": {
 			"type": "string",
 			"description": "The COMName of the serial port to communicate timekeeping info with. Used with TestRunner's timerbox."

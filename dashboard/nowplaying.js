@@ -15,7 +15,8 @@
 
 	const nowPlaying = nodecg.Replicant('nowPlaying');
 	nowPlaying.on('change', newVal => {
-		marquee.innerText = `${newVal.song} - ${newVal.album}`;
+		console.log(newVal);
+		marquee.innerText = `${newVal.title} - ${newVal.game}`;
 	});
 
 	show.addEventListener('click', () => {
