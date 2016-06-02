@@ -1,6 +1,6 @@
 'use strict';
 
-const LOGIN_URL = 'https://private.gamesdonequick.com/tracker/admin/login/?next=/tracker/admin/';
+const LOGIN_URL = 'https://private.gamesdonequick.com/tracker/admin/login/';
 const POLL_INTERVAL = 60 * 1000;
 const fs = require('fs');
 const path = require('path');
@@ -70,7 +70,8 @@ module.exports = function (nodecg) {
 		headers: {
 			Referer: LOGIN_URL
 		},
-		resolveWithFullResponse: true
+		resolveWithFullResponse: true,
+		simple: false
 	})).then(() => {
 		update();
 
@@ -97,7 +98,7 @@ module.exports = function (nodecg) {
 				});
 		});
 	}).catch(err => {
-		console.error(err);
+		nodecg.log.error('[schedule] Error authenticating with tracker!\n', err);
 	});
 
 	nodecg.listenFor('nextRun', cb => {
