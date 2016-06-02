@@ -11,6 +11,7 @@
 				text-transform: uppercase;
 				flex-direction: column;
 				will-change: -webkit-filter;
+				white-space: nowrap;
 			}
 
 			#musicNote {
@@ -63,10 +64,6 @@
 				left: 64px;
 				visibility: hidden;
 				z-index: 1;
-			}
-
-			#title,
-			#game {
 				padding-left: 16px;
 				padding-right: 16px;
 			}
@@ -79,6 +76,12 @@
 			#game {
 				font-size: 18px;
 				line-height: 28px;
+			}
+
+			#title,
+			#game {
+				display: inline-block;
+				transform-origin: left;
 			}
 		</style>
 
