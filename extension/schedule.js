@@ -6,12 +6,12 @@ const fs = require('fs');
 const path = require('path');
 const request = require('request-promise').defaults({jar: true}); // <= Automatically saves and re-uses cookies.
 const clone = require('clone');
-const Q = require('q');
 const equals = require('deep-equal');
 const assign = require('lodash.assign');
 const cheerio = require('cheerio');
 const {calcOriginalValues, mergeChangesFromTracker} = require('./lib/diff-run');
 const server = require('../../../lib/server');
+const Promise = require('bluebird');
 let updateInterval;
 
 module.exports = function (nodecg) {
@@ -178,11 +178,9 @@ module.exports = function (nodecg) {
 
 	/**
 	 * Gets the latest schedule info from the GDQ tracker.
-	 * @returns {Promise.<T>|*} - A Q.spread promise.
+	 * @returns {Promise} - A a promise resolved with "true" if the schedule was updated, "false" if unchanged.
 	 */
 	function update() {
-		const deferred = Q.defer();
-
 		const runnersPromise = request({
 			uri: nodecg.bundleConfig.useMockData ?
 				'https://dl.dropboxusercontent.com/u/6089084/gdq_mock/runners.json' :
@@ -205,7 +203,7 @@ module.exports = function (nodecg) {
 			json: true
 		});
 
-		return Q.spread([runnersPromise, schedulePromise], (runnersJSON, scheduleJSON) => {
+		return Promise.join(runnersPromise, schedulePromise, (runnersJSON, scheduleJSON) => {
 			const formattedRunners = [];
 			runnersJSON.forEach(obj => {
 				obj.fields.stream = obj.fields.stream.split('/').pop();
@@ -216,8 +214,7 @@ module.exports = function (nodecg) {
 
 			// If nothing has changed, return.
 			if (equals(formattedSchedule, scheduleRep.value)) {
-				deferred.resolve(false);
-				return;
+				return false;
 			}
 
 			scheduleRep.value = formattedSchedule;
@@ -248,6 +245,8 @@ module.exports = function (nodecg) {
 					_seekToArbitraryRun(formattedSchedule[formattedSchedule.length - 1]);
 				}
 			}
+
+			return true;
 		}).catch(err => {
 			nodecg.log.error('[schedule] Failed to update:', err.stack);
 		});
