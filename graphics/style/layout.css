@@ -6,7 +6,8 @@
 }
 
 #container > #background,
-#container > #foreground {
+#container > #foreground,
+#container > #addon {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -19,6 +20,11 @@
 #container > #foreground {
 	pointer-events: none;
 	z-index: 10;
+}
+
+#container > #addon {
+	pointer-events: none;
+	z-index: 11;
 }
 
 #sponsorsAndTwitter {
