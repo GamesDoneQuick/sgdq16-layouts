@@ -206,7 +206,7 @@ module.exports = function (nodecg) {
 		return Promise.join(runnersPromise, schedulePromise, (runnersJSON, scheduleJSON) => {
 			const formattedRunners = [];
 			runnersJSON.forEach(obj => {
-				obj.fields.stream = obj.fields.stream.split('/').pop();
+				obj.fields.stream = obj.fields.stream.split('/').filter(part => part).pop();
 				formattedRunners[obj.pk] = obj.fields;
 			});
 
