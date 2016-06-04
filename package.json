@@ -181,12 +181,27 @@
         "height": 665
       },
       {
+        "file": "gameboy_3.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "gameboy_4.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
         "file": "3ds.html",
         "width": 1280,
         "height": 665
       },
       {
         "file": "ds.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "ds_vertical.html",
         "width": 1280,
         "height": 665
       },
