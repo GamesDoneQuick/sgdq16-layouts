@@ -15,7 +15,6 @@
 
 	const nowPlaying = nodecg.Replicant('nowPlaying');
 	nowPlaying.on('change', newVal => {
-		console.log(newVal);
 		marquee.innerText = `${newVal.title} - ${newVal.game}`;
 	});
 
