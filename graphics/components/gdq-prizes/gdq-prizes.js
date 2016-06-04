@@ -26,34 +26,34 @@
 					x: '0%',
 					ease: Power2.easeInOut
 				});
-				this.tl.call(() => {
-					newVal.forEach(showPrize);
-				});
+				newVal.forEach(showPrize);
 			});
 		},
 
 		/**
 		 * Queues an animation to show a prize.
 		 * @param {Object} prize - The prize to show.
+		 * @param {Number} index - The index of this prize.
 		 * @returns {undefined}
 		 */
-		showPrize(prize) {
+		showPrize(prize, index) {
 			if (!prize.image) {
 				return;
 			}
 
 			const tl = this.tl;
+			const enterLabel = `prizeEnter${index}`;
 
 			tl.call(() => {
 				this.$.next.src = prize.image;
 			}, null, null, '+=0.1');
 
-			tl.add('prizeEnter');
+			tl.add(enterLabel, '+=0.01');
 
 			tl.to(this.$.images, TRANSITION_DURATION, {
 				x: '-50%',
 				ease: Power2.easeInOut
-			}, 'prizeEnter');
+			}, enterLabel);
 
 			tl.to(this.$.description, DESCRIPTION_TRANSITION_DURATON, {
 				y: '100%',
@@ -61,7 +61,7 @@
 				onComplete: function () {
 					this.$.descriptionText.textContent = prize.description;
 				}.bind(this)
-			}, 'prizeEnter');
+			}, enterLabel);
 
 			tl.to(this.$.description, DESCRIPTION_TRANSITION_DURATON, {
 				y: '0%',
@@ -71,7 +71,7 @@
 			tl.to({}, 0.1, {
 				onComplete: function () {
 					this.$.current.src = prize.image;
-					TweenLite.set(this.$.images, {x: '0%'}, 'reset');
+					TweenLite.set(this.$.images, {clearProps: 'x'});
 				}.bind(this)
 			}, '+=0.1');
 
