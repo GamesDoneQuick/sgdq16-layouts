@@ -11,10 +11,11 @@
 		<style>
 			:host {
 				@apply(--layout-vertical);
-				max-width: 914px;
-				min-width: 914px;
+				width: 914px;
 				font-family: 'roboto';
 				white-space: nowrap;
+				height: 100%;
+				position: absolute;
 			}
 
 			.green {
@@ -80,9 +81,11 @@
 				@apply(--layout-horizontal);
 				@apply(--layout-center);
 				@apply(--layout-justified);
-				height: 130px;
+				flex-basis: 130px;
 				padding-left: 26px;
 				padding-right: 8px;
+				flex-grow: 1;
+				flex-shrink: 1;
 			}
 
 			.runner:nth-child(even) {
