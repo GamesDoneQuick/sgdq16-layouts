@@ -69,6 +69,7 @@ module.exports = function (nodecg) {
 
 		serialPort.on('disconnect', () => {
 			nodecg.log.error('[timekeeping] Serial port disconnected.');
+			serialReconnectPending = false;
 			attemptSerialReconnect();
 		});
 
