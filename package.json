@@ -117,7 +117,7 @@
       {
         "name": "interview",
         "title": "Interview",
-        "width": 4,
+        "width": 2,
         "headerColor": "#2d4e8a",
         "file": "interview.html"
       },
@@ -132,6 +132,11 @@
     "graphics": [
       {
         "file": "break.html",
+        "width": 1280,
+        "height": 665
+      },
+      {
+        "file": "interview.html",
         "width": 1280,
         "height": 665
       },
