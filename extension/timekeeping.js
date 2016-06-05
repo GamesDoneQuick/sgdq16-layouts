@@ -57,21 +57,16 @@ module.exports = function (nodecg) {
 
 		serialPort.on('open', () => {
 			nodecg.log.info('[timekeeping] Serial port ${nodecg.bundleConfig.serialCOMName} opened.');
+			serialReconnectPending = false;
 		});
 
 		serialPort.on('disconnect', () => {
 			nodecg.log.error('[timekeeping] Serial port disconnected.');
-			if (serialPort.isOpen()) {
-				serialPort.close();
-			}
 			attemptSerialReconnect();
 		});
 
 		serialPort.on('error', error => {
 			nodecg.log.error('[timekeeping] Serial port error:', error.stack);
-			if (serialPort.isOpen()) {
-				serialPort.close();
-			}
 			attemptSerialReconnect();
 		});
 
@@ -246,11 +241,13 @@ module.exports = function (nodecg) {
 			return;
 		}
 
+		if (serialPort.isOpen()) {
+			serialPort.close();
+		}
+
 		serialReconnectPending = true;
 		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 5 seconds.');
 		setTimeout(() => {
-			serialReconnectPending = false;
-
 			if (serialPort.isOpen()) {
 				return;
 			}
