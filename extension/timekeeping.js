@@ -54,6 +54,10 @@ module.exports = function (nodecg) {
 			}
 		});
 
+		serialPort.on('error', error => {
+			nodecg.log.error('Serial port error:', error.stack);
+		});
+
 		let lastState;
 		stopwatch.on('change', newVal => {
 			if (newVal.state !== lastState) {
