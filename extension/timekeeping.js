@@ -128,6 +128,9 @@ module.exports = function (nodecg) {
 	 * @returns {undefined}
 	 */
 	function reset() {
+		if (serialPort && serialPort.isOpen()) {
+			serialPort.write(`${JSON.stringify({event: 'reset'})}\n`);
+		}
 		stop();
 		TimeObject.setSeconds(stopwatch.value, 0);
 		stopwatch.value.results = [];
