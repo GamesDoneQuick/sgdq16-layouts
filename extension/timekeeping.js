@@ -2,6 +2,7 @@
 
 const TimeObject = require('./classes/time-object');
 let interval;
+let serialReconnectPending = false;
 
 module.exports = function (nodecg) {
 	const currentRun = nodecg.Replicant('currentRun');
@@ -54,8 +55,18 @@ module.exports = function (nodecg) {
 			}
 		});
 
+		serialPort.on('open', () => {
+			nodecg.log.info('[timekeeping] Serial port ${nodecg.bundleConfig.serialCOMName} opened.');
+		});
+
+		serialPort.on('disconnect', error => {
+			nodecg.log.error('[timekeeping] Serial port error:', error.stack);
+			attemptSerialReconnect();
+		});
+
 		serialPort.on('error', error => {
-			nodecg.log.error('Serial port error:', error.stack);
+			nodecg.log.error('[timekeeping] Serial port error:', error.stack);
+			attemptSerialReconnect();
 		});
 
 		let lastState;
@@ -69,7 +80,7 @@ module.exports = function (nodecg) {
 						args.push(stopwatch.value.results);
 						break;
 					default:
-						// Do nothing.
+					// Do nothing.
 				}
 
 				if (serialPort && serialPort.isOpen()) {
@@ -218,5 +229,27 @@ module.exports = function (nodecg) {
 			stop();
 			stopwatch.value.state = 'finished';
 		}
+	}
+
+	/**
+	 * Attempts to reconnect to the specified COM port after 5 seconds.
+	 * @returns {undefined}
+	 */
+	function attemptSerialReconnect() {
+		if (serialPort.isOpen()) {
+			serialReconnectPending = false;
+			return;
+		}
+
+		if (serialReconnectPending) {
+			return;
+		}
+
+		serialReconnectPending = true;
+		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 5 seconds.');
+		setTimeout(() => {
+			serialReconnectPending = false;
+			serialPort.open();
+		}, 5000);
 	}
 };
