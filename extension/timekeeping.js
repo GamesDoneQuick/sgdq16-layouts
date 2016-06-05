@@ -61,13 +61,17 @@ module.exports = function (nodecg) {
 
 		serialPort.on('disconnect', () => {
 			nodecg.log.error('[timekeeping] Serial port disconnected.');
-			serialPort.close();
+			if (serialPort.isOpen()) {
+				serialPort.close();
+			}
 			attemptSerialReconnect();
 		});
 
 		serialPort.on('error', error => {
 			nodecg.log.error('[timekeeping] Serial port error:', error.stack);
-			serialPort.close();
+			if (serialPort.isOpen()) {
+				serialPort.close();
+			}
 			attemptSerialReconnect();
 		});
 
