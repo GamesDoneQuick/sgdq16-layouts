@@ -69,7 +69,7 @@ module.exports = function (nodecg) {
 				}
 
 				if (serialPort && serialPort.isOpen()) {
-					serialPort.write(JSON.stringify({event: newVal.state, arguments: args}));
+					serialPort.write(`${JSON.stringify({event: newVal.state, arguments: args})}\n`);
 				}
 			}
 		});
@@ -103,10 +103,10 @@ module.exports = function (nodecg) {
 		TimeObject.increment(stopwatch.value);
 
 		if (serialPort && serialPort.isOpen()) {
-			serialPort.write(JSON.stringify({
+			serialPort.write(`${JSON.stringify({
 				event: 'tick',
 				arguments: [stopwatch.value.raw]
-			}));
+			})}\n`);
 		}
 	}
 
