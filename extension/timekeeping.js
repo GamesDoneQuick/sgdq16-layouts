@@ -19,7 +19,7 @@ module.exports = function (nodecg) {
 	if (stopwatch.value.state === 'running') {
 		const missedSeconds = Math.round((Date.now() - stopwatch.value.timestamp) / 1000);
 		TimeObject.setSeconds(stopwatch.value, stopwatch.value.seconds + missedSeconds);
-		start();
+		start(true);
 	}
 
 	let serialPort;
@@ -108,11 +108,16 @@ module.exports = function (nodecg) {
 
 	/**
 	 * Starts the timer.
+	 * @param {Boolean} [force=false] - Forces the timer to start again, even if already running.
 	 * @returns {undefined}
 	 */
-	function start() {
-		if (stopwatch.value.state === 'running') {
+	function start(force) {
+		if (!force && stopwatch.value.state === 'running') {
 			return;
+		}
+
+		if (force) {
+			clearInterval(tick);
 		}
 
 		stopwatch.value.state = 'running';
