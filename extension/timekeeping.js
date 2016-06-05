@@ -59,8 +59,8 @@ module.exports = function (nodecg) {
 			nodecg.log.info('[timekeeping] Serial port ${nodecg.bundleConfig.serialCOMName} opened.');
 		});
 
-		serialPort.on('disconnect', error => {
-			nodecg.log.error('[timekeeping] Serial port error:', error.stack);
+		serialPort.on('disconnect', () => {
+			nodecg.log.error('[timekeeping] Serial port disconnected.');
 			attemptSerialReconnect();
 		});
 
