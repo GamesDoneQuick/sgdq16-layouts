@@ -1,6 +1,7 @@
 'use strict';
 
 const TimeObject = require('./classes/time-object');
+let SerialPort
 let interval;
 let serialReconnectPending = false;
 
@@ -25,7 +26,7 @@ module.exports = function (nodecg) {
 	let serialPort;
 	if (nodecg.bundleConfig.serialCOMName) {
 		nodecg.log.info(`[timekeeping] Setting up serial communications via ${nodecg.bundleConfig.serialCOMName}`);
-		const SerialPort = require('serialport').SerialPort;
+		SerialPort = require('serialport').SerialPort;
 		serialPort = new SerialPort(nodecg.bundleConfig.serialCOMName, {
 			parser: require('serialport').parsers.readline('\n')
 		}, err => {
@@ -260,7 +261,29 @@ module.exports = function (nodecg) {
 				return;
 			}
 
-			serialPort.open();
+			SerialPort.list((err, ports) => {
+				if (err) {
+					nodecg.log.error('[timekeeping] Error listing serial ports:', err.stack);
+					serialReconnectPending = false;
+					attemptSerialReconnect();
+					return;
+				}
+
+				const foundPort = ports.some(port => {
+					if (port.comName === nodecg.bundleConfig.serialCOMName) {
+						serialPort.open();
+						return true;
+					}
+
+					return false;
+				});
+
+				serialReconnectPending = false;
+
+				if (!foundPort) {
+					attemptSerialReconnect();
+				}
+			});
 		}, 5000);
 	}
 };
