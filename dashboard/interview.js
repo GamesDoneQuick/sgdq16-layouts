@@ -34,15 +34,6 @@
 		}
 	});
 
-	nodecg.Replicant('interviewLowerthirdPulsing').on('change', newVal => {
-		const shouldDisableHideButton = showing.value ? newVal : true;
-		if (shouldDisableHideButton) {
-			hide.setAttribute('disabled', 'true');
-		} else {
-			hide.removeAttribute('disabled');
-		}
-	});
-
 	/**
 	 * Takes the names currently entered into the paper-inputs.
 	 * @returns {undefined}
