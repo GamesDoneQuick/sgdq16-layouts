@@ -18,7 +18,7 @@ module.exports = function (nodecg) {
 	// Load the existing time and start the stopwatch at that.
 	if (stopwatch.value.state === 'running') {
 		const missedSeconds = Math.round((Date.now() - stopwatch.value.timestamp) / 1000);
-		TimeObject.setSeconds(stopwatch.value, stopwatch.value.seconds + missedSeconds);
+		TimeObject.setSeconds(stopwatch.value, stopwatch.value.raw + missedSeconds);
 		start(true);
 	}
 
