@@ -1,7 +1,6 @@
 {
   "name": "sgdq16-layouts",
   "dependencies": {
-    "EaselJS": "0.8.2",
     "gsap": "^1.18.5",
     "iron-icons": "PolymerElements/iron-icons#^1.1.3",
     "iron-image": "PolymerElements/iron-image#^1.2.3",
