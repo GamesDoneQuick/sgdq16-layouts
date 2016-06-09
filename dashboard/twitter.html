@@ -5,7 +5,6 @@
     <link rel="import" href="components/iron-flex-layout/iron-flex-layout.html">
     <link rel="import" href="components/nodecg-replicant/nodecg-replicant.html">
     <link rel="import" href="elements/tweet-item.html">
-    <link rel="import" href="elements/disabled-cover.html">
 
     <style is="custom-style">
         #scrollWrapper {
@@ -60,26 +59,6 @@
     <div id="tweets"></div>
     <div id="empty">There are no tweets in the queue.</div>
 </div>
-
-<disabled-cover id="cover">
-    <span reason="closed">
-        The layout graphic appears to be closed.
-        <br/>
-        Open the layout graphic to enable these controls.
-    </span>
-
-    <span reason="preloading">
-        The layout graphic is preloading.
-        <br/>
-        Please wait...
-    </span>
-
-    <span reason="badLayout">
-        This layout (<b class="layoutName"></b>) does not support Twitter.
-        <br/>
-        Switch to another layout to enable these controls.
-    </span>
-</disabled-cover>
 
 <script src="twitter.js"></script>
 </body>

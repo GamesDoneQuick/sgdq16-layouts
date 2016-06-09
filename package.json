@@ -131,6 +131,17 @@
     ],
     "graphics": [
       {
+        "file": "timekeeping.html",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "file": "advertisements.html",
+        "width": 1280,
+        "height": 720,
+        "singleInstance": true
+      },
+      {
         "file": "break.html",
         "width": 1280,
         "height": 665
@@ -214,11 +225,6 @@
         "file": "omnibar.html",
         "width": 1280,
         "height": 55
-      },
-      {
-        "file": "timekeeping.html",
-        "width": 1280,
-        "height": 720
       }
     ],
     "assetCategories": [

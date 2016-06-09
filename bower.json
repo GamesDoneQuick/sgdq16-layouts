@@ -21,6 +21,7 @@
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
     "paper-progress": "PolymerElements/paper-progress#^1.0.9",
     "PreloadJS": "0.6.2",
-    "textfit": "^2.3.1"
+    "textfit": "^2.3.1",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.4"
   }
 }
