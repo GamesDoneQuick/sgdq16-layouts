@@ -1,56 +1,93 @@
 'use strict';
 
+const equals = require('deep-equal');
+const clone = require('clone');
+
 module.exports = function (nodecg) {
 	// Create defaults array
-	const checklistDefault = [
-		{name: 'Check for Interview', complete: false},
-		{name: 'Cue game music', complete: false},
-		{name: 'Check for Advertisement', complete: false},
-		{name: 'Commentator Mics', complete: false},
-		{name: 'Runner Game Audio', complete: false},
-		{name: 'TVs have Video', complete: false},
-		{name: 'Restart Recording', complete: false},
-		{name: 'Stream Audio', complete: false},
-		{name: 'Stream Video & Deinterlacing', complete: false},
-		{name: 'Stream Layout', complete: false},
-		{name: 'RACE ONLY: Confirm Runner Names Match Game Positions', complete: false},
-		{name: 'STEAM ONLY: Turn off Steam notifications', complete: false},
-		{name: 'Camera', complete: false},
-		{name: 'Reset Timer', complete: false},
-		{name: 'Check Notes', complete: false}
-	];
+	const checklistDefault = {
+		extraContent: [
+			{name: 'Check for Advertisement', complete: false},
+			{name: 'Check for Interview', complete: false}
+		],
+		techStationDuties: [
+			{name: 'Reset Timer', complete: false},
+			{name: 'Check Tech Notes', complete: false},
+			{name: 'Stream Layout', complete: false},
+			{name: 'Runner Info/Position', complete: false},
+			{name: 'Game Deinterlacing', complete: false},
+			{name: 'Camera', complete: false},
+			{name: 'Stop/Start Recording', complete: false}
+		],
+		otherDuties: [
+			{name: 'Cue Game Music', complete: false},
+			{name: 'Runner Game Audio', complete: false},
+			{name: 'Commentator Mics', complete: false},
+			{name: 'Stream Audio', complete: false},
+			{name: 'TVs have Video', complete: false},
+			{name: 'Steam Notifications Off', complete: false},
+			{name: 'Kill Game Music', complete: false}
+		]
+	};
 
 	// Instantiate replicant with defaults object, which will load if no persisted data is present.
 	const checklist = nodecg.Replicant('checklist', {defaultValue: checklistDefault});
 
-	// If any entries in the config aren't present in the replicant,
-	// (which could happen when a persisted replicant value is loaded) add them.
-	checklistDefault.forEach(task => {
-		const exists = checklist.value.some(existingTask => existingTask.name === task.name);
-		if (!exists) {
-			checklist.value.push(task);
-		}
-	});
+	// Reconcile differences between persisted value and what we expect the checklistDefault to be.
+	const persistedValue = checklist.value;
+	if (!equals(persistedValue, checklistDefault)) {
+		const mergedChecklist = clone(checklistDefault);
 
-	// Likewise, if there are any entries in the replicant that are no longer present in the config, remove them.
-	checklist.value.forEach((existingTask, index) => {
-		const exists = checklistDefault.some(task => task.name === existingTask.name);
-		if (!exists) {
-			checklist.value.splice(index, 1);
+		for (const category in checklistDefault) {
+			if (!checklistDefault.hasOwnProperty(category)) {
+				continue;
+			}
+
+			mergedChecklist[category] = checklistDefault[category].map(task => {
+				if (persistedValue[category]) {
+					const persistedTask = persistedValue[category].find(({name}) => name === task.name);
+					if (persistedTask) {
+						return persistedTask;
+					}
+				}
+
+				return task;
+			});
 		}
-	});
+
+		checklist.value = mergedChecklist;
+	}
 
 	const checklistComplete = nodecg.Replicant('checklistComplete', {defaultValue: false});
 	checklist.on('change', newVal => {
-		const numUnfinishedTasks = newVal.filter(task => !task.complete).length;
-		checklistComplete.value = numUnfinishedTasks === 0;
+		let foundIncompleteTask = false;
+
+		for (const category in newVal) {
+			if (!newVal.hasOwnProperty(category)) {
+				continue;
+			}
+
+			foundIncompleteTask = newVal[category].some(task => !task.complete);
+
+			if (foundIncompleteTask) {
+				break;
+			}
+		}
+
+		checklistComplete.value = !foundIncompleteTask;
 	});
 
 	return {
 		reset() {
-			checklist.value.forEach(task => {
-				task.complete = false;
-			});
+			for (const category in checklist.value) {
+				if (!checklist.value.hasOwnProperty(category)) {
+					continue;
+				}
+
+				checklist.value[category].forEach(task => {
+					task.complete = false;
+				});
+			}
 		}
 	};
 };
