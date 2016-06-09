@@ -337,15 +337,15 @@ module.exports = function (nodecg) {
 				console: run.fields.console || 'Unknown',
 				commentators: run.fields.commentators || 'Unknown',
 				category: run.fields.category || 'Any%',
-				startTime: Date.parse(run.fields.starttime) || null,
+				setupTime: run.fields.setup_time,
+				startTime: new Date(run.fields.starttime).toLocaleTimeString('en-us', {
+					weekday: 'long', year: 'numeric', month: 'short',
+					day: 'numeric', hour: '2-digit', minute: '2-digit'
+				}) || null,
 				order: index + 1,
 				estimate: run.fields.run_time || 'Unknown',
 				releaseYear: run.fields.release_year || '',
 				runners,
-				boxart: {
-					url: boxartUrl
-				},
-				type: 'run',
 				notes: run.fields.tech_notes || '',
 				coop: run.fields.coop || false,
 				pk: run.pk
