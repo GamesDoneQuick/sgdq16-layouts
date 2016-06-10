@@ -72,6 +72,7 @@
 			});
 
 			advertisements.on('change', newVal => {
+				this.selectedIndex = -1;
 				this.advertisements = newVal.slice(0);
 			});
 
