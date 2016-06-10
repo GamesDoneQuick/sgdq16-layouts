@@ -103,7 +103,7 @@
       {
         "name": "twitter",
         "title": "Twitter",
-        "width": 3,
+        "width": 4,
         "headerColor": "#55acee",
         "file": "twitter.html"
       },
