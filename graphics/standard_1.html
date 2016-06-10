@@ -20,8 +20,8 @@
 		}
 
 		gdq-runinfo {
-			left: 0px;
-			top: 0px;
+			left: 0;
+			top: 0;
 			width: 397px;
 			height: 161px;
 			--gdq-runinfo-misc-height: 35px;
@@ -75,5 +75,14 @@
 		<gdq-nameplate index="0"></gdq-nameplate>
 		<img id="foreground" src="img/backgrounds/standard_1_fg.png">
 	</div>
+
+	<script>
+		window.addEventListener('DOMContentLoaded', function () {
+			TweenLite.to(document.body, 0.333, {
+				opacity: 1,
+				ease: Power1.easeOut
+			});
+		});
+	</script>
 </body>
 </html>

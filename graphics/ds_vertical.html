@@ -76,6 +76,15 @@
 	<img id="addon" src="img/backgrounds/ds_vertical_addon.png">
 	<img id="foreground" src="img/backgrounds/gameboy_fg.png">
 	<gdq-nameplate index="0"></gdq-nameplate>
+
+	<script>
+		window.addEventListener('DOMContentLoaded', function () {
+			TweenLite.to(document.body, 0.333, {
+				opacity: 1,
+				ease: Power1.easeOut
+			});
+		});
+	</script>
 </div>
 </body>
 </html>

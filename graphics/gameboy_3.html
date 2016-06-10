@@ -89,5 +89,14 @@
 		<img id="foreground" src="img/backgrounds/standard_3_fg.png">
 		<img id="addon" src="img/backgrounds/gb3_addon.png">
 	</div>
+
+	<script>
+		window.addEventListener('DOMContentLoaded', function () {
+			TweenLite.to(document.body, 0.333, {
+				opacity: 1,
+				ease: Power1.easeOut
+			});
+		});
+	</script>
 </body>
 </html>

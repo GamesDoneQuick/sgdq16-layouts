@@ -76,5 +76,14 @@
 		<img id="foreground" src="img/backgrounds/gameboy_fg.png">
 		<gdq-nameplate index="0"></gdq-nameplate>
 	</div>
+
+	<script>
+		window.addEventListener('DOMContentLoaded', function () {
+			TweenLite.to(document.body, 0.333, {
+				opacity: 1,
+				ease: Power1.easeOut
+			});
+		});
+	</script>
 </body>
 </html>

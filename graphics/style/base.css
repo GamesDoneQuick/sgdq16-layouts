@@ -3,6 +3,7 @@
 body {
 	font-family: 'montserrat';
 	margin: 0;
+	opacity: 0;
 }
 
 .shadow {
