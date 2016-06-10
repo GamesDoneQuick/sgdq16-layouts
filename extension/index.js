@@ -1,9 +1,6 @@
 'use strict';
 
 module.exports = function (nodecg) {
-	// Initialize this here because there's kinda nowhere better to do it.
-	nodecg.Replicant('displayDuration', {defaultValue: 10});
-
 	if (nodecg.bundleConfig.useMockData) {
 		nodecg.log.warn('WARNING! useMockData is true, you will not receive real data from the tracker!');
 	}

@@ -4,18 +4,14 @@
 	const TRANSITION_DURATION = 1.2;
 	const DESCRIPTION_TRANSITION_DURATON = TRANSITION_DURATION / 2 - 0.1;
 	const currentPrizes = nodecg.Replicant('currentPrizes');
-	const displayDuration = nodecg.Replicant('displayDuration');
+	const displayDuration = nodecg.bundleConfig.displayDuration;
 
 	Polymer({
 		is: 'gdq-prizes',
 
 		ready() {
 			this.tl = new TimelineMax({repeat: -1});
-			if (displayDuration.status === 'declared') {
-				this.init();
-			} else {
-				displayDuration.once('declared', () => this.init());
-			}
+			this.init();
 		},
 
 		init() {
@@ -75,7 +71,7 @@
 				}.bind(this)
 			}, '+=0.1');
 
-			tl.to({}, displayDuration.value, {});
+			tl.to({}, displayDuration, {});
 		}
 	});
 })();

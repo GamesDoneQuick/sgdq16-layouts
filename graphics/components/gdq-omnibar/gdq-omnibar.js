@@ -4,14 +4,9 @@
 	const total = nodecg.Replicant('total');
 	const currentRun = nodecg.Replicant('currentRun');
 	const nextRun = nodecg.Replicant('nextRun');
-	const displayDuration = nodecg.Replicant('displayDuration');
+	const displayDuration = nodecg.bundleConfig.displayDuration;
 	const currentBids = nodecg.Replicant('currentBids');
 	const currentPrizes = nodecg.Replicant('currentPrizes');
-
-	let displayDurationDeclared = false;
-	displayDuration.once('declared', () => {
-		displayDurationDeclared = true;
-	});
 
 	Polymer({
 		is: 'gdq-omnibar',
@@ -59,13 +54,7 @@
 			total.on('change', this.totalChanged.bind(this));
 
 			// CTA is the first thing we show, so we use this to start our loop
-			if (displayDurationDeclared) {
-				this.showCTA();
-			} else {
-				displayDuration.once('declared', () => {
-					this.showCTA();
-				});
-			}
+			this.showCTA();
 		},
 
 		totalChanged(newVal) {
@@ -319,7 +308,7 @@
 				});
 
 				// Give it some time to show
-				this.tl.to({}, displayDuration.value, {});
+				this.tl.to({}, displayDuration, {});
 			}
 
 			this.tl.to({}, 0.3, {
@@ -415,7 +404,7 @@
 			}
 
 			// Give the bid some time to show
-			this.tl.to({}, displayDuration.value, {});
+			this.tl.to({}, displayDuration, {});
 		},
 
 		/**
@@ -480,7 +469,7 @@
 			});
 
 			// Give the prize some time to show
-			this.tl.to({}, displayDuration.value, {});
+			this.tl.to({}, displayDuration, {});
 		},
 
 		/**
@@ -500,12 +489,12 @@
 			this.tl.to(this.$.cta, 0.8, {
 				y: '-100%',
 				ease: Power2.easeInOut
-			}, `+=${displayDuration.value}`);
+			}, `+=${displayDuration}`);
 
 			this.tl.to(this.$.cta, 0.55, {
 				y: '-200%',
 				ease: Power2.easeIn
-			}, `+=${displayDuration.value}`);
+			}, `+=${displayDuration}`);
 
 			this.tl.call(this.showCurrentBids, null, this, '+=0.3');
 		}
