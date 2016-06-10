@@ -84,4 +84,11 @@ module.exports = function (nodecg) {
 		nodecg.log.error('Failed to load "nowplaying" lib:', e.stack);
 		process.exit(1);
 	}
+
+	try {
+		require('./current-scene')(nodecg);
+	} catch (e) {
+		nodecg.log.error('Failed to load "current-scene" lib:', e.stack);
+		process.exit(1);
+	}
 };
