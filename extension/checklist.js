@@ -25,8 +25,7 @@ module.exports = function (nodecg) {
 			{name: 'Commentator Mics', complete: false},
 			{name: 'Stream Audio', complete: false},
 			{name: 'TVs have Video', complete: false},
-			{name: 'Steam Notifications Off', complete: false},
-			{name: 'Kill Game Music', complete: false}
+			{name: 'Steam Notifications Off', complete: false}
 		]
 	};
 
