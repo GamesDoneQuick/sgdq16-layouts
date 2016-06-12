@@ -1,6 +1,7 @@
 'use strict';
 
 const app = require('express')();
+const bodyParser = require('body-parser');
 
 module.exports = function (nodecg) {
 	const pulsing = nodecg.Replicant('nowPlayingPulsing', {defaultValue: false, persistent: false});
@@ -9,10 +10,16 @@ module.exports = function (nodecg) {
 
 	nodecg.listenFor('pulseNowPlaying', pulse);
 
-	app.post('/sgdq16-layouts/song', (req, res) => {
+	app.use(bodyParser.json());
+	app.post('/sgdq16-layouts/song', (req, res, next) => {
+		if (typeof req.body !== 'object') {
+			res.sendStatus(400);
+			return next();
+		}
+
 		nowPlaying.value = {
-			game: req.query.game,
-			title: req.query.title
+			game: req.body.game,
+			title: req.body.title
 		};
 
 		// If the graphic is already showing, end it prematurely and show the new song
