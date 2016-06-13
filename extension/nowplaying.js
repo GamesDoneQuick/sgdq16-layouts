@@ -2,6 +2,7 @@
 
 const app = require('express')();
 const bodyParser = require('body-parser');
+const debounce = require('lodash.debounce');
 
 module.exports = function (nodecg) {
 	const pulsing = nodecg.Replicant('nowPlayingPulsing', {defaultValue: false, persistent: false});
@@ -10,16 +11,10 @@ module.exports = function (nodecg) {
 
 	nodecg.listenFor('pulseNowPlaying', pulse);
 
-	app.use(bodyParser.json());
-	app.post('/sgdq16-layouts/song', (req, res, next) => {
-		if (typeof req.body !== 'object') {
-			res.sendStatus(400);
-			return next();
-		}
-
+	const changeSong = debounce(newSong => {
 		nowPlaying.value = {
-			game: req.body.game,
-			title: req.body.title
+			game: newSong.game,
+			title: newSong.title
 		};
 
 		// If the graphic is already showing, end it prematurely and show the new song
@@ -30,7 +25,16 @@ module.exports = function (nodecg) {
 
 		// Show the graphic
 		pulse();
+	}, 2000);
 
+	app.use(bodyParser.json());
+	app.post('/sgdq16-layouts/song', (req, res, next) => {
+		if (typeof req.body !== 'object') {
+			res.sendStatus(400);
+			return next();
+		}
+
+		changeSong(req.body);
 		res.sendStatus(200);
 	});
 
