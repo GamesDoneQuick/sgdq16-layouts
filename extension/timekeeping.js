@@ -220,6 +220,10 @@ module.exports = function (nodecg) {
 		} else if (stopwatch.value.results[index]) {
 			TimeObject.setSeconds(stopwatch.value.results[index], newSeconds);
 			recalcPlaces();
+
+			if (currentRun.value.runners.length === 1) {
+				TimeObject.setSeconds(stopwatch.value, newSeconds);
+			}
 		}
 	}
 
