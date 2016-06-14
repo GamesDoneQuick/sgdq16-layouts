@@ -320,11 +320,11 @@ module.exports = function (nodecg) {
 			const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
 			let boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/default.png`;
 
-			if (fs.existsSync(boxartPath)) {
+			if (fs.existsSync(boxartPath)) { 
 				boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
 			}
 
-			const runners = run.fields.runners.map(runnerId => {
+			const runners = run.fields.runners.slice(0, 4).map(runnerId => {
 				return {
 					name: formattedRunners[runnerId].name,
 					stream: formattedRunners[runnerId].stream
