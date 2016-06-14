@@ -125,10 +125,7 @@ module.exports = function (nodecg) {
 			return;
 		}
 
-		if (force) {
-			clearInterval(tick);
-		}
-
+		clearInterval(tick);
 		stopwatch.value.state = 'running';
 		interval = setInterval(tick, 1000);
 	}
@@ -182,7 +179,7 @@ module.exports = function (nodecg) {
 		}
 
 		stopwatch.value.results[index].forfeit = forfeit;
-		if (serialPort && serialPort.isOpen()) {
+		if (!forfeit && serialPort && serialPort.isOpen()) {
 			serialPort.write(`${JSON.stringify({event: 'runnerFinished'})}\n`);
 		}
 		recalcPlaces();
