@@ -2,8 +2,6 @@
 
 const LOGIN_URL = 'https://private.gamesdonequick.com/tracker/admin/login/';
 const POLL_INTERVAL = 60 * 1000;
-const fs = require('fs');
-const path = require('path');
 const request = require('request-promise').defaults({jar: true}); // <= Automatically saves and re-uses cookies.
 const clone = require('clone');
 const equals = require('deep-equal');
@@ -316,14 +314,6 @@ module.exports = function (nodecg) {
 	 */
 	function calcFormattedSchedule(formattedRunners, scheduleJSON) {
 		return scheduleJSON.map((run, index) => {
-			const boxartName = new Buffer(run.fields.display_name).toString('base64');
-			const boxartPath = path.resolve(__dirname, `../graphics/img/boxart/${boxartName}.jpg`);
-			let boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/default.png`;
-
-			if (fs.existsSync(boxartPath)) { 
-				boxartUrl = `/graphics/${nodecg.bundleName}/img/boxart/${boxartName}.jpg`;
-			}
-
 			const runners = run.fields.runners.slice(0, 4).map(runnerId => {
 				return {
 					name: formattedRunners[runnerId].name,
