@@ -53,7 +53,7 @@ module.exports = function (nodecg) {
 								return;
 							}
 
-							resumeRunner({index, forfeit: false});
+							resumeRunner(index);
 						});
 					}
 					break;
