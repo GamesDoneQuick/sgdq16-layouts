@@ -12,19 +12,19 @@ module.exports = function (nodecg) {
 		],
 		techStationDuties: [
 			{name: 'Reset Timer', complete: false},
+			{name: 'Stop/Start Recording', complete: false},
 			{name: 'Check Tech Notes', complete: false},
 			{name: 'Stream Layout', complete: false},
 			{name: 'Runner Info/Position', complete: false},
 			{name: 'Game Deinterlacing', complete: false},
-			{name: 'Camera', complete: false},
-			{name: 'Stop/Start Recording', complete: false}
+			{name: 'Camera', complete: false}
 		],
 		otherDuties: [
-			{name: 'Cue Game Music', complete: false},
+			{name: 'Cue Break Music', complete: false},
 			{name: 'Runner Game Audio', complete: false},
+			{name: 'TVs have Video', complete: false},
 			{name: 'Commentator Mics', complete: false},
 			{name: 'Stream Audio', complete: false},
-			{name: 'TVs have Video', complete: false},
 			{name: 'Steam Notifications Off', complete: false}
 		]
 	};
