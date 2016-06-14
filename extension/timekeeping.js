@@ -47,6 +47,8 @@ module.exports = function (nodecg) {
 							completeRunner({index, forfeit: false});
 						});
 					} else {
+						start();
+
 						// Resume all runners.
 						currentRun.value.runners.forEach((runner, index) => {
 							if (!runner) {
