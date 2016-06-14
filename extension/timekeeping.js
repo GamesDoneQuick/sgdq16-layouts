@@ -180,6 +180,9 @@ module.exports = function (nodecg) {
 		}
 
 		stopwatch.value.results[index].forfeit = forfeit;
+		if (serialPort && serialPort.isOpen()) {
+			serialPort.write(`${JSON.stringify({event: 'runnerFinished'})}\n`);
+		}
 		recalcPlaces();
 	}
 
