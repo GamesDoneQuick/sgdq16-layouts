@@ -111,7 +111,7 @@ module.exports = function (nodecg) {
 	nodecg.listenFor('resetTimer', reset);
 	nodecg.listenFor('completeRunner', completeRunner);
 	nodecg.listenFor('resumeRunner', resumeRunner);
-	nodecg.listenFor('editResult', editResult);
+	nodecg.listenFor('editTime', editTime);
 
 	/**
 	 * Starts the timer.
@@ -205,9 +205,20 @@ module.exports = function (nodecg) {
 	 * @param {String} newTime - A hh:mm:ss (or mm:ss) formatted new time.
 	 * @returns {undefined}
 	 */
-	function editResult({index, newTime}) {
-		if (newTime && stopwatch.value.results[index]) {
-			TimeObject.setSeconds(stopwatch.value.results[index], TimeObject.parseSeconds(newTime));
+	function editTime({index, newTime}) {
+		if (!newTime) {
+			return;
+		}
+
+		const newSeconds = TimeObject.parseSeconds(newTime);
+		if (isNaN(newSeconds)) {
+			return;
+		}
+
+		if (index === 'master') {
+			TimeObject.setSeconds(stopwatch.value, newSeconds);
+		} else if (stopwatch.value.results[index]) {
+			TimeObject.setSeconds(stopwatch.value.results[index], newSeconds);
 			recalcPlaces();
 		}
 	}

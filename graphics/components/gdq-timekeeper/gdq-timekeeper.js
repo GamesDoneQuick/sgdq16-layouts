@@ -108,17 +108,24 @@
 			nodecg.sendMessage('resumeRunner', index);
 		},
 
-		editTime(e) {
+		editMasterTime() {
+			this.$['editDialog-text'].textContent = `Enter a new master time.`;
+			this.$.editDialog.setAttribute('data-index', 'master');
+			this.$['editDialog-input'].value = this.time;
+			this.$.editDialog.open();
+		},
+
+		editRunnerTime(e) {
 			const runnerEl = e.target.closest('.runner');
 			const index = runnerEl.getAttribute('data-index');
-			this.$['editDialog-name'].textContent = runnerEl.getAttribute('data-name');
+			this.$['editDialog-text'].innerHTML = `Enter a new final time for <b>${runnerEl.getAttribute('data-name')}.</b>`;
 			this.$.editDialog.setAttribute('data-index', index);
 			this.$['editDialog-input'].value = this.results[index].formatted;
 			this.$.editDialog.open();
 		},
 
 		saveEditedTime() {
-			nodecg.sendMessage('editResult', {
+			nodecg.sendMessage('editTime', {
 				index: this.$.editDialog.getAttribute('data-index'),
 				newTime: this.$['editDialog-input'].value
 			});

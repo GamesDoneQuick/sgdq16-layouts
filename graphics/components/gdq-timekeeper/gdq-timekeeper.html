@@ -152,14 +152,8 @@
 
 		<div id="timerButtons">
 			<paper-button raised class="green" on-tap="startTimer" disabled="[[calcStartDisabled(checklistIncomplete, state)]]">
-				<template is="dom-if" if="[[checklistIncomplete]]">
-					Checklist Incomplete
-				</template>
-
-				<template is="dom-if" if="[[!checklistIncomplete]]">
-					<iron-icon icon="av:play-arrow" title="Start/Resume All"></iron-icon>
-					&nbsp;Start
-				</template>
+				<iron-icon icon="av:play-arrow" title="Start/Resume All"></iron-icon>
+				&nbsp;Start
 			</paper-button>
 
 			<paper-button raised class="yellow" on-tap="stopTimer" disabled="[[calcPauseDisabled(state)]]">
@@ -170,6 +164,11 @@
 			<paper-button raised class="purple" on-tap="confirmReset">
 				<iron-icon icon="refresh" title="Reset"></iron-icon>
 				&nbsp;Reset
+			</paper-button>
+
+			<paper-button raised class="purple" on-tap="editMasterTime" disabled="[[checklistIncomplete]]">
+				<iron-icon icon="editor:mode-edit" title="Edit"></iron-icon>
+				&nbsp;Edit
 			</paper-button>
 		</div>
 
@@ -184,9 +183,7 @@
 		</paper-dialog>
 
 		<paper-dialog id="editDialog" with-backdrop>
-			<p>
-				Enter a new final time for <b id="editDialog-name"></b>.
-			</p>
+			<p id="editDialog-text"></p>
 			<paper-input id="editDialog-input" label="Final Time" placeholder="00:00:00" auto-validate
 						 prevent-invalid-input allowed-pattern="[0-9:]"></paper-input>
 			<div class="buttons">
@@ -224,7 +221,7 @@
 							&nbsp;Forfeit
 						</paper-button>
 
-						<paper-button raised class="purple" on-tap="editTime"
+						<paper-button raised class="purple" on-tap="editRunnerTime"
 									  disabled="[[calcEditDisabled(results, index)]]">
 							<iron-icon icon="editor:mode-edit"></iron-icon>
 							&nbsp;Edit
