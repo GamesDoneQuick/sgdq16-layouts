@@ -12,7 +12,11 @@
 		},
 
 		_notesChanged(newVal) {
-			this.$.notes.querySelector('.value').innerHTML = newVal.replace(/\r\n/g, '<br/>').replace(/\n/g, '<br/>');
+			if (newVal) {
+				this.$.notes.querySelector('.value').innerHTML = newVal.replace(/\r\n/g, '<br/>').replace(/\n/g, '<br/>');
+			} else {
+				this.$.notes.querySelector('.value').innerHTML = '';
+			}
 		},
 
 		setRun(run) {
@@ -24,6 +28,7 @@
 			this.category = run.category;
 			this.order = run.order;
 			this.notes = run.notes;
+			this.coop = run.coop;
 			this.originalValues = run.originalValues;
 		},
 

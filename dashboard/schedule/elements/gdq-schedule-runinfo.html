@@ -74,24 +74,25 @@
 			#misc {
 				@apply(--layout-horizontal);
 				@apply(--layout-justified);
+				flex-wrap: wrap;
 			}
 
 			#misc > div {
 				@apply(--layout-vertical);
+				width: 50%;
+				box-sizing: border-box;
 			}
 
 			#console {
-				flex-shrink: 1;
-				flex-grow: 1;
-				flex-basis: 1px;
 				overflow: hidden;
 				white-space: nowrap;
 			}
 
 			#notes .value {
 				white-space: normal;
-				max-height: 5em;
-				overflow-y: scroll;
+				height: 5em;
+				overflow-y: auto;
+				word-wrap: break-word;
 			}
 
 			label {
@@ -158,7 +159,13 @@
 				<label>Release Year</label>
 				<span class="value">[[releaseYear]]&#8203;</span>
 			</div>
+			<div class$="padded [[calcModified(originalValues.coop)]]">
+				<label>Co-op</label>
+				<span class="value">[[coop]]&#8203;</span>
+			</div>
 		</section>
+
+		<div class="divider"></div>
 
 		<section id="notes" class="padded">
 			<label>Tech Notes</label>

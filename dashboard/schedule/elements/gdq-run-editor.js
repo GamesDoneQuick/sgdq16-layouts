@@ -24,6 +24,7 @@
 
 				return undefined;
 			});
+			this.coop = run.coop;
 			this.originalValues = run.originalValues;
 			this.pk = run.pk;
 		},
@@ -48,6 +49,7 @@
 				estimate: this.estimate,
 				console: this.console,
 				releaseYear: this.releaseYear,
+				coop: this.coop,
 				runners,
 				pk: this.pk
 			}, () => {

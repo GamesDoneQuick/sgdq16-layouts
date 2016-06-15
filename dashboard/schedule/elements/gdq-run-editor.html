@@ -1,6 +1,7 @@
 <link rel="import" href="../../components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../components/paper-button/paper-button.html">
 <link rel="import" href="../../components/paper-input/paper-input.html">
+<link rel="import" href="../../components/paper-checkbox/paper-checkbox.html">
 
 <dom-module id="gdq-run-editor">
 	<template>
@@ -105,6 +106,10 @@
 					background-color: #ffb0b3;
 				}
 			}
+
+			paper-checkbox[disabled] {
+				background-color: #ffb0b3;
+			}
 		</style>
 
 		<div id="title">[[title]]</div>
@@ -127,19 +132,28 @@
 				<paper-input label="Estimate" always-float-label value="[[originalValues.estimate]]" disabled
 							 hidden$="[[!calcHide('estimate', showingOriginal)]]"></paper-input>
 
-				<div class="row">
-					<div>
-						<paper-input label="Console" always-float-label value="{{console}}"
-									 hidden$="[[calcHide('console', showingOriginal)]]"></paper-input>
-						<paper-input label="Console" always-float-label value="[[originalValues.console]]" disabled
-									 hidden$="[[!calcHide('console', showingOriginal)]]"></paper-input>
-					</div>
+				<paper-input label="Console" always-float-label value="{{console}}"
+							 hidden$="[[calcHide('console', showingOriginal)]]"></paper-input>
+				<paper-input label="Console" always-float-label value="[[originalValues.console]]" disabled
+							 hidden$="[[!calcHide('console', showingOriginal)]]"></paper-input>
 
+				<div class="row" style="align-items: center;">
 					<div>
 						<paper-input label="Release Year" always-float-label value="{{releaseYear}}"
 									 hidden$="[[calcHide('releaseYear', showingOriginal)]]"></paper-input>
 						<paper-input label="Release Year" always-float-label value="[[originalValues.releaseYear]]" disabled
 									 hidden$="[[!calcHide('releaseYear', showingOriginal)]]"></paper-input>
+					</div>
+
+					<div>
+						<paper-checkbox checked="{{coop}}"
+										hidden$="[[calcHide('coop', showingOriginal)]]">
+							<span style="white-space: nowrap;">Co-op</span>
+						</paper-checkbox>
+						<paper-checkbox checked="[[originalValues.coop]]" disabled
+										hidden$="[[!calcHide('coop', showingOriginal)]]">
+							<span style="white-space: nowrap;">Co-op</span>
+						</paper-checkbox>
 					</div>
 				</div>
 			</div>
