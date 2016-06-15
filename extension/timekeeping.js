@@ -111,8 +111,34 @@ module.exports = function (nodecg) {
 	nodecg.listenFor('startTimer', start);
 	nodecg.listenFor('stopTimer', stop);
 	nodecg.listenFor('resetTimer', reset);
-	nodecg.listenFor('completeRunner', completeRunner);
-	nodecg.listenFor('resumeRunner', resumeRunner);
+	nodecg.listenFor('completeRunner', data => {
+		if (currentRun.value.coop) {
+			// Finish all runners.
+			currentRun.value.runners.forEach((runner, index) => {
+				if (!runner) {
+					return;
+				}
+
+				completeRunner({index, forfeit: data.forfeit});
+			});
+		} else {
+			completeRunner(data);
+		}
+	});
+	nodecg.listenFor('resumeRunner', index => {
+		if (currentRun.value.coop) {
+			// Resume all runners.
+			currentRun.value.runners.forEach((runner, index) => {
+				if (!runner) {
+					return;
+				}
+
+				resumeRunner(index);
+			});
+		} else {
+			resumeRunner(index);
+		}
+	});
 	nodecg.listenFor('editTime', editTime);
 
 	/**

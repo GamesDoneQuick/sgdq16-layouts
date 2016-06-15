@@ -25,6 +25,7 @@
 					runners[i] = runners[i] || false;
 				}
 				this.runners = runners;
+				this.coop = newVal.coop;
 			});
 			checklistComplete.on('change', newVal => {
 				this.checklistIncomplete = !newVal;
@@ -51,6 +52,18 @@
 
 		resetTimer() {
 			nodecg.sendMessage('resetTimer');
+		},
+
+		calcWingText(checklistIncomplete, coop) {
+			if (checklistIncomplete) {
+				return 'CHECKLIST INCOMPLETE';
+			}
+
+			if (coop) {
+				return 'CO-OP RUN';
+			}
+
+			return '';
 		},
 
 		calcStartDisabled(checklistIncomplete, state) {

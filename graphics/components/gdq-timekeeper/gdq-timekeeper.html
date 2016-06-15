@@ -34,16 +34,7 @@
 				--bg-color: #555555;
 			}
 
-			.incomplete-only {
-				visibility: hidden;
-			}
-
-			:host[checklist-incomplete] .incomplete-only {
-				visibility: visible;
-			}
-
 			:host[checklist-incomplete] #timer {
-				visibility: visible;
 				background-color: #ff6d6b;
 				color: white;
 			}
@@ -55,7 +46,7 @@
 				font-weight: 700;
 			}
 
-			#timer .incomplete-only {
+			#timer .timer-wing {
 				font-size: 20px;
 				color: black;
 			}
@@ -145,9 +136,9 @@
 		</style>
 
 		<div id="timer">
-			<span class="incomplete-only">CHECKLIST INCOMPLETE</span>
+			<span class="timer-wing">[[calcWingText(checklistIncomplete, coop)]]</span>
 			<span id="timer-time">[[time]]</span>
-			<span class="incomplete-only">CHECKLIST INCOMPLETE</span>
+			<span class="timer-wing">[[calcWingText(checklistIncomplete, coop)]]</span>
 		</div>
 
 		<div id="timerButtons">
