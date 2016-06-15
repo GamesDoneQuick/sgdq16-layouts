@@ -5,6 +5,8 @@
 	const tweetsContainer = document.getElementById('tweets');
 	const tweets = nodecg.Replicant('tweets');
 	const empty = document.getElementById('empty');
+	const currentScene = nodecg.Replicant('currentScene');
+	const cover = document.getElementById('cover');
 
 	tweets.on('change', newVal => {
 		empty.style.display = newVal.length > 0 ? 'none' : 'flex';
@@ -24,5 +26,19 @@
 			tweetItem.value = tweet;
 			tweetsContainer.appendChild(tweetItem);
 		});
+	});
+
+	currentScene.on('change', newVal => {
+		console.log('currentScene', newVal);
+		switch (newVal) {
+			case 'interview':
+			case 'standard_4':
+			case 'gameboy_4':
+			case 'ds':
+				cover.style.display = 'flex';
+				break;
+			default:
+				cover.style.display = 'none';
+		}
 	});
 })();
