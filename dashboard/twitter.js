@@ -29,7 +29,6 @@
 	});
 
 	currentScene.on('change', newVal => {
-		console.log('currentScene', newVal);
 		switch (newVal) {
 			case 'interview':
 			case 'standard_4':

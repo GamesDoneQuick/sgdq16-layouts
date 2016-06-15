@@ -67,12 +67,14 @@
 					throw new Error(`Tried to play ad but ad was not preloaded: ${ad.base}`);
 				}
 			} else {
+				/* eslint-disable no-lonely-if */
 				if (result) {
 					this.showAdImage(result);
 					nodecg.sendMessage('logAdPlay', ad);
 				} else {
 					throw new Error(`Tried to play ad but ad was not preloaded: ${ad.base}`);
 				}
+				/* eslint-enable no-lonely-if */
 			}
 		},
 

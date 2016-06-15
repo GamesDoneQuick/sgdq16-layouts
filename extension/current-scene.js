@@ -11,7 +11,7 @@ module.exports = function (nodecg) {
 		if (typeof req.body !== 'string') {
 			return res.sendStatus(400);
 		}
-		
+
 		currentScene.value = req.body.toLowerCase().replace(/ /g, '_');
 		res.sendStatus(200);
 	});
