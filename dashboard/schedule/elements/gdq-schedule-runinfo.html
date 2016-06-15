@@ -88,6 +88,12 @@
 				white-space: nowrap;
 			}
 
+			#notes .value {
+				white-space: normal;
+				max-height: 5em;
+				overflow-y: scroll;
+			}
+
 			label {
 				font-size: 13px;
 			}
@@ -156,7 +162,7 @@
 
 		<section id="notes" class="padded">
 			<label>Tech Notes</label>
-			<div class="value">[[notes]]</div>
+			<div class="value"></div>
 		</section>
 	</template>
 

@@ -4,6 +4,17 @@
 	Polymer({
 		is: 'gdq-schedule-runinfo',
 
+		properties: {
+			notes: {
+				type: String,
+				observer: '_notesChanged'
+			}
+		},
+
+		_notesChanged(newVal) {
+			this.$.notes.querySelector('.value').innerHTML = newVal.replace(/\r\n/g, '<br/>').replace(/\n/g, '<br/>');
+		},
+
 		setRun(run) {
 			this.name = run.name;
 			this.console = run.console;
