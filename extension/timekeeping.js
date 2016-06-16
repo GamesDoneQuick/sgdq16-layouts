@@ -222,7 +222,7 @@ module.exports = function (nodecg) {
 
 		if (stopwatch.value.state === 'finished') {
 			const missedSeconds = Math.round((Date.now() - stopwatch.value.timestamp) / 1000);
-			TimeObject.setSeconds(stopwatch.value, stopwatch.value.seconds + missedSeconds);
+			TimeObject.setSeconds(stopwatch.value, stopwatch.value.raw + missedSeconds);
 			start();
 		}
 	}
