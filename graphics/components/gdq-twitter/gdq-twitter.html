@@ -64,12 +64,18 @@
 				padding-left: 0.4em;
 			}
 
+			#username-wrapper {
+				height: 100%;
+				display: flex;
+				align-items: center;
+			}
+
 			#username {
-				line-height: 33px;
 				padding-left: 3px;
 				font-weight: 700;
 				transform-origin: left;
 				min-width: 1px;
+				line-height: 0;
 			}
 
 			.hashtag {
@@ -82,7 +88,9 @@
 		</div>
 		<div id="namebar">
 			<img id="icon" src="img/twitter-logo.png">
-			<span id="username" class="shadow"></span>
+			<div id="username-wrapper">
+				<span id="username" class="shadow"></span>
+			</div>
 		</div>
 	</template>
 
