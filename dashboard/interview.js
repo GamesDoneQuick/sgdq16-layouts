@@ -6,6 +6,7 @@
 	const auto = document.getElementById('auto');
 	const interviewNames = nodecg.Replicant('interviewNames');
 	const showing = nodecg.Replicant('interviewLowerthirdShowing');
+	const timeRemaining = nodecg.Replicant('interviewLowerthirdTimeRemaining');
 
 	show.addEventListener('click', () => {
 		takeNames();
@@ -26,10 +27,20 @@
 			show.setAttribute('disabled', 'true');
 			hide.removeAttribute('disabled');
 			auto.setAttribute('disabled', 'true');
+			auto.innerText = timeRemaining.value;
 		} else {
 			show.removeAttribute('disabled');
 			hide.setAttribute('disabled', 'true');
 			auto.removeAttribute('disabled');
+			auto.innerText = 'Auto';
+		}
+	});
+
+	timeRemaining.on('change', newVal => {
+		if (showing.value) {
+			auto.innerText = newVal;
+		} else {
+			auto.innerText = 'Auto';
 		}
 	});
 
