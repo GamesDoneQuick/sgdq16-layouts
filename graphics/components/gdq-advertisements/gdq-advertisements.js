@@ -81,7 +81,7 @@
 		stop() {
 			playingAd.value = true;
 			this.tl.clear();
-			this.tl.to([this.currentImage, this.nextImage], FADE_DURATION, {
+			this.tl.to([this.currentImage, this.nextImage, this.$.black], FADE_DURATION, {
 				opacity: 0,
 				ease: FADE_EASE,
 				onComplete: function () {
@@ -228,8 +228,14 @@
 			video.currentTime = 0;
 			video.style.visibility = 'hidden';
 			video.id = 'videoPlayer';
-			video.classList.add('fullscreen');
-			video.play();
+
+			TweenLite.to(this.$.black, 0.5, {
+				opacity: 1,
+				ease: Power1.easeIn,
+				onComplete() {
+					video.play();
+				}
+			});
 
 			// The videos sometimes look at bit weird when they first start playing.
 			// To polish things up a bit, we hide the video until the 'playing' event is fired.
@@ -268,6 +274,10 @@
 		 * @returns {undefined}
 		 */
 		endedListener(e) {
+			TweenLite.to(this.$.black, 0.5, {
+				opacity: 0,
+				ease: Power1.easeOut
+			});
 			this.removeAdVideo();
 			e.target.removeEventListener('ended', this.endedListener);
 			playingAd.value = false;
