@@ -178,7 +178,7 @@
         "height": 665
       },
       {
-        "file": "gameboy.html",
+        "file": "gameboy_1.html",
         "width": 1280,
         "height": 665
       },
@@ -227,8 +227,64 @@
         ]
       },
       {
-        "name": "sponsors",
-        "title": "Sponsors",
+        "name": "sponsors-3ds",
+        "title": "Sponsors 3DS",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-gameboy_1",
+        "title": "Sponsors Gameboy, 1 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-gba_1",
+        "title": "Sponsors GBA, 1 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-gba_2",
+        "title": "Sponsors GBA, 2 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-standard_1",
+        "title": "Sponsors Standard, 1 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-standard_2",
+        "title": "Sponsors Standard, 2 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-standard_3",
+        "title": "Sponsors Standard, 3 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-widescreen_1",
+        "title": "Sponsors Widescreen, 1 Player",
+        "allowedTypes": [
+          "png"
+        ]
+      },
+      {
+        "name": "sponsors-widescreen_2",
+        "title": "Sponsors Widescreen, 2 Player",
         "allowedTypes": [
           "png"
         ]

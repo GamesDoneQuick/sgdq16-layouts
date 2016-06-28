@@ -41,13 +41,6 @@ module.exports = function (nodecg) {
 	}
 
 	try {
-		require('./sponsors')(nodecg);
-	} catch (e) {
-		nodecg.log.error('Failed to load "sponsors" lib:', e.stack);
-		process.exit(1);
-	}
-
-	try {
 		require('./advertisements')(nodecg);
 	} catch (e) {
 		nodecg.log.error('Failed to load "advertisements" lib:', e.stack);

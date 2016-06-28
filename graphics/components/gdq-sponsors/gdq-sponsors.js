@@ -10,19 +10,56 @@
 		is: 'gdq-sponsors',
 
 		ready() {
-			const sponsors = nodecg.Replicant('sponsors');
+			let sponsors;
+			const layoutName = window.location.pathname.split('/').pop();
+			switch (layoutName) {
+				case ('standard_1.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-standard_1');
+					break;
+				case ('standard_2.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-standard_2');
+					break;
+				case ('standard_3.html'):
+				case ('gameboy_3.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-standard_3');
+					break;
+				case ('widescreen_1.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-widescreen_1');
+					break;
+				case ('widescreen_2.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-widescreen_2');
+					break;
+				case ('gba_1.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-gba_1');
+					break;
+				case ('gba_2.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-gba_2');
+					break;
+				case ('gameboy_1.html'):
+				case ('ds_vertical.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-gameboy_1');
+					break;
+				case ('3ds.html'):
+					sponsors = nodecg.Replicant('assets:sponsors-3ds');
+					break;
+				default:
+					throw new Error(`Unexpected pathname! ${window.location.pathname}`);
+			}
+
 			sponsors.on('change', newVal => {
+				console.log(newVal);
+
 				this.sponsors = newVal;
 
 				// If no sponsor is showing yet, show the first sponsor immediately
 				if (!this.currentSponsor && newVal.length > 0) {
 					this.currentSponsor = newVal[0];
-					this.$.image.src = newVal[0].src;
+					this.$.image.src = newVal[0].url;
 
-					TweenLite.fromTo(this, FADE_DURATION,
-						{opacity: 0},
-						{opacity: 1, ease: FADE_IN_EASE}
-					);
+					TweenLite.to(this.$.image, FADE_DURATION, {
+						opacity: 1,
+						ease: FADE_IN_EASE
+					});
 				}
 			});
 
@@ -65,7 +102,7 @@
 				ease: FADE_OUT_EASE,
 				onComplete: function () {
 					this.currentSponsor = nextSponsor;
-					this.$.image.src = nextSponsor.src;
+					this.$.image.src = nextSponsor.url;
 				}.bind(this)
 			});
 
