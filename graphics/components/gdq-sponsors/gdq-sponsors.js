@@ -47,8 +47,6 @@
 			}
 
 			sponsors.on('change', newVal => {
-				console.log(newVal);
-
 				this.sponsors = newVal;
 
 				// If no sponsor is showing yet, show the first sponsor immediately

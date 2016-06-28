@@ -17,6 +17,8 @@
 				}.bind(this)
 			});
 
+			this._sponsors = document.querySelector('gdq-sponsors');
+
 			nodecg.listenFor('showTweet', this.showTweet.bind(this));
 		},
 
@@ -35,6 +37,13 @@
 
 			tl.to({}, 0.2, {
 				onStart: function () {
+					if (this._sponsors) {
+						TweenLite.to(this._sponsors, 0.33, {
+							opacity: 0,
+							ease: Power1.easeIn
+						});
+					}
+
 					this.$.body.innerHTML = tweet.text;
 					this.$.username.innerText = `@${tweet.user.screen_name}`;
 				}.bind(this),
@@ -80,6 +89,13 @@
 				y: '25%',
 				ease: Power2.easeIn
 			}, 'exit');
+
+			if (this._sponsors) {
+				tl.to(this._sponsors, 0.33, {
+					opacity: 1,
+					ease: Power1.easeOut
+				});
+			}
 
 			// Padding
 			tl.to({}, 0.1, {});
