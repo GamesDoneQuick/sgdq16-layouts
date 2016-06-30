@@ -14,6 +14,7 @@
 			const layoutName = window.location.pathname.split('/').pop();
 			switch (layoutName) {
 				case ('standard_1.html'):
+				case ('standard_1_ff6.html'):
 					sponsors = nodecg.Replicant('assets:sponsors-standard_1');
 					break;
 				case ('standard_2.html'):
