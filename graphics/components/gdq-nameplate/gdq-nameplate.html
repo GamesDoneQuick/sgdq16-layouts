@@ -47,6 +47,7 @@ Audio indicator comes out from side opposide placement indicator
 				left: -34px;
 				overflow: hidden;
 				z-index: -1;
+				visibility: hidden;
 			}
 
 			#audioIcon {
@@ -233,6 +234,11 @@ Audio indicator comes out from side opposide placement indicator
 			:host[attach-left] #audio {
 				left: auto;
 				right: -39px;
+			}
+
+			:host[attach-left] #audio,
+			:host[attach-right] #audio {
+				visibility: visible;
 			}
 
 			:host[attach-left] #audioIcon {
