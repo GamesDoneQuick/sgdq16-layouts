@@ -33,7 +33,7 @@ module.exports = function (nodecg) {
 	}
 
 	const channelToReplicantMap = {};
-	nodecg.bundleConfig.x32.gameAudioChannels.forEach((item, index) => {
+	nodecg.bundleConfig.osc.gameAudioChannels.forEach((item, index) => {
 		if (typeof item.sd === 'number') {
 			channelToReplicantMap[item.sd] = gameAudioChannels.value[index].sd;
 		}
@@ -46,7 +46,7 @@ module.exports = function (nodecg) {
 	const udpPort = new osc.UDPPort({
 		localAddress: '0.0.0.0',
 		localPort: 52361,
-		remoteAddress: nodecg.bundleConfig.x32.address,
+		remoteAddress: nodecg.bundleConfig.osc.address,
 		remotePort: X32_UDP_PORT,
 		metadata: true
 	});
