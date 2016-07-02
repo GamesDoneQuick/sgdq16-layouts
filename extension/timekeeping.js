@@ -310,7 +310,7 @@ module.exports = function (nodecg) {
 		}
 
 		serialReconnectPending = true;
-		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 5 seconds.');
+		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 12 seconds.');
 		setTimeout(() => {
 			if (serialPort.isOpen()) {
 				return;
@@ -344,6 +344,6 @@ module.exports = function (nodecg) {
 					attemptSerialReconnect();
 				}
 			});
-		}, 5000);
+		}, 12000);
 	}
 };
