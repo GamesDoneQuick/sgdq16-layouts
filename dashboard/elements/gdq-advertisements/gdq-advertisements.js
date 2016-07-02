@@ -29,6 +29,11 @@
 		computeSelectedAd(selectedBase) {
 			if (selectedBase && this.advertisements) {
 				const selectedAd = this.advertisements.find(ad => ad.base === selectedBase);
+
+				if (!selectedAd) {
+					return null;
+				}
+
 				if (isVideo(selectedAd.ext)) {
 					this.$.previewImage.setAttribute('hidden', 'true');
 					this.$.previewVideo.removeAttribute('hidden');
