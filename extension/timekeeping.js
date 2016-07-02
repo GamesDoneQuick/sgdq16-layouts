@@ -319,6 +319,11 @@ module.exports = function (nodecg) {
 			require('serialport').list((err, ports) => {
 				if (err) {
 					nodecg.log.error('[timekeeping] Error listing serial ports:', err.stack);
+
+					if (serialPort.isOpen()) {
+						serialPort.close();
+					}
+
 					serialReconnectPending = false;
 					attemptSerialReconnect();
 					return;
