@@ -52,6 +52,7 @@
 				margin-right: 5px;
 				opacity: 0.7;
 				transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+				flex-shrink: 0;
 				@apply(--shadow-none);
 			}
 
@@ -149,7 +150,7 @@
 		<div id="container">
 			<div> <!-- This wrapper div makes the width behave as expected. -->
 				<paper-menu selected="{{selectedIndex}}">
-					<template is="dom-repeat" items="[[advertisements]]" as="advertisement">
+					<template is="dom-repeat" items="[[advertisements]]" as="advertisement" sort="adSort">
 						<div class="ad" data-base$="[[advertisement.base]]">
 							<iron-icon class="ad-icon" icon="[[calcAdIcon(advertisement.ext)]]"></iron-icon>
 							<div title="[[advertisement.base]]" class="ad-filename">[[advertisement.base]]</div>

@@ -135,6 +135,18 @@
 
 		stop() {
 			nodecg.sendMessage('stopAd');
+		},
+
+		adSort(a, b) {
+			if (a.base > b.base) {
+				return 1;
+			}
+
+			if (b.base > a.base) {
+				return -1;
+			}
+
+			return 0;
 		}
 	});
 
