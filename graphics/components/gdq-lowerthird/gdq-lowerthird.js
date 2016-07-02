@@ -39,7 +39,7 @@
 					// Fit names
 					tl.call(() => {
 						const padding = this.numNames === 4 ? 24 : 36;
-						const nameDivs = this.querySelectorAll('.name');
+						const nameDivs = Array.from(this.querySelectorAll('.name'));
 						const maxNameWidth = nameDivs[0].parentNode.clientWidth - padding;
 						nameDivs.forEach(nameDiv => {
 							const nameWidth = nameDiv.scrollWidth;
@@ -49,7 +49,7 @@
 								TweenLite.set(nameDiv, {scaleX: 1});
 							}
 						});
-					});
+					}, '+=0.01');
 
 					tl.to(this, 1, {
 						height: 153,
