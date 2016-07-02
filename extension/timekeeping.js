@@ -27,7 +27,8 @@ module.exports = function (nodecg) {
 		nodecg.log.info(`[timekeeping] Setting up serial communications via ${nodecg.bundleConfig.serialCOMName}`);
 		const SerialPort = require('serialport').SerialPort;
 		serialPort = new SerialPort(nodecg.bundleConfig.serialCOMName, {
-			parser: require('serialport').parsers.readline('\n')
+			parser: require('serialport').parsers.readline('\n'),
+			baudRate: 9600
 		}, err => {
 			if (err) {
 				return nodecg.log.error(err.message);
