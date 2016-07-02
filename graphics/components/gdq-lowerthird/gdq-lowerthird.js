@@ -49,7 +49,7 @@
 								TweenLite.set(nameDiv, {scaleX: 1});
 							}
 						});
-					}, '+=0.01');
+					});
 
 					tl.to(this, 1, {
 						height: 153,
