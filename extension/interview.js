@@ -16,6 +16,7 @@ module.exports = function (nodecg) {
 			clearInterval(interval);
 			clearTimeout(timeout);
 			lowerthirdPulsing.value = false;
+			lowerthirdPulseTimeRemaining.value = 0;
 		}
 	});
 
