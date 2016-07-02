@@ -10,10 +10,10 @@
 
 		properties: {
 			advertisements: Array,
-			selectedIndex: Number,
+			selectedBase: String,
 			selectedAd: {
 				type: Object,
-				computed: 'computeSelectedAd(selectedIndex)',
+				computed: 'computeSelectedAd(selectedBase)',
 				value: null
 			},
 			playing: {
@@ -26,9 +26,9 @@
 			}
 		},
 
-		computeSelectedAd(selectedIndex) {
-			if (selectedIndex >= 0) {
-				const selectedAd = this.advertisements[selectedIndex];
+		computeSelectedAd(selectedBase) {
+			if (selectedBase && this.advertisements) {
+				const selectedAd = this.advertisements.find(ad => ad.base === selectedBase);
 				if (isVideo(selectedAd.ext)) {
 					this.$.previewImage.setAttribute('hidden', 'true');
 					this.$.previewVideo.removeAttribute('hidden');
@@ -63,7 +63,7 @@
 						adEl.setAttribute('disabled', 'true');
 					});
 
-					this.selectedIndex = -1;
+					this.selectedBase = -1;
 				}
 			});
 
@@ -72,7 +72,7 @@
 			});
 
 			advertisements.on('change', newVal => {
-				this.selectedIndex = -1;
+				this.selectedBase = -1;
 				this.advertisements = newVal.slice(0);
 			});
 

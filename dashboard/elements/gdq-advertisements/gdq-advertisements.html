@@ -149,7 +149,7 @@
 
 		<div id="container">
 			<div> <!-- This wrapper div makes the width behave as expected. -->
-				<paper-menu selected="{{selectedIndex}}">
+				<paper-menu selected="{{selectedBase}}" attr-for-selected="data-base">
 					<template is="dom-repeat" items="[[advertisements]]" as="advertisement" sort="adSort">
 						<div class="ad" data-base$="[[advertisement.base]]">
 							<iron-icon class="ad-icon" icon="[[calcAdIcon(advertisement.ext)]]"></iron-icon>
