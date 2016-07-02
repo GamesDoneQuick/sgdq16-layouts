@@ -13,6 +13,9 @@
 
 		properties: {
 			index: Number,
+			audio: {
+				reflectToAttribute: true
+			},
 			attachLeft: {
 				type: Boolean,
 				reflectToAttribute: true,
