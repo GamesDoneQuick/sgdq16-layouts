@@ -1,7 +1,9 @@
 'use strict';
 
 const TimeObject = require('./classes/time-object');
+const HEARTBEAT_INTERVAL = 2000;
 let interval;
+let heartbeatTimeout;
 let serialReconnectPending = false;
 
 module.exports = function (nodecg) {
@@ -37,6 +39,17 @@ module.exports = function (nodecg) {
 
 		serialPort.on('data', data => {
 			switch (data) {
+				case 'handshake':
+					if (serialPort.isOpen()) {
+						nodecg.log.warn('Received serial handshake while port was open.');
+					}
+
+					attemptSerialReconnect();
+					break;
+				case 'heartbeat':
+					clearTimeout(heartbeatTimeout);
+					heartbeatTimeout = setTimeout(serialHeartbeatExpired, HEARTBEAT_INTERVAL);
+					break;
 				case 'startFinish':
 					if (stopwatch.value.state === 'running') {
 						// Finish all runners.
@@ -305,6 +318,8 @@ module.exports = function (nodecg) {
 			return;
 		}
 
+		clearTimeout(heartbeatTimeout);
+
 		if (serialPort.isOpen()) {
 			serialPort.close();
 		}
@@ -345,5 +360,13 @@ module.exports = function (nodecg) {
 				}
 			});
 		}, 12000);
+	}
+
+	/**
+	 * Closes the serial port and tries to re-open it.
+	 * @returns {undefined}
+	 */
+	function serialHeartbeatExpired() {
+		nodecg.log.info('Serial heartbeat expired, attempting reconnect').attemptSerialReconnect();
 	}
 };
