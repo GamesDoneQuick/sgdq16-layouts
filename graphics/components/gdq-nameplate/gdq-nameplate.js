@@ -122,6 +122,9 @@
 				case 3:
 					this.showTime();
 					return 'components/gdq-nameplate/img/medal-bronze.png';
+				case 4:
+					this.showTime();
+					return '';
 				default:
 					this.hideTime();
 					return '';
