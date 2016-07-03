@@ -55,9 +55,13 @@
 					} else {
 						TweenLite.set(this.$.username, {scaleX: 1});
 					}
-					textFit(this.$.body);
 				}.bind(this)
 			});
+
+			// Do the fit on the next tick, to maybe fix an issue where some tweet bodies only appear on one line?
+			tl.call(() => {
+				textFit(this.$.body);
+			}, '+=0.01');
 
 			tl.to(this, 0.33, {
 				opacity: 1,
