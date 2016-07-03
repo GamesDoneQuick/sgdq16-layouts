@@ -24,6 +24,8 @@ function calcOriginalValues(run, original) {
 	differences.forEach(difference => {
 		switch (difference.kind) {
 			case 'A':
+			case 'D':
+			case 'N':
 				// The only place that 'A' differences can happen is in the "runners" array.
 				/* istanbul ignore else: shouldn't be possible to enter the else path */
 				if (difference.path[0] === 'runners' && difference.path.length === 1) {
