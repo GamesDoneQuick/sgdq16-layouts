@@ -31,6 +31,7 @@ module.exports = function (nodecg) {
 			let lastLongName;
 			currentRun.on('change', newVal => {
 				if (newVal.longName !== lastLongName) {
+					nodecg.log.info('Updating Twitch title and game to', newVal.longName);
 					lastLongName = newVal.longName;
 					twitchApi.put('/channels/{{username}}', {
 						channel: {
@@ -38,6 +39,7 @@ module.exports = function (nodecg) {
 							game: newVal.longName
 						}
 					}).then(response => {
+						nodecg.log.info('Successfully updated Twitch title and game to', newVal.longName);
 						if (response.statusCode !== 200) {
 							return nodecg.log.error(response.body.error, response.body.message);
 						}
