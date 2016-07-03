@@ -44,7 +44,6 @@
 
 			nodecg.listenFor('getLoadedAds', () => {
 				loader.getItems().forEach(item => {
-					console.log(item);
 					if (item.result) {
 						nodecg.sendMessage('adLoaded', item.item.gdqBase);
 					}
@@ -93,6 +92,8 @@
 		},
 
 		advertisementsChanged(newVal) {
+			console.log('ADVERTISEMENTS CHANGED');
+
 			let loadedItems = loader.getItems();
 			// Load new items, re-load changed items.
 			newVal.forEach(ad => {
