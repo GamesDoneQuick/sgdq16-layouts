@@ -166,7 +166,12 @@ module.exports = function (nodecg) {
 		}
 
 		if (runRep) {
-			runRep.value = scheduleRep.value.find(r => r.pk === pk);
+			runRep.value = clone(scheduleRep.value.find(r => r.pk === pk));
+			if ({}.hasOwnProperty.call(runRep.value, 'originalValues')) {
+				nodecg.log.error('%s had an `originalValues` property after being reset! This is bad! Deleting it...',
+					runRep.value.name);
+				delete runRep.value.originalValues;
+			}
 		}
 
 		if (typeof cb === 'function') {
