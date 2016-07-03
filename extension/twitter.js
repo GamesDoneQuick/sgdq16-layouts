@@ -152,6 +152,12 @@ module.exports = function (nodecg) {
 			return;
 		}
 
+		// Don't add the tweet if we already have it
+		const isDupe = tweets.value.find(t => t.id_str === tweet.id_str);
+		if (isDupe) {
+			return;
+		}
+
 		// Parse emoji.
 		tweet.text = twemoji.parse(tweet.text);
 
