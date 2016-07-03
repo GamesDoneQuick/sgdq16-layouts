@@ -39,13 +39,6 @@ module.exports = function (nodecg) {
 
 		serialPort.on('data', data => {
 			switch (data) {
-				case 'handshake':
-					if (serialPort.isOpen()) {
-						nodecg.log.warn('Received serial handshake while port was open.');
-						attemptSerialReconnect();
-					}
-
-					break;
 				case 'heartbeat':
 					clearTimeout(heartbeatTimeout);
 					heartbeatTimeout = setTimeout(serialHeartbeatExpired, HEARTBEAT_INTERVAL);
@@ -87,6 +80,8 @@ module.exports = function (nodecg) {
 				return;
 			}
 
+			nodecg.log.info('Sending response handshake');
+			serialPort.write('handshake\n');
 			nodecg.log.info(`[timekeeping] Serial port ${nodecg.bundleConfig.serialCOMName} opened.`);
 		});
 
@@ -325,7 +320,7 @@ module.exports = function (nodecg) {
 		}
 
 		serialReconnectPending = true;
-		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 12 seconds.');
+		nodecg.log.info('[timekeeping] Attempting serial port reconnect in 5 seconds.');
 		setTimeout(() => {
 			if (serialPort.isOpen()) {
 				return;
@@ -359,7 +354,7 @@ module.exports = function (nodecg) {
 					attemptSerialReconnect();
 				}
 			});
-		}, 12000);
+		}, 5000);
 	}
 
 	/**
@@ -367,6 +362,7 @@ module.exports = function (nodecg) {
 	 * @returns {undefined}
 	 */
 	function serialHeartbeatExpired() {
-		nodecg.log.info('Serial heartbeat expired, attempting reconnect').attemptSerialReconnect();
+		nodecg.log.info('Serial heartbeat expired, attempting reconnect');
+		attemptSerialReconnect();
 	}
 };
