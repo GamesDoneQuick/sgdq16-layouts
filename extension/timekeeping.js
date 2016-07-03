@@ -1,7 +1,7 @@
 'use strict';
 
 const TimeObject = require('./classes/time-object');
-const HEARTBEAT_INTERVAL = 2000;
+const HEARTBEAT_INTERVAL = 2500;
 let interval;
 let heartbeatTimeout;
 let serialReconnectPending = false;
@@ -42,9 +42,9 @@ module.exports = function (nodecg) {
 				case 'handshake':
 					if (serialPort.isOpen()) {
 						nodecg.log.warn('Received serial handshake while port was open.');
+						attemptSerialReconnect();
 					}
 
-					attemptSerialReconnect();
 					break;
 				case 'heartbeat':
 					clearTimeout(heartbeatTimeout);
