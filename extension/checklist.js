@@ -12,7 +12,6 @@ module.exports = function (nodecg) {
 		],
 		techStationDuties: [
 			{name: 'Reset Timer', complete: false},
-			{name: 'Hit "Next Run"', complete: false},
 			{name: 'Stop/Start Recording', complete: false},
 			{name: 'Check Tech Notes', complete: false},
 			{name: 'Stream Layout', complete: false},
