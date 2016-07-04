@@ -115,7 +115,7 @@ module.exports = function (nodecg) {
 					// Do nothing.
 				}
 
-				if (serialPort && serialPort.isOpen()) {
+				if (canWriteToSerial()) {
 					serialPort.write(`${JSON.stringify({event: newVal.state, arguments: args})}\n`);
 				}
 			}
@@ -177,7 +177,7 @@ module.exports = function (nodecg) {
 	function tick() {
 		TimeObject.increment(stopwatch.value);
 
-		if (serialPort && serialPort.isOpen()) {
+		if (canWriteToSerial()) {
 			serialPort.write(`${JSON.stringify({
 				event: 'tick',
 				arguments: [stopwatch.value.raw]
@@ -199,7 +199,7 @@ module.exports = function (nodecg) {
 	 * @returns {undefined}
 	 */
 	function reset() {
-		if (serialPort && serialPort.isOpen()) {
+		if (canWriteToSerial()) {
 			serialPort.write(`${JSON.stringify({event: 'reset'})}\n`);
 		}
 		stop();
@@ -219,7 +219,7 @@ module.exports = function (nodecg) {
 		}
 
 		stopwatch.value.results[index].forfeit = forfeit;
-		if (!forfeit && serialPort && serialPort.isOpen()) {
+		if (!forfeit && canWriteToSerial()) {
 			serialPort.write(`${JSON.stringify({event: 'runnerFinished'})}\n`);
 		}
 		recalcPlaces();
@@ -385,8 +385,16 @@ module.exports = function (nodecg) {
 	 * @returns {undefined}
 	 */
 	function sendHeartbeat() {
-		if (serialPort && serialPort.isOpen()) {
+		if (canWriteToSerial()) {
 			serialPort.write('heartbeat\n');
 		}
+	}
+
+	/**
+	 * Checks if we can write to the serial port.
+	 * @returns {boolean}
+     */
+	function canWriteToSerial() {
+		return serialPort && !serialPort.closing && serialPort.isOpen()
 	}
 };
