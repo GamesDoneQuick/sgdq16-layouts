@@ -3,7 +3,6 @@
 const clone = require('clone');
 const diff = require('deep-diff').diff;
 const objectPath = require('object-path');
-const prettyjson = require('prettyjson');
 const merge = require('lodash.merge');
 
 /**
@@ -42,17 +41,17 @@ function calcOriginalValues(run, original) {
 							break;
 						/* istanbul ignore next: shouldn't be possible to enter default path */
 						default:
-							throw new Error(`Unexpected difference:\n${prettyjson.render(difference)}`);
+							throw new Error(`Unexpected difference:\n${difference}`);
 					}
 				} else {
-					throw new Error(`Unexpected difference:\n${prettyjson.render(difference)}`);
+					throw new Error(`Unexpected difference:\n${difference}`);
 				}
 				break;
 			case 'E':
 				objectPath.set(originalValues, difference.path, difference.lhs);
 				break;
 			default:
-				throw new Error(`Unexpected difference:\n${prettyjson.render(difference)}`);
+				throw new Error(`Unexpected difference:\n${difference}`);
 		}
 	});
 
@@ -109,7 +108,7 @@ function mergeChangesFromTracker(run, unmodifiedRun) {
 				break;
 			/* istanbul ignore next: shouldn't be possible */
 			default:
-				throw new Error(`Unexpected difference:\n${prettyjson.render(difference)}`);
+				throw new Error(`Unexpected difference:\n${difference}`);
 		}
 	});
 
