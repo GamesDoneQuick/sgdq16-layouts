@@ -392,9 +392,9 @@ module.exports = function (nodecg) {
 
 	/**
 	 * Checks if we can write to the serial port.
-	 * @returns {boolean}
+	 * @returns {boolean} - Whether or not we can write to the port
      */
 	function canWriteToSerial() {
-		return serialPort && !serialPort.closing && serialPort.isOpen()
+		return serialPort && !serialPort.closing && serialPort.isOpen();
 	}
 };
