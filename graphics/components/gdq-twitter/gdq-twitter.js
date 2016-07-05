@@ -48,6 +48,8 @@
 					this.$.username.innerText = `@${tweet.user.screen_name}`;
 				}.bind(this),
 				onComplete: function () {
+					textFit(this.$.body);
+
 					const maxNameWidth = this.$.username.clientWidth;
 					const nameWidth = this.$.username.scrollWidth;
 					if (nameWidth > maxNameWidth) {
@@ -57,11 +59,6 @@
 					}
 				}.bind(this)
 			});
-
-			// Do the fit on the next tick, to maybe fix an issue where some tweet bodies only appear on one line?
-			tl.call(() => {
-				textFit(this.$.body);
-			}, '+=0.01');
 
 			tl.to(this, 0.33, {
 				opacity: 1,
@@ -83,6 +80,8 @@
 				opacity: 1,
 				ease: Power1.easeOut
 			}, '-=0.25');
+
+			return;
 
 			tl.add('exit', `+=${BODY_DISPLAY_DURATION}`);
 			tl.to(this, 0.4, {
