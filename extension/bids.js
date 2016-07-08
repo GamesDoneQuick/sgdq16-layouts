@@ -83,7 +83,14 @@ module.exports = function (nodecg) {
 	 */
 	function handleResponse(error, response, body, deferred, opts) {
 		if (!error && response.statusCode === 200) {
-			const bids = JSON.parse(body);
+			let bids;
+			try {
+				bids = JSON.parse(body);
+			} catch (e) {
+				nodecg.log.error(e.stack);
+				return;
+			}
+
 
 			// The response from the tracker is flat. This is okay for donation incentives, but it requires
 			// us to do some extra work to figure out what the options are for donation wars that have multiple
