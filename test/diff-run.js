@@ -115,6 +115,56 @@ describe('calcOriginalValues', () => {
 			]
 		});
 	});
+
+	it('should handle the addition of a runner stream', () => {
+		const original = {
+			name: 'a',
+			runners: [
+				{name: 'a'}
+			]
+		};
+
+		const run = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'}
+			]
+		};
+
+		const originalValues = calcOriginalValues(run, original);
+		assert.deepEqual(originalValues, {
+			runners: [
+				{
+					stream: ''
+				}
+			]
+		});
+	});
+
+	it('should handle the removal of a runner stream', () => {
+		const original = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'}
+			]
+		};
+
+		const run = {
+			name: 'a',
+			runners: [
+				{name: 'a'}
+			]
+		};
+
+		const originalValues = calcOriginalValues(run, original);
+		assert.deepEqual(originalValues, {
+			runners: [
+				{
+					stream: 'a'
+				}
+			]
+		});
+	});
 });
 
 describe('mergeChangesFromTracker', () => {
@@ -179,7 +229,7 @@ describe('mergeChangesFromTracker', () => {
 		});
 	});
 
-	it('should handle removed runners', () => {
+	it('should handle runners removed from the original', () => {
 		const original = {
 			name: 'a',
 			runners: [
@@ -200,6 +250,111 @@ describe('mergeChangesFromTracker', () => {
 			name: 'a',
 			runners: [
 				{name: 'a', stream: 'a'}
+			]
+		});
+	});
+
+	it('should handle runners removed from the run', () => {
+		const original = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'},
+				{name: 'a', stream: 'a'}
+			]
+		};
+
+		const run = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'}
+			],
+			originalValues: {
+				runners: [
+					,
+					{name: 'a', stream: 'a'}
+				]
+			}
+		};
+
+		const newRun = mergeChangesFromTracker(run, original);
+		assert.deepEqual(newRun, {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'}
+			],
+			originalValues: {
+				runners: [
+					,
+					{name: 'a', stream: 'a'}
+				]
+			}
+		});
+	});
+
+	it('should handle runner properties added to the original', () => {
+		const original = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'},
+				{name: 'a', stream: 'a'}
+			]
+		};
+
+		const run = {
+			name: 'a',
+			runners: [
+				{name: 'a'},
+				{name: 'a', stream: 'b'}
+			],
+			originalValues: {
+				runners: [
+					,
+					{stream: 'a'}
+				]
+			}
+		};
+
+		const newRun = mergeChangesFromTracker(run, original);
+		assert.deepEqual(newRun, {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'a'},
+				{name: 'a', stream: 'b'}
+			],
+			originalValues: {
+				runners: [
+					,
+					{stream: 'a'}
+				]
+			}
+		});
+	});
+
+	it('should handle runner properties removed from the original', () => {
+		const original = {
+			name: 'a',
+			runners: [
+				{name: 'a'}
+			]
+		};
+
+		const run = {
+			name: 'a',
+			runners: [
+				{name: 'a', stream: 'b'}
+			],
+			originalValues: {
+				runners: [
+					{stream: 'a'}
+				]
+			}
+		};
+
+		const newRun = mergeChangesFromTracker(run, original);
+		assert.deepEqual(newRun, {
+			name: 'a',
+			runners: [
+				{name: 'a'}
 			]
 		});
 	});

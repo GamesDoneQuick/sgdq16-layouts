@@ -22,9 +22,35 @@ function calcOriginalValues(run, original) {
 	const originalValues = {};
 	differences.forEach(difference => {
 		switch (difference.kind) {
-			case 'A':
-			case 'D':
 			case 'N':
+				// The only place that 'N' differences can happen is in the "runners" array.
+				/* istanbul ignore else: shouldn't be possible to enter the else path */
+				if (difference.path[0] === 'runners') {
+					if (!originalValues.runners) {
+						originalValues.runners = [];
+					}
+
+					objectPath.set(originalValues, difference.path, '');
+				} else {
+					throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
+				}
+
+				break;
+			case 'D':
+				// The only place that 'D' differences can happen is in the "runners" array.
+				/* istanbul ignore else: shouldn't be possible to enter the else path */
+				if (difference.path[0] === 'runners') {
+					if (!originalValues.runners) {
+						originalValues.runners = [];
+					}
+
+					objectPath.set(originalValues, difference.path, difference.lhs);
+				} else {
+					throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
+				}
+
+				break;
+			case 'A':
 				// The only place that 'A' differences can happen is in the "runners" array.
 				/* istanbul ignore else: shouldn't be possible to enter the else path */
 				if (difference.path[0] === 'runners' && difference.path.length === 1) {
@@ -41,17 +67,18 @@ function calcOriginalValues(run, original) {
 							break;
 						/* istanbul ignore next: shouldn't be possible to enter default path */
 						default:
-							throw new Error(`Unexpected difference:\n${difference}`);
+							throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
 					}
 				} else {
-					throw new Error(`Unexpected difference:\n${difference}`);
+					throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
 				}
 				break;
 			case 'E':
 				objectPath.set(originalValues, difference.path, difference.lhs);
 				break;
+			/* istanbul ignore next: shouldn't be possible */
 			default:
-				throw new Error(`Unexpected difference:\n${difference}`);
+				throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
 		}
 	});
 
@@ -86,11 +113,16 @@ function mergeChangesFromTracker(run, unmodifiedRun) {
 
 		switch (difference.kind) {
 			case 'E':
-				objectPath.set(run, difference.path, difference.rhs);
+				if (difference.path[0] === 'runners' && difference.rhs === '') {
+					delete objectPath.get(run, pathBase)[pathTip];
+				} else {
+					objectPath.set(run, difference.path, difference.rhs);
+				}
+
 				delete objectPath.get(run.originalValues, pathBase)[pathTip];
 				break;
 			case 'N':
-				merge(run, difference.rhs);
+				merge(objectPath.get(run, difference.path), difference.rhs);
 				break;
 			case 'D':
 				if (difference.path) {
@@ -108,12 +140,27 @@ function mergeChangesFromTracker(run, unmodifiedRun) {
 				break;
 			/* istanbul ignore next: shouldn't be possible */
 			default:
-				throw new Error(`Unexpected difference:\n${difference}`);
+				throw new Error(`Unexpected difference:\n${JSON.stringify(difference)}`);
 		}
 	});
 
-	if (run.originalValues && Object.keys(run.originalValues).length === 0) {
-		delete run.originalValues;
+	if (run.originalValues) {
+		if (run.originalValues.runners) {
+			for (let i = 0; i < run.originalValues.runners.length; i++) {
+				if (typeof run.originalValues.runners[i] === 'object' &&
+					Object.keys(run.originalValues.runners[i]).length === 0) {
+					delete run.originalValues.runners[i];
+				}
+			}
+
+			if (Object.keys(run.originalValues.runners).length === 0) {
+				delete run.originalValues.runners;
+			}
+		}
+
+		if (Object.keys(run.originalValues).length === 0) {
+			delete run.originalValues;
+		}
 	}
 
 	if (run.runners) {
