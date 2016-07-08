@@ -122,7 +122,12 @@ function mergeChangesFromTracker(run, unmodifiedRun) {
 				delete objectPath.get(run.originalValues, pathBase)[pathTip];
 				break;
 			case 'N':
-				merge(objectPath.get(run, difference.path), difference.rhs);
+				if (typeof difference.rhs === 'object') {
+					merge(run, difference.rhs);
+				} else {
+					objectPath.set(run, difference.path, difference.rhs);
+				}
+
 				break;
 			case 'D':
 				if (difference.path) {
