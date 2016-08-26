@@ -96,11 +96,11 @@ module.exports = function (nodecg) {
 	});
 
 	udpPort.on('open', () => {
-		nodecg.log.info('[osc] Connected to Behringer X32');
+		nodecg.log.info('[osc] Port open, can now communicate with a Behringer X32.');
 	});
 
 	udpPort.on('close', () => {
-		nodecg.log.warn('[osc] Disconnected from Behringer X32');
+		nodecg.log.warn('[osc] Port closed.');
 	});
 
 	// Open the socket.
