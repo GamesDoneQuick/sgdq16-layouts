@@ -8,3 +8,4 @@ coverage
 !/graphics/img/boxart/default.png
 !.empty_directory
 
+.idea
