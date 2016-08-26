@@ -8,7 +8,7 @@ This is a [NodeCG](http://github.com/nodecg/nodecg) 0.8 bundle. You will need to
 - Install `bower` if you have not already (`npm install -g bower`)
 - **WINDOWS**: Install [`windows-build-tools`](https://www.npmjs.com/package/windows-build-tools) to install the tools necessary to compile `sgdq16-layouts`' dependencies.
 - **LINUX**: Install `build-essential` and Python 2.7, which are needed to compile `sgdq16-layouts`' dependencies.
-- `cd nodecg/bundles/sgdq16-layouts` and run `npm install`, then `bower install`
+- `cd nodecg/bundles/sgdq16-layouts` and run `npm install --production`, then `bower install`
 - Create the configuration file (see the [configuration][id] section below for more details)
 - Run the nodecg server: `nodecg start` (or `node index.js` if you don't have nodecg-cli) from the `nodecg` root directory.
 
@@ -33,7 +33,7 @@ Example config:
 {
 	"useMockData": true,
 	"displayDuration": 10,
-	"x32": {
+	"osc": {
 		"address": "192.168.1.10",
 		"gameAudioChannels": [
 			{
